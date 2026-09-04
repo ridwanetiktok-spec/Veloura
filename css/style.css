@@ -2311,3 +2311,213 @@ html[data-theme="dark"] {
     --testimonial-card-width: calc((100vw - 40px) * 0.85);
   }
 }
+
+
+/* ============================================
+   CAROUSEL WITH SIDE ARROWS
+   ============================================ */
+
+/* Section header - remove arrows from header */
+.section-header-with-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.section-header-with-nav .section-header {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* Hide the old arrow container in header */
+.carousel-nav-btns {
+  display: none;
+}
+
+/* ===== Carousel Wrapper with Side Arrows ===== */
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 0 56px; /* Space for arrows */
+}
+
+/* Arrow buttons - positioned on sides */
+.carousel-wrapper .carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201, 168, 76, 0.25);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--charcoal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  outline: none;
+  opacity: 1;
+}
+
+/* Left arrow */
+.carousel-wrapper .carousel-nav-btn:first-of-type {
+  left: -6px;
+}
+
+/* Right arrow */
+.carousel-wrapper .carousel-nav-btn:last-of-type {
+  right: -6px;
+}
+
+.carousel-wrapper .carousel-nav-btn:hover {
+  background: var(--white);
+  border-color: var(--gold-500);
+  color: var(--gold-600);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 4px 24px rgba(201, 168, 76, 0.2);
+}
+
+.carousel-wrapper .carousel-nav-btn:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.carousel-wrapper .carousel-nav-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  transition: transform 0.3s ease;
+}
+
+.carousel-wrapper .carousel-nav-btn:hover svg {
+  transform: scale(1.1);
+}
+
+/* Dark theme */
+[data-theme="dark"] .carousel-wrapper .carousel-nav-btn {
+  background: rgba(26, 23, 32, 0.9);
+  border-color: rgba(201, 168, 76, 0.15);
+  color: #C8C0D0;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .carousel-wrapper .carousel-nav-btn:hover {
+  background: rgba(26, 23, 32, 0.95);
+  border-color: var(--gold-400);
+  color: var(--gold-400);
+  box-shadow: 0 4px 24px rgba(201, 168, 76, 0.12);
+}
+
+/* ===== Carousel Track ===== */
+.carousel-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 12px 4px 24px 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-track .product-card {
+  flex: 0 0 calc(25% - 18px);
+  min-width: 250px;
+  scroll-snap-align: start;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .carousel-wrapper {
+    padding: 0 40px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:first-of-type {
+    left: -2px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:last-of-type {
+    right: -2px;
+  }
+  
+  .carousel-track .product-card {
+    flex: 0 0 calc(33.333% - 16px);
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-wrapper {
+    padding: 0 20px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn {
+    width: 34px;
+    height: 34px;
+    opacity: 0.7;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:first-of-type {
+    left: 2px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:last-of-type {
+    right: 2px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .carousel-track .product-card {
+    flex: 0 0 calc(50% - 12px);
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-wrapper {
+    padding: 0 12px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn {
+    width: 30px;
+    height: 30px;
+    opacity: 0.6;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:first-of-type {
+    left: 0px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn:last-of-type {
+    right: 0px;
+  }
+  
+  .carousel-wrapper .carousel-nav-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .carousel-track .product-card {
+    flex: 0 0 85%;
+    min-width: 0;
+  }
+}
