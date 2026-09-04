@@ -1,7 +1,7 @@
 // ============================================================
 // VELOURA NEWSLETTER ADMIN
 // ============================================================
-// Uses Node.js API: /api/emails
+// Uses Supabase API: /api/emails
 // Login requires: Email + Password
 // ============================================================
 
@@ -71,7 +71,6 @@ function handleLogin(event) {
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
 
-    // Validate both email and password
     if (!email) {
         showLoginError('Please enter your email address.');
         return;
@@ -82,13 +81,11 @@ function handleLogin(event) {
         return;
     }
 
-    // Check credentials
     if (email !== LOGIN_EMAIL || password !== LOGIN_PASSWORD) {
         showLoginError('Invalid email or password. Please try again.');
         return;
     }
 
-    // Login successful
     isAuthenticated = true;
     sessionStorage.setItem('veloura_newsletter_auth', 'true');
     loginForm.reset();
@@ -155,7 +152,7 @@ async function apiFetch(endpoint, options = {}) {
 }
 
 // ============================================================
-// LOAD SUBSCRIBERS
+// LOAD SUBSCRIBERS - With Supabase dates
 // ============================================================
 
 async function loadSubscribers() {
@@ -176,9 +173,10 @@ async function loadSubscribers() {
             throw new Error(data.message || 'Failed to load subscribers');
         }
 
-        subscribers = data.emails.map((email, index) => ({
-            email,
-            subscribedAt: null,
+        // Use data from Supabase with timestamps
+        subscribers = data.data.map((row, index) => ({
+            email: row.email,
+            subscribedAt: row.created_at,
             order: index
         }));
 
@@ -281,12 +279,22 @@ async function deleteEmail(email) {
 }
 
 // ============================================================
-// STATS
+// STATS - With real "This Month" count
 // ============================================================
 
 function updateStats() {
     statTotal.textContent = subscribers.length;
-    statThisMonth.textContent = '—';
+    
+    // Calculate this month's subscribers
+    const now = new Date();
+    const thisMonth = subscribers.filter(s => {
+        if (!s.subscribedAt) return false;
+        const date = new Date(s.subscribedAt);
+        return date.getMonth() === now.getMonth() && 
+               date.getFullYear() === now.getFullYear();
+    });
+    
+    statThisMonth.textContent = thisMonth.length || '0';
     statLatest.textContent = subscribers.length > 0 ? subscribers[0].email : '—';
 }
 

@@ -2,30 +2,23 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": "dist",
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/index.html"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
-      "source": "/shop.html",
-      "destination": "/shop.html"
+      "source": "/infos.html",
+      "destination": "/infos.html"
     },
     {
-      "source": "/blog.html",
-      "destination": "/blog.html"
-    },
-    {
-      "source": "/privacy-policy.html",
-      "destination": "/privacy-policy.html"
-    },
-    {
-      "source": "/terms-of-service.html",
-      "destination": "/terms-of-service.html"
-    },
-    {
-      "source": "/admin-8f7k29x-private-dashboard/(.*)",
-      "destination": "/admin-8f7k29x-private-dashboard/index.html"
+      "source": "/(.*)",
+      "destination": "/$1"
     }
   ],
   "headers": [
