@@ -93,12 +93,28 @@
 
   <!-- Categories -->
   <section class="section" id="categories">
-    <div class="section-header">
-      <span class="section-label">Curated For You</span>
-      <h2 class="section-title">Shop by Category</h2>
-      <p class="section-subtitle">Explore our carefully curated collections designed for every beauty need.</p>
+    <div class="section-header-with-nav">
+      <div class="section-header">
+        <span class="section-label">Curated For You</span>
+        <h2 class="section-title">Shop by Category</h2>
+        <p class="section-subtitle">Explore our carefully curated collections designed for every beauty need.</p>
+      </div>
+      <div class="carousel-nav-btns">
+        <button class="carousel-nav-btn" onclick="scrollCarousel('categoriesGrid', -1)" aria-label="Previous Categories">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <button class="carousel-nav-btn" onclick="scrollCarousel('categoriesGrid', 1)" aria-label="Next Categories">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="categories-grid" id="categoriesGrid"></div>
+    <div class="carousel-wrapper">
+      <div class="categories-grid carousel-track" id="categoriesGrid"></div>
+    </div>
   </section>
 
   <!-- Featured Products -->

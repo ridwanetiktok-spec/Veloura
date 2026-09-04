@@ -320,6 +320,7 @@ function initSite() {
   initCustomSortDropdown();
 
   // Initialize infinite carousels with hover-pause
+  initCarouselAutoLoop('categoriesGrid', 4000);
   initCarouselAutoLoop('featuredProducts', 3500);
   initCarouselAutoLoop('bestSellers', 3000);
   initCarouselAutoLoop('newArrivals', 3800);

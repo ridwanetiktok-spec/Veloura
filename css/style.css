@@ -560,6 +560,9 @@ input, select, textarea { font-family: inherit; }
     align-items: flex-start;
     gap: 16px;
   }
+  .categories-grid.carousel-track .category-card {
+    flex: 0 0 calc((100% - 24px) / 2);
+  }
   .carousel-track .product-card {
     flex: 0 0 calc(50% - 12px);
   }
@@ -711,6 +714,21 @@ input, select, textarea { font-family: inherit; }
   font-size: 1.3rem;
   color: var(--white);
   margin-bottom: 4px;
+}
+
+.categories-grid.carousel-track {
+  display: flex;
+}
+
+.categories-grid.carousel-track .category-card {
+  flex: 0 0 calc((100% - 96px) / 5);
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .categories-grid.carousel-track .category-card {
+    flex-basis: calc((100% - 24px) / 2);
+  }
 }
 
 .category-card-overlay span {
