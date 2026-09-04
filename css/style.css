@@ -721,13 +721,25 @@ input, select, textarea { font-family: inherit; }
 }
 
 .categories-grid.carousel-track .category-card {
-  flex: 0 0 calc((100% - 96px) / 5);
-  min-width: 0;
+  flex: 0 0 calc(25% - 18px);
+  min-width: 250px;
+}
+
+@media (max-width: 1024px) {
+  .categories-grid.carousel-track .category-card {
+    flex-basis: calc(33.333% - 16px);
+  }
 }
 
 @media (max-width: 768px) {
   .categories-grid.carousel-track .category-card {
-    flex-basis: calc((100% - 24px) / 2);
+    flex-basis: calc(50% - 12px);
+  }
+}
+
+@media (max-width: 480px) {
+  .categories-grid.carousel-track .category-card {
+    flex-basis: 85%;
   }
 }
 
