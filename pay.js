@@ -521,14 +521,12 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 window.location.href = '/';
             }, 3000);
-
         } catch (error) {
             console.error('❌ Error:', error);
             showPopup(
                 "Error processing payment<br><br>" +
                 error.message
             );
-
             payButton.innerHTML = 'Pay Now';
             payButton.dataset.processing = "false";
             payButton.disabled = !validateFormReady();
@@ -536,5 +534,4 @@ document.addEventListener("DOMContentLoaded", () => {
             payButton.style.cursor = payButton.disabled ? 'not-allowed' : 'pointer';
         }
     });
-
 });

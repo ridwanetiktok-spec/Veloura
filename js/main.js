@@ -15,6 +15,18 @@ let currentSlide = 0;
 let slideInterval;
 let publicRealtimeChannel;
 
+
+// ===== Save Products to LocalStorage for Checkout =====
+function saveProductsToLocalStorage() {
+    try {
+        localStorage.setItem('luxbeauty_products', JSON.stringify(products));
+        console.log('✅ Products saved to localStorage for checkout page');
+    } catch (e) {
+        console.warn('Could not save products to localStorage:', e);
+    }
+}
+
+
 function mapProduct(row) {
   return { ...row, salePrice: row.sale_price, shortDescription: row.short_description, skinType: row.skin_type, bestSeller: row.best_seller, newArrival: row.new_arrival, createdAt: row.created_at };
 }
@@ -49,6 +61,7 @@ async function loadPublicFromSupabase() {
   blogPosts = (results[3].data || []).map(mapBlogPost);
   settings = results[4].data?.data || { siteName: 'Veloura' };
   reviews = (results[5].data || []).map(mapReview);
+  saveProductsToLocalStorage();
 }
 
 function subscribeToPublicRealtime() {
@@ -65,6 +78,8 @@ async function loadData() {
   try {
     await loadPublicFromSupabase();
     subscribeToPublicRealtime();
+    // ✅ Save products to localStorage for checkout page
+    saveProductsToLocalStorage();
     initSite();
   } catch (e) {
     console.error('Error loading Supabase data:', e);
@@ -74,6 +89,8 @@ async function loadData() {
     reviews = DEFAULT_REVIEWS;
     banners = { newsBanner: { enabled: false }, promoBanner: { enabled: false }, heroSlides: [] };
     settings = { siteName: 'Veloura' };
+    // ✅ Save empty products to localStorage
+    saveProductsToLocalStorage();
     initSite();
   }
 }
