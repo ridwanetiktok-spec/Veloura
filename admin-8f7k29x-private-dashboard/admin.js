@@ -170,7 +170,8 @@ function reviewRow(review) {
 }
 
 async function dbInsert(table, row) {
-  const { error } = await requireSupabase().from(table).insert(row);
+  const { id, ...insertRow } = row;
+  const { error } = await requireSupabase().from(table).insert(insertRow);
   if (error) throw error;
 }
 
@@ -191,7 +192,10 @@ async function dbSaveSingleton(table, data) {
 
 async function dbSaveBanners(banners) {
   const client = requireSupabase();
-  const rows = ['newsBanner', 'promoBanner', 'heroSlides'].map((type, index) => ({ id: index + 1, type, data: banners[type] || (type === 'heroSlides' ? [] : {}) }));
+  const rows = ['newsBanner', 'promoBanner', 'heroSlides'].map(type => ({
+    type,
+    data: banners[type] || (type === 'heroSlides' ? [] : {})
+  }));
   const { error } = await client.from('banners').upsert(rows, { onConflict: 'type' });
   if (error) throw error;
 }
