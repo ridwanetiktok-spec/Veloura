@@ -275,10 +275,15 @@ input, select, textarea { font-family: inherit; }
   position: absolute;
   inset: 0;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 1.2s ease;
 }
 
-.hero-slide.active { opacity: 1; }
+.hero-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
 
 .hero-slide img {
   width: 100%;
