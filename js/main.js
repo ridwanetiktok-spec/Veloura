@@ -904,6 +904,9 @@ function initSite() {
     'nailStudio',
     3600
   );
+
+  // ✅ Initialize the newsletter form with Supabase API
+  setupNewsletterForm();
 }
 
 // ===== News Banner =====
@@ -1498,8 +1501,7 @@ function initializeTestimonialsCarousel() {
     target.addEventListener(
       type,
       handler,
-      options
-    );
+      options    );
 
     state.listeners.push(
       () =>
@@ -3809,36 +3811,8 @@ function setupEventListeners() {
       });
   }
 
-  // Newsletter
-  const newsletterForm =
-    document.getElementById(
-      'newsletterForm'
-    );
-
-  if (newsletterForm) {
-    newsletterForm.addEventListener(
-      'submit',
-      e => {
-        e.preventDefault();
-
-        const email =
-          newsletterForm
-            .querySelector(
-              'input'
-            )
-            .value;
-
-        if (email) {
-          showToast(
-            'Thank you for subscribing!',
-            'success'
-          );
-
-          newsletterForm.reset();
-        }
-      }
-    );
-  }
+  // ❌ REMOVED: Duplicate newsletter handler
+  // The newsletter is now handled by setupNewsletterForm()
 
   // Checkout
   const checkoutBtn =
@@ -4288,7 +4262,7 @@ function initCustomSortDropdown() {
   );
 }
 
-
+// ===== NEWSLETTER FORM - Uses Supabase API =====
 
 function setupNewsletterForm() {
     const form = document.getElementById('newsletterForm');
@@ -4316,7 +4290,7 @@ function setupNewsletterForm() {
         button.textContent = 'Subscribing...';
 
         try {
-            // Send to Node.js API instead of PHP
+            // Send to Supabase API
             const response = await fetch('/api/emails', {
                 method: 'POST',
                 headers: {
