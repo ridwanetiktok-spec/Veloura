@@ -491,7 +491,7 @@ input, select, textarea { font-family: inherit; }
   --testimonial-card-width: calc((min(100vw, 1280px) - 96px) / 3);
   width: 100%;
   overflow: hidden;
-  touch-action: pan-y;
+  touch-action: auto;
 }
 
 .testimonials-carousel-wrapper .carousel-track {
