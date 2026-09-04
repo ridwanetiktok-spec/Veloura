@@ -59,49 +59,7 @@ function subscribeToPublicRealtime() {
     .subscribe();
 }
 
-// Default reviews fallback
-const DEFAULT_REVIEWS = [
-  {
-    id: 1,
-    author: "Sarah Mitchell",
-    initials: "SM",
-    subtitle: "Verified Buyer",
-    rating: 5,
-    text: "The Radiant Glow Serum completely transformed my skin. I've been using it for 3 weeks and my complexion has never looked better. Absolutely worth every penny!",
-    productName: "Radiant Glow Serum",
-    date: "2026-02-15"
-  },
-  {
-    id: 2,
-    author: "Jessica Chen",
-    initials: "JC",
-    subtitle: "Verified Buyer",
-    rating: 5,
-    text: "I'm obsessed with the Velvet Matte Lipstick! The color payoff is incredible and it lasts all day without drying out my lips. This is my new holy grail.",
-    productName: "Velvet Matte Lipstick",
-    date: "2026-02-18"
-  },
-  {
-    id: 3,
-    author: "Amanda Rodriguez",
-    initials: "AR",
-    subtitle: "Verified Buyer",
-    rating: 5,
-    text: "The Luxury Gift Set was the perfect birthday present for my sister. The packaging alone is stunning, and the products inside are even better. She hasn't stopped talking about it!",
-    productName: "Rose Gold Luxury Gift Set",
-    date: "2026-02-22"
-  },
-  {
-    id: 4,
-    author: "Elena Rostova",
-    initials: "ER",
-    subtitle: "Verified Buyer",
-    rating: 5,
-    text: "The Silk Hydrating Night Cream feels divine on the skin. I wake up every morning with plump, soft skin. Truly high luxury quality.",
-    productName: "Silk Hydrating Night Cream",
-    date: "2026-02-28"
-  }
-];
+setupNewsletterForm();
 
 // ===== Data Loading =====
 async function loadData() {
@@ -4329,4 +4287,70 @@ function initCustomSortDropdown() {
       );
     }
   );
+}
+
+
+function setupNewsletterForm() {
+    const form = document.getElementById('newsletterForm');
+
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const input = form.querySelector('input[type="email"]');
+        const button = form.querySelector('button');
+
+        const email = input.value.trim();
+
+        if (!email) return;
+
+        const originalText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = 'Subscribing...';
+
+        try {
+            const response = await fetch('mails.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    email
+                })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(
+                    result.message || 'Subscription failed.'
+                );
+            }
+
+            input.value = '';
+
+            button.textContent =
+                result.alreadySubscribed
+                    ? 'Already Subscribed'
+                    : 'Subscribed ✓';
+
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2500);
+
+        } catch (error) {
+            console.error(error);
+
+            button.textContent = 'Try Again';
+
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2500);
+
+        } finally {
+            button.disabled = false;
+        }
+    });
 }

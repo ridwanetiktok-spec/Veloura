@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter Subscribers - Veloura</title>
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="infos.css">
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <section class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <div class="login-logo">Veloura</div>
+            <p class="login-subtitle">Private Newsletter Dashboard</p>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="login-input-group">
+                    <label for="loginEmail">Email</label>
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="Enter your email"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div class="login-input-group">
+                    <label for="loginPassword">Password</label>
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Enter your password"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Sign In
+                </button>
+
+                <div class="login-error" id="loginError" role="alert"></div>
+            </form>
+        </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <div class="admin-layout" id="adminLayout">
+
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">Veloura</div>
+                <span class="sidebar-badge">Admin Panel</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">Main</div>
+
+                <a class="sidebar-link active" href="infos.html">
+                    <span class="sidebar-icon">✉</span>
+                    <span>Newsletter</span>
+                </a>
+
+                <a class="sidebar-link" href="admin.html">
+                    <span class="sidebar-icon">◆</span>
+                    <span>Main Dashboard</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="index.html">
+                    <span>↗</span>
+                    View Store
+                </a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+
+            <div class="admin-topbar">
+                <div>
+                    <h1 class="topbar-title">Newsletter Subscribers</h1>
+                    <p class="topbar-subtitle">
+                        Manage emails collected from the Veloura newsletter.
+                    </p>
+                </div>
+
+                <div class="topbar-actions">
+                    <a href="index.html" class="view-site-btn">
+                        View Store
+                    </a>
+
+                    <button class="logout-btn" id="logoutBtn">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+
+                <!-- STATS -->
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon pink">✉</div>
+                        <div class="stat-info">
+                            <h3 id="statTotal">0</h3>
+                            <p>Total Subscribers</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">✓</div>
+                        <div class="stat-info">
+                            <h3 id="statThisMonth">0</h3>
+                            <p>This Month</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon gold">★</div>
+                        <div class="stat-info">
+                            <h3 id="statLatest">—</h3>
+                            <p>Latest Subscriber</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LIST -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title">Subscriber List</div>
+                            <div class="panel-caption" id="listCaption">
+                                Loading subscribers...
+                            </div>
+                        </div>
+
+                        <div class="panel-actions">
+                            <input
+                                type="search"
+                                id="searchInput"
+                                class="search-input"
+                                placeholder="Search email..."
+                                autocomplete="off"
+                            >
+
+                            <button class="btn btn-secondary" id="refreshBtn">
+                                Refresh
+                            </button>
+
+                            <button class="btn btn-primary" id="copyAllBtn">
+                                Copy All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Email</th>
+                                    <th>Subscribed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="subscriberTableBody">
+                                <tr>
+                                    <td colspan="4" class="loading-cell">
+                                        Loading subscribers...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script src="infos.js"></script>
+</body>
+</html>
