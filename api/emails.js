@@ -1,20 +1,20 @@
-// api/emails.js - With Better Error Handling
+// api/emails.js - Uses VITE_ prefixed variables
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Use VITE_ prefixed variables (same as frontend)
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-// Log environment variables status (will show in Vercel logs)
+// Log environment variables status
 console.log('🔍 Checking environment variables:');
-console.log('SUPABASE_URL exists:', !!supabaseUrl);
-console.log('SUPABASE_ANON_KEY exists:', !!supabaseKey);
+console.log('VITE_SUPABASE_URL exists:', !!supabaseUrl);
+console.log('VITE_SUPABASE_ANON_KEY exists:', !!supabaseKey);
 
 // Check if environment variables are set
 if (!supabaseUrl || !supabaseKey) {
     console.error('❌ Missing Supabase environment variables!');
-    console.error('SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing');
-    console.error('SUPABASE_ANON_KEY:', supabaseKey ? '✅ Set' : '❌ Missing');
+    console.error('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing');
+    console.error('VITE_SUPABASE_ANON_KEY:', supabaseKey ? '✅ Set' : '❌ Missing');
 }
 
 // Create Supabase client
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         console.error('❌ Supabase client not initialized');
         return res.status(500).json({
             success: false,
-            message: 'Database connection not initialized. Check environment variables.'
+            message: 'Database connection not initialized. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
         });
     }
 
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
         console.error('❌ Missing environment variables');
         return res.status(500).json({
             success: false,
-            message: 'Missing database credentials. Please check environment variables.'
+            message: 'Missing database credentials. Please check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
         });
     }
 
