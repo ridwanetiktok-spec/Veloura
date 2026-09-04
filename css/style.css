@@ -1803,8 +1803,51 @@ html.lux-notify-open { overflow: hidden; }
   .hero-content h1 { font-size: 2.2rem; }
   .newsletter-form { flex-direction: column; }
   .newsletter-form .btn-primary { width: 100%; justify-content: center; text-align: center; }
-  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
-  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  .main-footer { padding: 36px 20px 18px; margin-top: 32px; }
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 22px;
+    padding-bottom: 24px;
+  }
+  .footer-brand,
+  .footer-col:last-child { grid-column: 1 / -1; }
+  .footer-brand .logo { font-size: 1.7rem; margin-bottom: 8px; }
+  .footer-brand p {
+    max-width: none;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .social-links { gap: 8px; }
+  .social-links a { width: 38px; height: 38px; }
+  .footer-col h4 { font-size: 0.75rem; margin-bottom: 8px; }
+  .footer-col ul li { margin-bottom: 0; }
+  .footer-col a {
+    display: inline-block;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    padding: 5px 0;
+  }
+  .footer-col a:hover { padding-left: 0; }
+  .footer-col:last-child ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 16px;
+  }
+  .footer-col:last-child li {
+    font-size: 0.76rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .footer-bottom {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding-top: 16px;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    text-align: center;
+  }
   .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
   .product-info { padding: 14px; }
   .categories-grid { grid-template-columns: repeat(2, 1fr); }
