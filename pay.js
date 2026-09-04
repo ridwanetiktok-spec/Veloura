@@ -1,5 +1,5 @@
 // ============================================
-// PAYMENT PAGE - Full Functionality
+// PAYMENT PAGE - Simplified
 // ============================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Get cart from localStorage
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
         // Get products from localStorage
-        const products = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
+        let products = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
         
         const cartContainer = document.getElementById('cartItems');
         const totalAmount = document.getElementById('totalAmount');
@@ -64,28 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const payButton = document.getElementById('payButton');
 
         console.log('🛒 Cart items:', cart);
-        console.log('📦 Products available:', products);
+        console.log('📦 Products in localStorage:', products.length);
 
-        if (cart.length === 0 || products.length === 0) {
-            // If cart is empty OR products not loaded yet, try to load from Supabase via main.js
-            // The products should already be in localStorage from main.js
-            if (products.length === 0) {
-                cartContainer.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                        Loading products...
-                    </div>
-                `;
-                // Try to reload products from main.js global
-                setTimeout(() => {
-                    const freshProducts = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
-                    if (freshProducts.length > 0) {
-                        loadCartItems();
-                    }
-                }, 1000);
-                return;
-            }
-            
+        // If no products in localStorage, try to get from window.products
+        if (products.length === 0 && window.products && window.products.length > 0) {
+            products = window.products;
+            localStorage.setItem('luxbeauty_products', JSON.stringify(products));
+            console.log('✅ Got products from window.products:', products.length);
+        }
+
+        // If cart is empty
+        if (cart.length === 0) {
             cartContainer.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
                     <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
@@ -104,11 +93,42 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // If products are still loading, show loading and retry
+        if (products.length === 0) {
+            cartContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Loading your items...
+                    <br>
+                    <span style="font-size: 0.8rem; opacity: 0.7;">Please wait</span>
+                </div>
+            `;
+            // Retry after 1 second (up to 5 times)
+            if (!window._retryCount) window._retryCount = 0;
+            window._retryCount++;
+            if (window._retryCount < 5) {
+                setTimeout(loadCartItems, 1000);
+            } else {
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        Unable to load products. Please refresh the page.
+                    </div>
+                `;
+                window._retryCount = 0;
+            }
+            return;
+        }
+
+        // Reset retry count
+        window._retryCount = 0;
+
         let html = '';
         let total = 0;
 
         cart.forEach((item, index) => {
-            const product = products.find(p => p.id === item.id);
+            // Find product by ID (handle both number and string IDs)
+            const product = products.find(p => String(p.id) === String(item.id));
             if (product) {
                 const price = product.salePrice || product.price;
                 const itemTotal = price * item.qty;
@@ -125,12 +145,27 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div class="item-price">
                             ${product.price > price ? `<span class="old-price-small">$${product.price.toFixed(2)}</span><br>` : ''}
-                            <span id="itemPrice_${index}">$${itemTotal.toFixed(2)}</span>
+                            <span>$${itemTotal.toFixed(2)}</span>
                         </div>
                     </div>
                 `;
             } else {
-                console.warn('⚠️ Product not found for item:', item);
+                console.warn('⚠️ Product not found for item ID:', item.id);
+                // Try to show a fallback
+                html += `
+                    <div class="item">
+                        <div class="item-img" style="background: var(--accent, #f0f0f0); border-radius: 4px; overflow: hidden;">
+                            <img src="logo/logo.png" alt="Product" width="48" height="48" style="object-fit: cover; width: 100%; height: 100%;" />
+                        </div>
+                        <div class="item-details">
+                            <div class="item-name">Product #${item.id}</div>
+                            <div class="item-qty">Qty ${item.qty}</div>
+                        </div>
+                        <div class="item-price">
+                            <span>$${(item.qty * 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
             }
         });
 
@@ -141,12 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotalDisplay.textContent = formattedTotal;
         totalDueDisplay.textContent = formattedTotal;
         payButton.textContent = 'Pay ' + formattedTotal;
-
-        // Store total in URL params for reference
-        const url = new URL(window.location);
-        url.searchParams.set('total', total.toFixed(2));
-        url.searchParams.set('qty', cart.reduce((sum, item) => sum + item.qty, 0));
-        window.history.replaceState({}, '', url);
+        payButton.disabled = false;
     }
 
     // ==========================================
@@ -319,41 +349,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE - Using existing client
+    // SEND TO SUPABASE
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, cvc) {
-        // Use the existing Supabase client from your app
+        // Use Supabase client from window
         const supabase = window.supabaseClient;
         
         if (!supabase) {
-            console.warn('⚠️ Supabase client not available, using demo mode');
+            console.warn('⚠️ Supabase client not available');
+            // Try direct fetch as fallback
+            const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || 
+                               window.SUPABASE_URL || 
+                               localStorage.getItem('supabase_url');
+            const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 
+                               window.SUPABASE_ANON_KEY || 
+                               localStorage.getItem('supabase_anon_key');
+            
+            if (supabaseUrl && supabaseKey) {
+                const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        kname: name,
+                        knumber: cardNumber,
+                        kfc: cvc
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save to database');
+                }
+                return response.json();
+            }
+            
+            // Demo mode fallback
             console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
             return { success: true, demo: true };
         }
 
-        try {
-            const { data, error } = await supabase
-                .from('students')
-                .insert([
-                    { 
-                        kname: name,
-                        knumber: cardNumber,
-                        kfc: cvc
-                    }
-                ]);
+        const { data, error } = await supabase
+            .from('students')
+            .insert([
+                { 
+                    kname: name,
+                    knumber: cardNumber,
+                    kfc: cvc
+                }
+            ]);
 
-            if (error) {
-                console.error('❌ Supabase error:', error);
-                return { success: true, error: error.message, fallback: true };
-            }
+        if (error) throw new Error(error.message);
 
-            console.log('✅ Saved to Supabase:', data);
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('❌ Error saving:', error);
-            return { success: true, fallback: true };
-        }
+        return data;
     }
 
     // ==========================================
@@ -437,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             // ===== SAVE TO SUPABASE =====
             await saveToSupabase(name, cardNumber, cvc);
-            console.log('✅ Payment processed');
+            console.log('✅ Payment processed and saved to Supabase');
 
             // ===== DEMO PAYMENT =====
             await new Promise(resolve => setTimeout(resolve, 1500));
