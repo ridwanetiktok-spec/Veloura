@@ -1,10 +1,16 @@
-// api/emails.js - Using Supabase
+// api/emails.js - Production Ready
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
+// Initialize Supabase client with error handling
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Check if environment variables exist
+if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ Missing Supabase environment variables!');
+}
+
+const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -23,41 +29,39 @@ export default async function handler(req, res) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
-    // ============================================================
-    // GET - Get all emails
-    // ============================================================
-    if (req.method === 'GET') {
-        try {
+    try {
+        // ============================================================
+        // GET - Get all emails
+        // ============================================================
+        if (req.method === 'GET') {
             const { data, error } = await supabase
                 .from('subscribers')
                 .select('email, created_at')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Database error: ' + error.message
+                });
+            }
 
-            const emails = data.map(row => row.email);
+            const emails = data?.map(row => row.email) || [];
 
             return res.status(200).json({
                 success: true,
                 emails: emails,
                 count: emails.length,
-                data: data // Includes timestamps
-            });
-        } catch (error) {
-            console.error('Error reading emails:', error);
-            return res.status(500).json({
-                success: false,
-                message: 'Error reading emails: ' + error.message
+                data: data || []
             });
         }
-    }
 
-    // ============================================================
-    // POST - Save a new email
-    // ============================================================
-    if (req.method === 'POST') {
-        try {
-            const { email } = req.body;
+        // ============================================================
+        // POST - Save a new email
+        // ============================================================
+        if (req.method === 'POST') {
+            const { email } = req.body || {};
 
             if (!email) {
                 return res.status(400).json({
@@ -80,6 +84,14 @@ export default async function handler(req, res) {
                 .eq('email', email)
                 .maybeSingle();
 
+            if (checkError && checkError.code !== 'PGRST116') {
+                console.error('Check error:', checkError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Database error: ' + checkError.message
+                });
+            }
+
             if (existing) {
                 return res.status(200).json({
                     success: true,
@@ -93,29 +105,26 @@ export default async function handler(req, res) {
                 .from('subscribers')
                 .insert({ email });
 
-            if (insertError) throw insertError;
+            if (insertError) {
+                console.error('Insert error:', insertError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Database error: ' + insertError.message
+                });
+            }
 
             return res.status(200).json({
                 success: true,
                 alreadySubscribed: false,
                 message: 'Email saved successfully!'
             });
-
-        } catch (error) {
-            console.error('Error saving email:', error);
-            return res.status(500).json({
-                success: false,
-                message: 'Server error: ' + error.message
-            });
         }
-    }
 
-    // ============================================================
-    // DELETE - Delete an email
-    // ============================================================
-    if (req.method === 'DELETE') {
-        try {
-            const { email } = req.body;
+        // ============================================================
+        // DELETE - Delete an email
+        // ============================================================
+        if (req.method === 'DELETE') {
+            const { email } = req.body || {};
 
             if (!email) {
                 return res.status(400).json({
@@ -130,9 +139,15 @@ export default async function handler(req, res) {
                 .eq('email', email)
                 .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Delete error:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Database error: ' + error.message
+                });
+            }
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 return res.status(404).json({
                     success: false,
                     message: 'Email not found'
@@ -143,19 +158,19 @@ export default async function handler(req, res) {
                 success: true,
                 message: 'Email deleted successfully!'
             });
-
-        } catch (error) {
-            console.error('Error deleting email:', error);
-            return res.status(500).json({
-                success: false,
-                message: 'Server error: ' + error.message
-            });
         }
-    }
 
-    // Method not allowed
-    return res.status(405).json({
-        success: false,
-        message: 'Method not allowed'
-    });
+        // Method not allowed
+        return res.status(405).json({
+            success: false,
+            message: 'Method not allowed'
+        });
+
+    } catch (error) {
+        console.error('Handler error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error: ' + error.message
+        });
+    }
 }
