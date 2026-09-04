@@ -200,18 +200,37 @@ function updateCarouselIndexFromScroll(state) {
   state.index = closestIndex;
 }
 
+function measureCarousel(state) {
+  const { track, count } = state;
+  const firstItem = track.children[0];
+  const cycleStart = track.children[count];
+  const middleStart = track.children[count * 2];
+  const middleEnd = track.children[count * 3];
+  if (!firstItem || !cycleStart || !middleStart || !middleEnd) return false;
+
+  const trackOffset = track.getBoundingClientRect().left;
+  state.metrics = {
+    cycleWidth: cycleStart.getBoundingClientRect().left - firstItem.getBoundingClientRect().left,
+    lowerBoundary: middleStart.getBoundingClientRect().left - trackOffset - (
+      cycleStart.getBoundingClientRect().left - firstItem.getBoundingClientRect().left
+    ),
+    upperBoundary: middleEnd.getBoundingClientRect().left - trackOffset
+  };
+  return state.metrics.cycleWidth > 0;
+}
+
 function settleNativeCarousel(state) {
   if (state.useTransform || state.animating) return;
 
-  const { track, count } = state;
-  const cycleWidth = getCarouselTarget(track, count) - getCarouselTarget(track, 0);
-  if (!cycleWidth) return;
+  const { track } = state;
+  if (!state.metrics && !measureCarousel(state)) return;
+  const { cycleWidth, lowerBoundary, upperBoundary } = state.metrics;
 
   let nextScrollLeft = track.scrollLeft;
-  while (nextScrollLeft < cycleWidth * 1.5) {
+  while (nextScrollLeft < lowerBoundary) {
     nextScrollLeft += cycleWidth;
   }
-  while (nextScrollLeft > cycleWidth * 3.5) {
+  while (nextScrollLeft > upperBoundary) {
     nextScrollLeft -= cycleWidth;
   }
 
@@ -254,12 +273,14 @@ function initCarouselAutoLoop(trackId, intervalMs = 3000) {
     count,
     index: count * 2,
     useTransform,
+    metrics: null,
     animating: false,
     queue: 0,
     moveTimer: null
   };
 
   requestAnimationFrame(() => {
+    measureCarousel(state);
     normalizeCarousel(state);
     setTimeout(() => normalizeCarousel(state), 500);
     setTimeout(() => normalizeCarousel(state), 1000);
@@ -278,8 +299,10 @@ function initCarouselAutoLoop(trackId, intervalMs = 3000) {
       settleNativeCarousel(state);
     }, 140);
 
-    const shift = getCarouselTarget(track, count) - getCarouselTarget(track, 0);
-    if (!state.animating && shift && (track.scrollLeft < shift * 1.5 || track.scrollLeft > shift * 3.5)) {
+    if (!state.animating && state.metrics && (
+      track.scrollLeft < state.metrics.lowerBoundary ||
+      track.scrollLeft > state.metrics.upperBoundary
+    )) {
       settleNativeCarousel(state);
     }
   };
@@ -313,7 +336,10 @@ function scrollCarousel(trackId, direction) {
 
 window.addEventListener('resize', () => {
   requestAnimationFrame(() => {
-    Object.values(carouselStates).forEach(normalizeCarousel);
+    Object.values(carouselStates).forEach(state => {
+      measureCarousel(state);
+      normalizeCarousel(state);
+    });
   });
 });
 
