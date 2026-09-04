@@ -1,22 +1,12 @@
 // ============================================================
 // VELOURA NEWSLETTER ADMIN
 // ============================================================
-//
-// Expected newsletter file:
-//     result/mails.txt
-//
-// One email per line.
-//
-// NOTE:
-// The login below is a front-end gate only. For real server-side
-// protection, the file/API that serves mails.txt should also be
-// protected on the server.
+// Uses Node.js API: /api/emails
+// Login requires: Email + Password
 // ============================================================
 
-const LOGIN_EMAIL = 'admin@veloura.com';
-const LOGIN_PASSWORD = 'ChangeThisPassword123!';
-
-const MAILS_FILE = 'result/mails.txt';
+const LOGIN_EMAIL = 'admin@veloura.com';    // Change this!
+const LOGIN_PASSWORD = 'admin123';          // Change this!
 
 let subscribers = [];
 let isAuthenticated =
@@ -38,6 +28,7 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const copyAllBtn = document.getElementById('copyAllBtn');
+const exportCsvBtn = document.getElementById('exportCsvBtn');
 const searchInput = document.getElementById('searchInput');
 
 const tableBody = document.getElementById('subscriberTableBody');
@@ -55,13 +46,10 @@ const toast = document.getElementById('toast');
 
 document.addEventListener('DOMContentLoaded', () => {
     loginForm?.addEventListener('submit', handleLogin);
-
     logoutBtn?.addEventListener('click', handleLogout);
-
     refreshBtn?.addEventListener('click', loadSubscribers);
-
     copyAllBtn?.addEventListener('click', copyAllEmails);
-
+    exportCsvBtn?.addEventListener('click', exportCsv);
     searchInput?.addEventListener('input', renderSubscribers);
 
     if (isAuthenticated) {
@@ -73,37 +61,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
-// LOGIN
+// LOGIN - Requires Email AND Password
 // ============================================================
 
 function handleLogin(event) {
     event.preventDefault();
-
     clearLoginError();
 
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
 
-    if (email !== LOGIN_EMAIL || password !== LOGIN_PASSWORD) {
-        showLoginError(
-            'Invalid credentials. Please try again.'
-        );
+    // Validate both email and password
+    if (!email) {
+        showLoginError('Please enter your email address.');
         return;
     }
 
+    if (!password) {
+        showLoginError('Please enter your password.');
+        return;
+    }
+
+    // Check credentials
+    if (email !== LOGIN_EMAIL || password !== LOGIN_PASSWORD) {
+        showLoginError('Invalid email or password. Please try again.');
+        return;
+    }
+
+    // Login successful
     isAuthenticated = true;
-
-    sessionStorage.setItem(
-        'veloura_newsletter_auth',
-        'true'
-    );
-
+    sessionStorage.setItem('veloura_newsletter_auth', 'true');
     loginForm.reset();
-
     showDashboard();
-
     loadSubscribers();
-
     showToast('Welcome back, Admin!');
 }
 
@@ -137,20 +127,35 @@ function clearLoginError() {
 
 function handleLogout() {
     isAuthenticated = false;
-
     subscribers = [];
-
-    sessionStorage.removeItem(
-        'veloura_newsletter_auth'
-    );
-
+    sessionStorage.removeItem('veloura_newsletter_auth');
     showLogin();
-
     showToast('Signed out successfully.');
 }
 
 // ============================================================
-// LOAD MAILS
+// API CALLS
+// ============================================================
+
+async function apiFetch(endpoint, options = {}) {
+    const response = await fetch(endpoint, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+}
+
+// ============================================================
+// LOAD SUBSCRIBERS
 // ============================================================
 
 async function loadSubscribers() {
@@ -165,86 +170,37 @@ async function loadSubscribers() {
     `;
 
     try {
-        // Cache-buster so a freshly saved mails.txt is loaded.
-        const cacheBuster = `?t=${Date.now()}`;
+        const data = await apiFetch('/api/emails');
 
-        const response = await fetch(
-            `${MAILS_FILE}${cacheBuster}`,
-            {
-                cache: 'no-store'
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                `Unable to read ${MAILS_FILE}`
-            );
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load subscribers');
         }
 
-        const text = await response.text();
-
-        subscribers = parseMailFile(text);
-
-        sortSubscribers();
-
-        updateStats();
-
-        renderSubscribers();
-
-        showToast(
-            'Subscriber list refreshed.'
-        );
-
-    } catch (error) {
-        console.error(
-            'Newsletter load error:',
-            error
-        );
-
-        subscribers = [];
-
-        updateStats();
-
-        tableBody.innerHTML = `
-            <tr>
-                <td
-                    colspan="4"
-                    class="empty-cell"
-                >
-                    Could not load
-                    <strong>${escapeHtml(MAILS_FILE)}</strong>.
-                </td>
-            </tr>
-        `;
-
-        listCaption.textContent =
-            'Unable to read subscriber file.';
-    }
-}
-
-// ============================================================
-// PARSE MAIL FILE
-// ============================================================
-
-function parseMailFile(text) {
-    return text
-        .split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(Boolean)
-        .filter(isValidEmail)
-        .filter(
-            (email, index, arr) =>
-                arr.indexOf(email.toLowerCase()) === index
-        )
-        .map((email, index) => ({
+        subscribers = data.emails.map((email, index) => ({
             email,
             subscribedAt: null,
             order: index
         }));
-}
 
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        updateStats();
+        renderSubscribers();
+        showToast('Subscriber list refreshed.');
+
+    } catch (error) {
+        console.error('Newsletter load error:', error);
+        subscribers = [];
+        updateStats();
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="empty-cell">
+                    Could not load subscribers: ${error.message}
+                </td>
+            </tr>
+        `;
+
+        listCaption.textContent = 'Unable to read subscriber file.';
+    }
 }
 
 // ============================================================
@@ -252,97 +208,76 @@ function isValidEmail(email) {
 // ============================================================
 
 function renderSubscribers() {
+    const query = (searchInput.value || '').trim().toLowerCase();
 
-    const query =
-        (searchInput.value || '')
-            .trim()
-            .toLowerCase();
+    const filtered = subscribers.filter(subscriber =>
+        subscriber.email.toLowerCase().includes(query)
+    );
 
-    const filtered =
-        subscribers.filter(subscriber =>
-            subscriber.email
-                .toLowerCase()
-                .includes(query)
-        );
-
-    listCaption.textContent =
-        query
-            ? `${filtered.length} of ${subscribers.length} subscribers`
-            : `${subscribers.length} subscriber${
-                  subscribers.length === 1
-                      ? ''
-                      : 's'
-              }`;
+    listCaption.textContent = query
+        ? `${filtered.length} of ${subscribers.length} subscribers`
+        : `${subscribers.length} subscriber${subscribers.length === 1 ? '' : 's'}`;
 
     if (filtered.length === 0) {
-
         tableBody.innerHTML = `
             <tr>
-                <td
-                    colspan="4"
-                    class="empty-cell"
-                >
-                    ${
-                        subscribers.length
-                            ? 'No matching emails found.'
-                            : 'No subscribers yet.'
-                    }
+                <td colspan="4" class="empty-cell">
+                    ${subscribers.length ? 'No matching emails found.' : 'No subscribers yet.'}
                 </td>
             </tr>
         `;
-
         return;
     }
 
-    tableBody.innerHTML =
-        filtered
-            .map((subscriber, index) => {
+    tableBody.innerHTML = filtered
+        .map((subscriber, index) => {
+            const realIndex = subscribers.indexOf(subscriber) + 1;
+            return `
+                <tr>
+                    <td>${realIndex}</td>
+                    <td class="email-cell">${escapeHtml(subscriber.email)}</td>
+                    <td class="date-cell">
+                        ${subscriber.subscribedAt ? formatDate(subscriber.subscribedAt) : '—'}
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <button class="row-btn" type="button" onclick="copyEmail('${escapeJs(subscriber.email)}')">
+                                Copy
+                            </button>
+                            <button class="row-btn delete" type="button" onclick="deleteEmail('${escapeJs(subscriber.email)}')">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        })
+        .join('');
+}
 
-                return `
-                    <tr>
+// ============================================================
+// DELETE EMAIL
+// ============================================================
 
-                        <td>
-                            ${index + 1}
-                        </td>
+async function deleteEmail(email) {
+    if (!confirm(`Delete "${email}"?`)) return;
 
-                        <td class="email-cell">
-                            ${escapeHtml(
-                                subscriber.email
-                            )}
-                        </td>
+    try {
+        const data = await apiFetch('/api/emails', {
+            method: 'DELETE',
+            body: JSON.stringify({ email })
+        });
 
-                        <td class="date-cell">
-                            ${
-                                subscriber.subscribedAt
-                                    ? formatDate(
-                                          subscriber.subscribedAt
-                                      )
-                                    : 'Saved in mails.txt'
-                            }
-                        </td>
-
-                        <td>
-
-                            <div class="action-group">
-
-                                <button
-                                    class="row-btn"
-                                    type="button"
-                                    onclick="copyEmail('${escapeJs(
-                                        subscriber.email
-                                    )}')"
-                                >
-                                    Copy
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-                `;
-            })
-            .join('');
+        if (data.success) {
+            showToast('Email deleted successfully.');
+            loadSubscribers();
+        } else {
+            showToast('Error: ' + data.message);
+        }
+    } catch (error) {
+        showToast('Error deleting email.');
+        console.error(error);
+    }
 }
 
 // ============================================================
@@ -350,74 +285,68 @@ function renderSubscribers() {
 // ============================================================
 
 function updateStats() {
-
-    statTotal.textContent =
-        subscribers.length;
-
-    // mails.txt currently stores one email per line,
-    // so no subscription date exists in the file.
+    statTotal.textContent = subscribers.length;
     statThisMonth.textContent = '—';
-
-    statLatest.textContent =
-        subscribers.length > 0
-            ? subscribers[0].email
-            : '—';
+    statLatest.textContent = subscribers.length > 0 ? subscribers[0].email : '—';
 }
 
 // ============================================================
-// COPY SINGLE EMAIL
+// COPY FUNCTIONS
 // ============================================================
 
 async function copyEmail(email) {
-
     try {
-
-        await navigator.clipboard.writeText(
-            email
-        );
-
+        await navigator.clipboard.writeText(email);
         showToast('Email copied.');
-
     } catch (error) {
-
         fallbackCopy(email);
     }
 }
 
-// ============================================================
-// COPY ALL EMAILS
-// ============================================================
-
 async function copyAllEmails() {
-
     if (!subscribers.length) {
-
-        showToast(
-            'There are no subscriber emails to copy.'
-        );
-
+        showToast('There are no subscriber emails to copy.');
         return;
     }
 
-    const emails =
-        subscribers
-            .map(subscriber => subscriber.email)
-            .join('\n');
+    const emails = subscribers.map(subscriber => subscriber.email).join('\n');
 
     try {
-
-        await navigator.clipboard.writeText(
-            emails
-        );
-
-        showToast(
-            `${subscribers.length} emails copied.`
-        );
-
+        await navigator.clipboard.writeText(emails);
+        showToast(`${subscribers.length} emails copied.`);
     } catch (error) {
-
         fallbackCopy(emails);
     }
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+
+function exportCsv() {
+    if (!subscribers.length) {
+        showToast('No subscribers to export.');
+        return;
+    }
+
+    const headers = 'Email,Subscribed Date\n';
+    const rows = subscribers.map(s => 
+        `${s.email},${s.subscribedAt || ''}`
+    ).join('\n');
+    
+    const csv = headers + rows;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.href = url;
+    link.setAttribute('download', `subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast('CSV exported successfully.');
 }
 
 // ============================================================
@@ -425,34 +354,18 @@ async function copyAllEmails() {
 // ============================================================
 
 function fallbackCopy(text) {
-
-    const textarea =
-        document.createElement('textarea');
-
+    const textarea = document.createElement('textarea');
     textarea.value = text;
-
     textarea.style.position = 'fixed';
     textarea.style.opacity = '0';
-
-    document.body.appendChild(
-        textarea
-    );
-
+    document.body.appendChild(textarea);
     textarea.select();
 
     try {
-
         document.execCommand('copy');
-
-        showToast(
-            'Copied to clipboard.'
-        );
-
+        showToast('Copied to clipboard.');
     } catch (error) {
-
-        showToast(
-            'Unable to copy.'
-        );
+        showToast('Unable to copy.');
     }
 
     textarea.remove();
@@ -462,61 +375,30 @@ function fallbackCopy(text) {
 // HELPERS
 // ============================================================
 
-function sortSubscribers() {
-
-    // mails.txt is line-based and does not
-    // contain timestamps, so preserve its order.
-}
-
 function formatDate(value) {
-
-    const date =
-        new Date(value);
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return '—';
-    }
-
-    return date.toLocaleString(
-        undefined,
-        {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }
-    );
+    if (!value) return '—';
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return '—';
+    return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function escapeHtml(value) {
-
     return String(value)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(
-            /'/g,
-            '&#039;'
-        );
+        .replace(/'/g, '&#039;');
 }
 
 function escapeJs(value) {
-
-    return String(value)
-        .replace(
-            /\\/g,
-            '\\\\'
-        )
-        .replace(
-            /'/g,
-            "\\'"
-        );
+    return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 // ============================================================
@@ -526,26 +408,12 @@ function escapeJs(value) {
 let toastTimer;
 
 function showToast(message) {
-
-    toast.textContent =
-        message;
-
-    toast.classList.add(
-        'show'
-    );
-
-    clearTimeout(
-        toastTimer
-    );
-
-    toastTimer =
-        setTimeout(() => {
-
-            toast.classList.remove(
-                'show'
-            );
-
-        }, 2500);
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500);
 }
 
 // ============================================================
@@ -553,3 +421,4 @@ function showToast(message) {
 // ============================================================
 
 window.copyEmail = copyEmail;
+window.deleteEmail = deleteEmail;

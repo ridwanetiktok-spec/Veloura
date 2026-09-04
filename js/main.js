@@ -59,7 +59,6 @@ function subscribeToPublicRealtime() {
     .subscribe();
 }
 
-setupNewsletterForm();
 
 // ===== Data Loading =====
 async function loadData() {
@@ -4290,6 +4289,7 @@ function initCustomSortDropdown() {
 }
 
 
+
 function setupNewsletterForm() {
     const form = document.getElementById('newsletterForm');
 
@@ -4303,7 +4303,12 @@ function setupNewsletterForm() {
 
         const email = input.value.trim();
 
-        if (!email) return;
+        if (!email) {
+            if (typeof showToast === 'function') {
+                showToast('Please enter your email address.', 'error');
+            }
+            return;
+        }
 
         const originalText = button.textContent;
 
@@ -4311,46 +4316,54 @@ function setupNewsletterForm() {
         button.textContent = 'Subscribing...';
 
         try {
-            const response = await fetch('mails.php', {
+            // Send to Node.js API instead of PHP
+            const response = await fetch('/api/emails', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
-                body: new URLSearchParams({
-                    email
-                })
+                body: JSON.stringify({ email })
             });
 
             const result = await response.json();
 
             if (!result.success) {
-                throw new Error(
-                    result.message || 'Subscription failed.'
-                );
+                throw new Error(result.message || 'Subscription failed.');
             }
 
             input.value = '';
 
-            button.textContent =
-                result.alreadySubscribed
-                    ? 'Already Subscribed'
-                    : 'Subscribed ✓';
+            button.textContent = result.alreadySubscribed 
+                ? 'Already Subscribed' 
+                : 'Subscribed ✓';
 
             setTimeout(() => {
                 button.textContent = originalText;
+                button.disabled = false;
             }, 2500);
 
+            // Show toast notification
+            if (typeof showToast === 'function') {
+                if (result.alreadySubscribed) {
+                    showToast('You\'re already subscribed!', 'success');
+                } else {
+                    showToast('Thank you for subscribing! 🎉', 'success');
+                }
+            }
+
         } catch (error) {
-            console.error(error);
+            console.error('Subscription error:', error);
 
             button.textContent = 'Try Again';
 
+            if (typeof showToast === 'function') {
+                showToast(error.message || 'Subscription failed. Please try again.', 'error');
+            }
+
             setTimeout(() => {
                 button.textContent = originalText;
+                button.disabled = false;
             }, 2500);
-
-        } finally {
-            button.disabled = false;
         }
     });
 }
