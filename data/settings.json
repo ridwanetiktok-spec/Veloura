@@ -1,0 +1,47 @@
+{
+  "siteName": "Veloura",
+  "tagline": "Where Luxury Meets Beauty",
+  "logo": "",
+  "socialMedia": {
+    "reddit": "https://www.reddit.com/r/veloura",
+    "pinterest": "https://pinterest.com/veloura"
+  },
+  "contact": {
+    "email": "hello@veloura.com",
+    "phone": "+1 (555) 123-4567",
+    "address": "123 Beauty Lane, Suite 100, Beverly Hills, CA 90210"
+  },
+  "seo": {
+    "title": "Veloura - Premium Luxury Beauty Products",
+    "description": "Discover luxury beauty products including skincare, makeup, fragrances, and more. Premium quality for your most radiant self.",
+    "keywords": "beauty, skincare, makeup, luxury, cosmetics, fragrance"
+  },
+  "promotions": {
+    "discountCodes": [
+      {
+        "code": "WELCOME10",
+        "type": "percentage",
+        "value": 10,
+        "minOrder": 0,
+        "expires": "2026-12-31",
+        "active": true
+      },
+      {
+        "code": "SUMMER25",
+        "type": "percentage",
+        "value": 25,
+        "minOrder": 75,
+        "expires": "2026-08-31",
+        "active": true
+      },
+      {
+        "code": "FREESHIP",
+        "type": "freeshipping",
+        "value": 0,
+        "minOrder": 50,
+        "expires": "2026-12-31",
+        "active": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "name": "Makeup",
+    "slug": "makeup",
+    "description": "Luxurious makeup for every occasion",
+    "banner": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&q=80",
+    "subcategories": ["Lipsticks", "Foundation", "Mascara", "Blush", "Eyeshadow"],
+    "featured": true,
+    "order": 1
+  },
+  {
+    "id": 2,
+    "name": "Skincare",
+    "slug": "skincare",
+    "description": "Premium skincare for radiant skin",
+    "banner": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80",
+    "subcategories": ["Serums", "Moisturizers", "Eye Care", "Masks", "Cleansers"],
+    "featured": true,
+    "order": 2
+  },
+  {
+    "id": 3,
+    "name": "Hair Care",
+    "slug": "hair-care",
+    "description": "Nourishing treatments for beautiful hair",
+    "banner": "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=1200&q=80",
+    "subcategories": ["Hair Oils", "Shampoos", "Conditioners", "Styling"],
+    "featured": false,
+    "order": 3
+  },
+  {
+    "id": 4,
+    "name": "Fragrances",
+    "slug": "fragrances",
+    "description": "Exquisite scents for every mood",
+    "banner": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=1200&q=80",
+    "subcategories": ["Eau de Parfum", "Eau de Toilette", "Body Mist"],
+    "featured": true,
+    "order": 4
+  },
+  {
+    "id": 5,
+    "name": "Beauty Tools",
+    "slug": "beauty-tools",
+    "description": "Professional tools for your beauty routine",
+    "banner": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=1200&q=80",
+    "subcategories": ["Facial Tools", "Brushes", "Sponges", "Accessories"],
+    "featured": false,
+    "order": 5
+  },
+  {
+    "id": 6,
+    "name": "Gift Sets",
+    "slug": "gift-sets",
+    "description": "Curated collections for someone special",
+    "banner": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=1200&q=80",
+    "subcategories": ["Skincare Sets", "Makeup Sets", "Fragrance Sets"],
+    "featured": true,
+    "order": 6
+  },
+  {
+    "id": 7,
+    "name": "Jewelry",
+    "slug": "jewelry",
+    "description": "Timeless, elegant jewelry pieces for every occasion",
+    "banner": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1200&q=80",
+    "subcategories": ["Necklaces", "Earrings", "Rings", "Bracelets", "Anklets", "Jewelry Sets", "Luxury Jewelry", "Gift Jewelry"],
+    "featured": true,
+    "order": 7
+  },
+  {
+    "id": 8,
+    "name": "Nails",
+    "slug": "nails",
+    "description": "Salon-quality polishes, press-ons, and care tools",
+    "banner": "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80",
+    "subcategories": ["Nail Polish", "Gel Polish", "Press-On Nails", "Nail Art", "Nail Stickers", "Nail Tools", "Nail Care", "Nail Kits"],
+    "featured": true,
+    "order": 8
+  }
+]

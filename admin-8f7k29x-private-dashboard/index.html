@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Veloura</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">Veloura</div>
+      <p class="login-subtitle">Private Admin Dashboard</p>
+      <form id="loginForm">
+        <div class="login-input-group">
+          <label for="loginUsername">Email</label>
+          <input type="email" id="loginUsername" placeholder="Enter your email" required autocomplete="username">
+        </div>
+        <div class="login-input-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="login-btn">Sign In</button>
+        <div class="login-error" id="loginError">Invalid credentials. Please try again.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Layout -->
+  <div class="admin-layout" id="adminLayout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">Veloura</div>
+        <span class="sidebar-badge">Admin Panel</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+        <div class="sidebar-link active" data-page="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="sidebar-section">Catalog</div>
+        <div class="sidebar-link" data-page="products">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span>Products</span>
+        </div>
+        <div class="sidebar-link" data-page="categories">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Categories</span>
+        </div>
+        <div class="sidebar-section">Content</div>
+        <div class="sidebar-link" data-page="banners">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Banners</span>
+        </div>
+        <div class="sidebar-link" data-page="featured">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Featured Content</span>
+        </div>
+        <div class="sidebar-link" data-page="blog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Blog & News</span>
+        </div>
+        <div class="sidebar-link" data-page="media">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Media Library</span>
+        </div>
+        <div class="sidebar-section">Management</div>
+        <div class="sidebar-link" data-page="reviews">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Reviews</span>
+        </div>
+        <div class="sidebar-link" data-page="promotions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          <span>Promotions</span>
+        </div>
+        <div class="sidebar-link" data-page="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          View Store
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+        <div class="topbar-actions">
+          <a href="../index.html" class="view-site-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View Store
+          </a>
+          <button class="logout-btn" id="logoutBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+
+        <!-- ===== DASHBOARD PAGE ===== -->
+        <div class="admin-page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon pink">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statTotalProducts">0</h3>
+                <p>Total Products</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statActiveProducts">0</h3>
+                <p>Active Products</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statLowStock">0</h3>
+                <p>Low Stock Alerts</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon gold">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statInventoryValue">$0</h3>
+                <p>Inventory Value</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statTotalReviews">0</h3>
+                <p>Total Reviews</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3 id="statAvgRating">0</h3>
+                <p>Average Rating</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" class="dash-panels">
+            <div class="panel">
+              <div class="panel-header"><span class="panel-title">Products by Category</span></div>
+              <div class="panel-body" id="dashCategories"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><span class="panel-title">Inventory Alerts</span></div>
+              <div class="panel-body" id="dashAlerts"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Recently Added Products</span></div>
+            <div class="panel-body" id="dashRecent"></div>
+          </div>
+        </div>
+
+        <!-- ===== PRODUCTS PAGE ===== -->
+        <div class="admin-page" id="page-products">
+          <div class="tabs">
+            <div class="tab active" data-tab="all-products" onclick="switchTab('tab-all-products', this)">All Products</div>
+            <div class="tab" data-tab="add-product" onclick="switchTab('tab-add-product', this)">Add / Edit Product</div>
+          </div>
+
+          <!-- All Products Tab -->
+          <div class="tab-content active" id="tab-all-products">
+            <div class="filter-bar">
+              <input type="text" id="productSearch" placeholder="Search products by name, SKU, or tag..." oninput="renderProductsTable()">
+              <select id="productFilterCat" onchange="renderProductsTable()">
+                <option value="">All Categories</option>
+              </select>
+              <select id="productFilterStatus" onchange="renderProductsTable()">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Draft">Draft</option>
+                <option value="Hidden">Hidden</option>
+              </select>
+            </div>
+
+            <div class="bulk-bar hidden" id="bulkBar">
+              <span id="selectedCount">0 selected</span>
+              <button class="btn btn-sm btn-secondary" onclick="bulkSetStatus('Active')">Set Active</button>
+              <button class="btn btn-sm btn-secondary" onclick="bulkSetStatus('Draft')">Set Draft</button>
+              <button class="btn btn-sm btn-secondary" onclick="bulkSetStatus('Hidden')">Set Hidden</button>
+              <button class="btn btn-sm btn-danger" onclick="bulkDelete()">Delete Selected</button>
+            </div>
+
+            <div class="panel">
+              <div class="panel-body" style="padding:0;overflow-x:auto">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="checkbox-col"><input type="checkbox" onchange="selectAllProducts(this)"></th>
+                      <th>Image</th>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Product Tab -->
+          <div class="tab-content" id="tab-add-product">
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title" id="productFormTitle">Add New Product</span>
+                <button class="btn btn-sm btn-secondary" onclick="clearProductForm()">Clear Form</button>
+              </div>
+              <div class="panel-body">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" id="pfName" placeholder="e.g., Velvet Matte Lipstick">
+                  </div>
+                  <div class="form-group">
+                    <label>Brand</label>
+                    <input type="text" id="pfBrand" placeholder="e.g., Veloura">
+                  </div>
+                  <div class="form-group">
+                    <label>Category *</label>
+                    <select id="pfCategory" onchange="updateSubcategories()">
+                      <option value="">Select Category</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Subcategory</label>
+                    <select id="pfSubcategory">
+                      <option value="">Select Subcategory</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Price ($) *</label>
+                    <input type="number" id="pfPrice" placeholder="0.00" step="0.01" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Sale Price ($)</label>
+                    <input type="number" id="pfSalePrice" placeholder="0.00" step="0.01" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" id="pfSKU" placeholder="e.g., LUX-LIP-001">
+                  </div>
+                  <div class="form-group">
+                    <label>Stock Quantity</label>
+                    <input type="number" id="pfStock" placeholder="0" min="0">
+                  </div>
+                  <div class="form-group full">
+                    <label>Main Image URL *</label>
+                    <input type="url" id="pfImage" placeholder="https://example.com/image.jpg">
+                    <div class="form-hint">Paste a direct image URL. Use the Media Library to find images.</div>
+                  </div>
+                  <div class="form-group full">
+                    <label>Gallery Images (one URL per line)</label>
+                    <textarea id="pfGallery" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" rows="3"></textarea>
+                  </div>
+                  <div class="form-group full">
+                    <label>Product Description</label>
+                    <textarea id="pfDescription" placeholder="Full product description..." rows="4"></textarea>
+                  </div>
+                  <div class="form-group full">
+                    <label>Short Description</label>
+                    <input type="text" id="pfShortDesc" placeholder="Brief one-line description">
+                  </div>
+                  <div class="form-group">
+                    <label>Ingredients</label>
+                    <textarea id="pfIngredients" placeholder="List of ingredients..." rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>Benefits</label>
+                    <textarea id="pfBenefits" placeholder="Key benefits..." rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>Usage Instructions</label>
+                    <textarea id="pfUsage" placeholder="How to use..." rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>Skin Type Compatibility</label>
+                    <input type="text" id="pfSkinType" placeholder="e.g., All skin types, Dry skin">
+                  </div>
+                  <div class="form-group">
+                    <label>Tags (comma-separated)</label>
+                    <input type="text" id="pfTags" placeholder="e.g., matte, lipstick, long-lasting">
+                  </div>
+                  <div class="form-group">
+                    <label>Shade Options (comma-separated)</label>
+                    <input type="text" id="pfShades" placeholder="e.g., Rouge, Nude, Berry">
+                  </div>
+                  <!-- Jewelry Optional Fields -->
+                  <div class="form-group full" id="pfJewelryFields" style="display:none;background:var(--admin-bg);padding:16px;border-radius:10px;margin-bottom:16px">
+                    <label style="font-weight:700;color:var(--admin-gold);margin-bottom:12px;display:block">Jewelry Optional Details</label>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px">
+                      <div>
+                        <label style="font-size:0.8rem">Material</label>
+                        <input type="text" id="pfMaterial" placeholder="e.g., 18k Rose Gold, 925 Silver">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Color</label>
+                        <input type="text" id="pfJewelryColor" placeholder="e.g., Rose Gold, Silver">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Collection</label>
+                        <input type="text" id="pfCollection" placeholder="e.g., Royal Radiance">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Size</label>
+                        <input type="text" id="pfJewelrySize" placeholder="e.g., 18 inches, Size 7">
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Nails Optional Fields -->
+                  <div class="form-group full" id="pfNailsFields" style="display:none;background:var(--admin-bg);padding:16px;border-radius:10px;margin-bottom:16px">
+                    <label style="font-weight:700;color:var(--admin-accent);margin-bottom:12px;display:block">Nails Optional Details</label>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px">
+                      <div>
+                        <label style="font-size:0.8rem">Color</label>
+                        <input type="text" id="pfNailColor" placeholder="e.g., Classic French, Berry">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Finish</label>
+                        <input type="text" id="pfFinish" placeholder="e.g., Glossy, Matte, Shimmer">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Shape</label>
+                        <input type="text" id="pfShape" placeholder="e.g., Almond, Coffin, Square">
+                      </div>
+                      <div>
+                        <label style="font-size:0.8rem">Length</label>
+                        <input type="text" id="pfLength" placeholder="e.g., Short, Medium, Long">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Product Badge</label>
+                    <select id="pfBadge">
+                      <option value="">None</option>
+                      <option value="New">New</option>
+                      <option value="Bestseller">Bestseller</option>
+                      <option value="Trending">Trending</option>
+                      <option value="Luxury">Luxury</option>
+                      <option value="Handcrafted">Handcrafted</option>
+                      <option value="Gift Favorite">Gift Favorite</option>
+                      <option value="Limited Edition">Limited Edition</option>
+                      <option value="Salon Quality">Salon Quality</option>
+                      <option value="Long Lasting">Long Lasting</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Status</label>
+                    <select id="pfStatus">
+                      <option value="Active">Active</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Hidden">Hidden</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="margin-top:20px;padding:16px;background:var(--admin-bg);border-radius:10px">
+                  <label style="font-size:0.8rem;font-weight:600;text-transform:uppercase;color:var(--admin-text-light);display:block;margin-bottom:10px">Homepage Placement</label>
+                  <div style="display:flex;gap:24px;flex-wrap:wrap">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer">
+                      <input type="checkbox" id="pfFeatured" style="accent-color:var(--admin-accent);width:18px;height:18px"> Featured
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer">
+                      <input type="checkbox" id="pfBestSeller" style="accent-color:var(--admin-accent);width:18px;height:18px"> Best Seller
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer">
+                      <input type="checkbox" id="pfNewArrival" style="accent-color:var(--admin-accent);width:18px;height:18px"> New Arrival
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer">
+                      <input type="checkbox" id="pfTrending" style="accent-color:var(--admin-accent);width:18px;height:18px"> Trending
+                    </label>
+                  </div>
+                </div>
+
+                <div style="margin-top:24px;display:flex;gap:12px">
+                  <button class="btn btn-primary" id="btnGenerateProduct" onclick="generateProduct()">Save Product</button>
+                  <button class="btn btn-secondary" onclick="clearProductForm()">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CATEGORIES PAGE ===== -->
+        <div class="admin-page" id="page-categories">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Add New Category</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Category Name *</label>
+                  <input type="text" id="newCatName" placeholder="e.g., Body Care">
+                </div>
+                <div class="form-group">
+                  <label>Subcategories (comma-separated)</label>
+                  <input type="text" id="newCatSubs" placeholder="e.g., Lotions, Scrubs, Oils">
+                </div>
+                <div class="form-group full">
+                  <label>Banner Image URL</label>
+                  <input type="url" id="newCatBanner" placeholder="https://example.com/banner.jpg">
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="addCategory()">Add Category</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">All Categories</span></div>
+            <div class="panel-body" id="categoriesList"></div>
+          </div>
+        </div>
+
+        <!-- ===== BANNERS PAGE ===== -->
+        <div class="admin-page" id="page-banners">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" class="banners-grid">
+            <!-- News Banner -->
+            <div class="panel">
+              <div class="panel-header"><span class="panel-title">News / Announcement Banner</span></div>
+              <div class="panel-body">
+                <div class="form-group" style="margin-bottom:16px">
+                  <label>Announcement Text</label>
+                  <input type="text" id="nbText" placeholder="e.g., Free Shipping on Orders Over $50">
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                  <div class="toggle-switch" id="nbEnabled" onclick="this.classList.toggle('on')"></div>
+                  <span style="font-size:0.9rem">Enabled</span>
+                </div>
+                <button class="btn btn-primary" onclick="saveNewsBanner()">Save News Banner</button>
+              </div>
+            </div>
+
+            <!-- Promo Banner -->
+            <div class="panel">
+              <div class="panel-header"><span class="panel-title">Promotional Banner</span></div>
+              <div class="panel-body">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="pbTitle" placeholder="e.g., Summer Sale">
+                  </div>
+                  <div class="form-group">
+                    <label>Subtitle</label>
+                    <input type="text" id="pbSubtitle" placeholder="e.g., Up to 50% Off">
+                  </div>
+                  <div class="form-group">
+                    <label>Button Text</label>
+                    <input type="text" id="pbButtonText" placeholder="e.g., Shop Now">
+                  </div>
+                  <div class="form-group">
+                    <label>Button Link</label>
+                    <input type="text" id="pbButtonLink" placeholder="e.g., #shop">
+                  </div>
+                  <div class="form-group full">
+                    <label>Background Image URL</label>
+                    <input type="url" id="pbBgImage" placeholder="https://example.com/banner.jpg">
+                  </div>
+                  <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="pbStartDate">
+                  </div>
+                  <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="pbEndDate">
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+                  <div class="toggle-switch" id="pbEnabled" onclick="this.classList.toggle('on')"></div>
+                  <span style="font-size:0.9rem">Enabled</span>
+                </div>
+                <button class="btn btn-primary" onclick="savePromoBanner()">Save Promo Banner</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Slides -->
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Homepage Hero Slides</span></div>
+            <div class="panel-body">
+              <div id="heroSlidesList"></div>
+              <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--admin-border)">
+                <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:16px">Add New Hero Slide</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Headline</label>
+                    <input type="text" id="hsHeadline" placeholder="e.g., Discover Your Radiance">
+                  </div>
+                  <div class="form-group">
+                    <label>Subheadline</label>
+                    <input type="text" id="hsSubheadline" placeholder="e.g., Luxury beauty products...">
+                  </div>
+                  <div class="form-group">
+                    <label>Button Text</label>
+                    <input type="text" id="hsButtonText" placeholder="e.g., Shop Collection">
+                  </div>
+                  <div class="form-group">
+                    <label>Button Link</label>
+                    <input type="text" id="hsButtonLink" placeholder="e.g., #shop">
+                  </div>
+                  <div class="form-group full">
+                    <label>Image URL</label>
+                    <input type="url" id="hsImage" placeholder="https://example.com/hero.jpg">
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top:16px" onclick="addHeroSlide()">Add Hero Slide</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== FEATURED CONTENT PAGE ===== -->
+        <div class="admin-page" id="page-featured">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Homepage Product Placement</span>
+            </div>
+            <div class="panel-body">
+              <p style="font-size:0.88rem;color:var(--admin-text-light);margin-bottom:20px">
+                Toggle which products appear in each homepage section. Changes save automatically.
+              </p>
+              <div id="featuredProductsList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== BLOG PAGE ===== -->
+        <div class="admin-page" id="page-blog">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Create New Article</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label>Article Title *</label>
+                  <input type="text" id="bpTitle" placeholder="e.g., 10 Skincare Tips for Summer">
+                </div>
+                <div class="form-group">
+                  <label>Author</label>
+                  <input type="text" id="bpAuthor" placeholder="e.g., Sophia Laurent">
+                </div>
+                <div class="form-group">
+                  <label>Category</label>
+                  <input type="text" id="bpCategory" placeholder="e.g., Skincare">
+                </div>
+                <div class="form-group full">
+                  <label>Cover Image URL</label>
+                  <input type="url" id="bpCoverImage" placeholder="https://example.com/cover.jpg">
+                </div>
+                <div class="form-group full">
+                  <label>Content * (Markdown supported)</label>
+                  <textarea id="bpContent" rows="10" placeholder="Write your article content here... Use ## for headings and **bold** for emphasis."></textarea>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="addBlogPost()">Publish Article</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">All Articles</span></div>
+            <div class="panel-body" id="blogPostsList"></div>
+          </div>
+        </div>
+
+        <!-- ===== MEDIA LIBRARY PAGE ===== -->
+        <!-- <div class="admin-page" id="page-media">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Add New Media</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Image URL *</label>
+                  <input type="url" id="newMediaUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                  <label>Name</label>
+                  <input type="text" id="newMediaName" placeholder="e.g., Lipstick Hero Shot">
+                </div>
+                <div class="form-group">
+                  <label>Folder</label>
+                  <select id="newMediaFolder">
+                    <option value="products">Products</option>
+                    <option value="banners">Banners</option>
+                    <option value="hero">Hero</option>
+                    <option value="blog">Blog</option>
+                    <option value="general">General</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="addMedia()">Add to Library</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Media Library</span>
+              <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none">
+            </div>
+            <div class="panel-body">
+              <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">Click any image to copy its URL.</p>
+              <div class="media-grid" id="mediaGrid"></div>
+            </div>
+          </div>
+        </div> -->
+
+
+<!-- ===== MEDIA LIBRARY PAGE ===== -->
+<div class="admin-page" id="page-media">
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">Add New Media</span></div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Image URL *</label>
+          <input type="url" id="newMediaUrl" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="newMediaName" placeholder="e.g., Lipstick Hero Shot">
+        </div>
+        <div class="form-group">
+          <label>Folder</label>
+          <select id="newMediaFolder">
+            <option value="products">Products</option>
+            <option value="banners">Banners</option>
+            <option value="hero">Hero</option>
+            <option value="blog">Blog</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="addMedia()">Add to Library</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header" style="display:flex;gap:12px;flex-wrap:wrap">
+      <span class="panel-title" style="flex:1">Media Library</span>
+      <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;width:200px">
+      <select id="mediaFolderFilter" onchange="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--admin-bg)">
+        <option value="">All Folders</option>
+      </select>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">
+        💡 Click an image to copy its URL. Use the <strong>Replace</strong> button to update an image, or <strong>Delete</strong> to remove it.
+      </p>
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+  </div>
+</div>
+
+
+
+        <!-- ===== REVIEWS PAGE ===== -->
+        <div class="admin-page" id="page-reviews">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Add New Customer Review</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Author Name *</label>
+                  <input type="text" id="revAuthor" placeholder="e.g., Sarah Mitchell">
+                </div>
+                <div class="form-group">
+                  <label>Subtitle / Tag</label>
+                  <input type="text" id="revSubtitle" placeholder="e.g., Verified Buyer" value="Verified Buyer">
+                </div>
+                <div class="form-group">
+                  <label>Rating (1 - 5 Stars) *</label>
+                  <select id="revRating">
+                    <option value="5">5 Stars (★★★★★)</option>
+                    <option value="4">4 Stars (★★★★☆)</option>
+                    <option value="3">3 Stars (★★★☆☆)</option>
+                    <option value="2">2 Stars (★★☆☆☆)</option>
+                    <option value="1">1 Star (★☆☆☆☆)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Associated Product (Optional)</label>
+                  <select id="revProductSelect">
+                    <option value="">-- General Store Review --</option>
+                  </select>
+                </div>
+                <div class="form-group full">
+                  <label>Review Text *</label>
+                  <textarea id="revText" rows="4" placeholder="Write customer feedback here..."></textarea>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="addAdminReview()">Add Customer Review</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">All Customer Reviews ("Loved by Thousands")</span></div>
+            <div class="panel-body" id="reviewsList"></div>
+          </div>
+        </div>
+
+
+        <!-- ===== PROMOTIONS PAGE ===== -->
+        <div class="admin-page" id="page-promotions">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Create Discount Code</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Code *</label>
+                  <input type="text" id="pcCode" placeholder="e.g., SUMMER25">
+                </div>
+                <div class="form-group">
+                  <label>Type</label>
+                  <select id="pcType">
+                    <option value="percentage">Percentage Off</option>
+                    <option value="fixed">Fixed Amount Off</option>
+                    <option value="freeshipping">Free Shipping</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Value (% or $)</label>
+                  <input type="number" id="pcValue" placeholder="e.g., 25" min="0">
+                </div>
+                <div class="form-group">
+                  <label>Minimum Order ($)</label>
+                  <input type="number" id="pcMinOrder" placeholder="0" min="0">
+                </div>
+                <div class="form-group">
+                  <label>Expiry Date</label>
+                  <input type="date" id="pcExpires">
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px" onclick="addPromoCode()">Create Code</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Active Discount Codes</span></div>
+            <div class="panel-body" id="promoCodesList"></div>
+          </div>
+        </div>
+
+        <!-- ===== SETTINGS PAGE ===== -->
+        <div class="admin-page" id="page-settings">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Website Branding</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Site Name</label>
+                  <input type="text" id="setSiteName">
+                </div>
+                <div class="form-group">
+                  <label>Tagline</label>
+                  <input type="text" id="setTagline">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Contact Information</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="setEmail">
+                </div>
+                <div class="form-group">
+                  <label>Phone</label>
+                  <input type="text" id="setPhone">
+                </div>
+                <div class="form-group full">
+                  <label>Address</label>
+                  <input type="text" id="setAddress">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Social Media</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Instagram URL</label>
+                  <input type="url" id="setInstagram">
+                </div>
+                <div class="form-group">
+                  <label>Facebook URL</label>
+                  <input type="url" id="setFacebook">
+                </div>
+                <div class="form-group">
+                  <label>Twitter URL</label>
+                  <input type="url" id="setTwitter">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">SEO Settings</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label>Meta Title</label>
+                  <input type="text" id="setSeoTitle">
+                </div>
+                <div class="form-group full">
+                  <label>Meta Description</label>
+                  <textarea id="setSeoDesc" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveSettings()">Save All Settings</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="admin-modal-overlay" id="deleteModal">
+    <div class="admin-modal" style="max-width:450px">
+      <div class="admin-modal-header">
+        <h3>Confirm Delete</h3>
+        <button class="admin-modal-close" onclick="closeDeleteModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="admin-modal-body" id="deleteModalBody"></div>
+      <div class="admin-modal-footer">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="admin-toast-container" id="adminToastContainer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="../lib/supabase.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

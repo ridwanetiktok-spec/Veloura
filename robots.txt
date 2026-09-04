@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /admin-8f7k29x-private-dashboard/
+Disallow: /data/
