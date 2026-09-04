@@ -200,6 +200,12 @@ function updateCarouselIndexFromScroll(state) {
   state.index = closestIndex;
 }
 
+function settleNativeCarousel(state) {
+  if (state.useTransform || state.animating) return;
+  updateCarouselIndexFromScroll(state);
+  normalizeCarousel(state);
+}
+
 function initCarouselAutoLoop(trackId, intervalMs = 3000) {
   const track = document.getElementById(trackId);
   if (!track || carouselStates[trackId]) return;
@@ -247,20 +253,21 @@ function initCarouselAutoLoop(trackId, intervalMs = 3000) {
     track.classList.add('infinite-transform-carousel');
   }
   let scrollEndTimer;
-  track.addEventListener('scroll', () => {
+  const handleNativeScroll = () => {
     clearTimeout(scrollEndTimer);
     scrollEndTimer = setTimeout(() => {
-      if (!state.animating) {
-        updateCarouselIndexFromScroll(state);
-        normalizeCarousel(state);
-      }
+      settleNativeCarousel(state);
     }, 140);
 
     const shift = getCarouselTarget(track, count) - getCarouselTarget(track, 0);
     if (!state.animating && shift && (track.scrollLeft < shift * 1.5 || track.scrollLeft > shift * 3.5)) {
-      updateCarouselIndexFromScroll(state);
-      normalizeCarousel(state);
+      settleNativeCarousel(state);
     }
+  };
+  track.addEventListener('scroll', handleNativeScroll, { passive: true });
+  track.addEventListener('scrollend', () => {
+    clearTimeout(scrollEndTimer);
+    settleNativeCarousel(state);
   }, { passive: true });
 
   function startTimer() {
