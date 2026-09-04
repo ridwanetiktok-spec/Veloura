@@ -50,7 +50,7 @@ async function loadAdminData(retryCount = 0) {
     ]);
 
     // Check for errors
-    const errors = [pRes, cRes, bRes, blogRes, sRes, revRes, mediaRes]
+    const errors = [pRes, cRes, bRes, blogRes, sRes, revRes]
       .filter(result => result.error)
       .map(result => result.error.message);
       
@@ -91,6 +91,9 @@ async function loadAdminData(retryCount = 0) {
       productName: r.product_name 
     }));
     
+    if (mediaRes.error) {
+      console.warn(`Media library could not be loaded: ${mediaRes.error.message}`);
+    }
     mediaLibrary = (mediaRes.data || []).map(m => ({ 
       ...m, 
       createdAt: m.created_at 
@@ -150,22 +153,22 @@ function requireSupabase() {
 }
 
 function productRow(product) {
-  const { salePrice, shortDescription, skinType, bestSeller, newArrival, createdAt, ...rest } = product;
+  const { id, salePrice, shortDescription, skinType, bestSeller, newArrival, createdAt, ...rest } = product;
   return { ...rest, sale_price: salePrice, short_description: shortDescription, skin_type: skinType, best_seller: bestSeller, new_arrival: newArrival, created_at: createdAt };
 }
 
 function categoryRow(category) {
-  const { order, ...rest } = category;
+  const { id, order, ...rest } = category;
   return { ...rest, sort_order: order };
 }
 
 function blogRow(post) {
-  const { coverImage, publishDate, ...rest } = post;
+  const { id, coverImage, publishDate, ...rest } = post;
   return { ...rest, cover_image: coverImage, publish_date: publishDate };
 }
 
 function reviewRow(review) {
-  const { productName, ...rest } = review;
+  const { id, productName, ...rest } = review;
   return { ...rest, product_name: productName };
 }
 
@@ -176,7 +179,8 @@ async function dbInsert(table, row) {
 }
 
 async function dbUpdate(table, id, row) {
-  const { error } = await requireSupabase().from(table).update(row).eq('id', id);
+  const { id: ignoredId, ...updateRow } = row;
+  const { error } = await requireSupabase().from(table).update(updateRow).eq('id', id);
   if (error) throw error;
 }
 
