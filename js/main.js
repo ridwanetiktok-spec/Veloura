@@ -202,8 +202,27 @@ function updateCarouselIndexFromScroll(state) {
 
 function settleNativeCarousel(state) {
   if (state.useTransform || state.animating) return;
+
+  const { track, count } = state;
+  const cycleWidth = getCarouselTarget(track, count) - getCarouselTarget(track, 0);
+  if (!cycleWidth) return;
+
+  let nextScrollLeft = track.scrollLeft;
+  while (nextScrollLeft < cycleWidth * 1.5) {
+    nextScrollLeft += cycleWidth;
+  }
+  while (nextScrollLeft > cycleWidth * 3.5) {
+    nextScrollLeft -= cycleWidth;
+  }
+
+  if (nextScrollLeft !== track.scrollLeft) {
+    const previousScrollBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto';
+    track.scrollLeft = nextScrollLeft;
+    track.style.scrollBehavior = previousScrollBehavior;
+  }
+
   updateCarouselIndexFromScroll(state);
-  normalizeCarousel(state);
 }
 
 function initCarouselAutoLoop(trackId, intervalMs = 3000) {
