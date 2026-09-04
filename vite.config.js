@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync } from 'fs'
 
 export default defineConfig({
   root: '.',
@@ -28,14 +28,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        admin: resolve(__dirname, 'admin-8f7k29x-private-dashboard/index.html'),
-        shop: resolve(__dirname, 'shop.html'),
-        blog: resolve(__dirname, 'blog.html'),
-        privacy: resolve(__dirname, 'privacy-policy.html'),
-        terms: resolve(__dirname, 'terms-of-service.html')
-      }
+      input: getHtmlInputs() // ← Auto-detects all HTML files!
     }
   },
   resolve: {
@@ -48,3 +41,18 @@ export default defineConfig({
     }
   }
 })
+
+// ===== AUTO-DETECT HTML FILES =====
+function getHtmlInputs() {
+  const files = readdirSync(resolve(__dirname, '.'))
+  const htmlFiles = files.filter(file => file.endsWith('.html'))
+  
+  const inputs = {}
+  
+  htmlFiles.forEach(file => {
+    const name = file.replace('.html', '')
+    inputs[name] = resolve(__dirname, file)
+  })
+  
+  return inputs
+}
