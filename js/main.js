@@ -647,15 +647,18 @@ function initializeTestimonialsCarousel() {
   on(viewport, 'mouseenter', pauseAutoplay);
   on(viewport, 'mouseleave', resumeAutoplay);
   on(viewport, 'pointerdown', event => {
+    if (!event.isPrimary || event.pointerType === 'mouse' && event.button !== 0) return;
     pauseAutoplay();
     state.touchStartX = event.clientX;
     state.touchStartY = event.clientY;
+    state.pointerId = event.pointerId;
     state.dragging = true;
     viewport.setPointerCapture?.(event.pointerId);
   });
   on(viewport, 'pointerup', event => {
-    if (!state.dragging) return;
+    if (!state.dragging || event.pointerId !== state.pointerId) return;
     state.dragging = false;
+    viewport.releasePointerCapture?.(event.pointerId);
     const deltaX = event.clientX - state.touchStartX;
     const deltaY = event.clientY - state.touchStartY;
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
@@ -663,10 +666,14 @@ function initializeTestimonialsCarousel() {
     }
     resumeAutoplay();
   });
-  on(viewport, 'pointercancel', () => {
+  const cancelPointerGesture = event => {
+    if (!state.dragging || event.pointerId !== undefined && event.pointerId !== state.pointerId) return;
     state.dragging = false;
+    if (event.pointerId !== undefined) viewport.releasePointerCapture?.(event.pointerId);
     resumeAutoplay();
-  });
+  };
+  on(viewport, 'pointercancel', cancelPointerGesture);
+  on(viewport, 'lostpointercapture', cancelPointerGesture);
   on(window, 'resize', () => {
     if (testimonialsCarouselState === state) {
       requestAnimationFrame(() => {
