@@ -350,47 +350,91 @@ function measureCategoryCarousel(state) {
   return state.step;
 }
 
-function rotateCategoryForward(state) {
-  const step = measureCategoryCarousel(state);
-  const first = state.track.firstElementChild;
-  if (!step || !first) return;
+const CATEGORY_TRANSITION = 'transform 0.6s cubic-bezier(0.45, 0.05, 0.2, 1)';
 
-  state.rotating = true;
-  state.track.appendChild(first);
-  state.track.scrollLeft -= step;
-  state.rotating = false;
+function applyCategoryTransform(state, offset, animate) {
+  state.track.style.transition = animate ? CATEGORY_TRANSITION : 'none';
+  state.track.style.transform = `translate3d(${-offset}px, 0, 0)`;
 }
 
-function rotateCategoryBackward(state) {
-  const step = measureCategoryCarousel(state);
-  const last = state.track.lastElementChild;
-  if (!step || !last) return;
+// Keeps the logical offset inside [0, step) by rotating fully-hidden
+// cards around the loop. Because wrapping only happens once a card is
+// completely off-screen, the reset is invisible and seamless.
+function normalizeCategoryLoop(state) {
+  const len = state.track.children.length;
+  let guard = 0;
+  const maxGuard = len + 4;
 
-  state.rotating = true;
-  state.track.prepend(last);
-  state.track.scrollLeft += step;
-  state.rotating = false;
-}
+  if (state.step <= 0) return;
 
-function settleCategoryScroll(state) {
-  if (state.rotating) return;
-  const step = measureCategoryCarousel(state);
-  if (!step) return;
+  while (state.offset >= state.step && guard++ < maxGuard) {
+    const first = state.track.firstElementChild;
+    if (!first) break;
+    state.track.appendChild(first);
+    state.offset -= state.step;
+  }
 
-  while (state.track.scrollLeft >= step) {
-    rotateCategoryForward(state);
+  while (state.offset < 0 && guard++ < maxGuard) {
+    const last = state.track.lastElementChild;
+    if (!last) break;
+    state.track.prepend(last);
+    state.offset += state.step;
   }
 }
 
-function moveCategoryBackward(state, remainingDistance = 0) {
-  const step = measureCategoryCarousel(state);
-  if (!step) return;
+function finishCategoryTransition(state) {
+  state.animating = false;
+  state.track.classList.remove('dragging');
+  clearTimeout(state.transitionFallback);
+  state.transitionFallback = null;
 
-  rotateCategoryBackward(state);
-  state.track.scrollTo({
-    left: remainingDistance ? Math.max(0, step - remainingDistance) : 0,
-    behavior: 'smooth'
-  });
+  const fromOffset = state.offset;
+  normalizeCategoryLoop(state);
+  applyCategoryTransform(state, state.offset, false);
+  if (state.offset !== fromOffset) void state.track.offsetWidth;
+}
+
+// Animates the track from `fromOffset` to `toOffset`, then wraps the
+// loop invisibly once the transition completes.
+function animateCategoryTrack(state, fromOffset, toOffset) {
+  state.animating = true;
+
+  // Moving backward past the left edge: rotate the last card to the front
+  // first so the transition never exposes an empty region. Moving the node
+  // and shifting both offsets by one step keeps the current frame identical,
+  // so this reset is invisible.
+  if (toOffset < 0) {
+    const last = state.track.lastElementChild;
+    if (last) {
+      state.track.prepend(last);
+      fromOffset += state.step;
+      toOffset += state.step;
+    }
+  }
+
+  state.offset = toOffset;
+
+  applyCategoryTransform(state, fromOffset, false);
+  void state.track.offsetWidth;
+  applyCategoryTransform(state, toOffset, true);
+
+  clearTimeout(state.transitionFallback);
+  state.transitionFallback = window.setTimeout(() => finishCategoryTransition(state), 700);
+}
+
+function moveCategoryCarousel(state, direction) {
+  if (state.animating) return;
+  const step = measureCategoryCarousel(state);
+  if (!step || state.track.children.length < 2) return;
+
+  const fromOffset = state.offset;
+  const toOffset = state.offset + (direction >= 0 ? step : -step);
+  animateCategoryTrack(state, fromOffset, toOffset);
+}
+
+function settleCategoryScroll() {
+  // No-op kept for interface compatibility; wrapping is handled by
+  // finishCategoryTransition.
 }
 
 function initCircularCategoryCarousel() {
@@ -400,10 +444,10 @@ function initCircularCategoryCarousel() {
   const state = categoryCarouselState = {
     track,
     step: 0,
-    rotating: false,
-    pointerStartX: null,
+    offset: 0,
+    animating: false,
     autoplayTimer: null,
-    scrollTimer: null,
+    transitionFallback: null,
     listeners: []
   };
 
@@ -413,45 +457,99 @@ function initCircularCategoryCarousel() {
   };
 
   measureCategoryCarousel(state);
+  applyCategoryTransform(state, 0, false);
 
-  const handleScroll = () => {
-    clearTimeout(state.scrollTimer);
-    state.scrollTimer = setTimeout(() => settleCategoryScroll(state), 80);
-    settleCategoryScroll(state);
+  on(track, 'transitionend', event => {
+    if (event.target !== track || event.propertyName !== 'transform') return;
+    if (state.animating) finishCategoryTransition(state);
+  });
+
+  // ---- Drag / swipe (pointer) ----
+  let drag = null;
+
+  const beginDrag = event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (state.animating) return;
+    drag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      baseOffset: state.offset,
+      moved: false,
+      startTime: Date.now()
+    };
+    track.setPointerCapture(event.pointerId);
+    track.classList.add('dragging');
   };
 
-  on(track, 'scroll', handleScroll, { passive: true });
-  on(track, 'scrollend', () => {
-    clearTimeout(state.scrollTimer);
-    settleCategoryScroll(state);
-  }, { passive: true });
+  const moveDrag = event => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const deltaX = event.clientX - drag.startX;
+    if (Math.abs(deltaX) > 4) drag.moved = true;
+    state.offset = drag.baseOffset - deltaX;
+    applyCategoryTransform(state, state.offset, false);
+  };
 
-  on(track, 'wheel', event => {
-    if (event.deltaX >= 0 || track.scrollLeft > 0) return;
-    moveCategoryBackward(state, Math.min(Math.abs(event.deltaX), state.step));
-  }, { passive: true });
+  const endDrag = event => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const deltaX = event.clientX - drag.startX;
+    const duration = Date.now() - drag.startTime;
+    const velocity = duration > 0 ? Math.abs(deltaX) / duration : 0;
+    const wasDrag = drag;
+    drag = null;
+    track.classList.remove('dragging');
 
-  on(track, 'pointerdown', event => {
-    if (!event.isPrimary) return;
-    state.pointerStartX = event.clientX;
-  });
+    const step = measureCategoryCarousel(state);
+    if (!step) return;
 
-  on(track, 'pointerup', event => {
-    if (!event.isPrimary || state.pointerStartX === null) return;
-    const deltaX = event.clientX - state.pointerStartX;
-    state.pointerStartX = null;
+    const fromOffset = state.offset;
 
-    if (track.scrollLeft <= 0 && deltaX > 40) {
-      moveCategoryBackward(state, Math.min(deltaX, measureCategoryCarousel(state)));
-    } else {
-      settleCategoryScroll(state);
+    if (!wasDrag.moved) {
+      // Simple click / tap: settle back cleanly with no visible motion.
+      state.offset = wasDrag.baseOffset;
+      applyCategoryTransform(state, wasDrag.baseOffset, false);
+      return;
     }
-  });
 
-  on(track, 'pointercancel', () => {
-    state.pointerStartX = null;
-  });
+    if (wasDrag.moved && deltaX <= -40) {
+      // Swiped left -> next
+      animateCategoryTrack(state, fromOffset, wasDrag.baseOffset + step);
+    } else if (wasDrag.moved && deltaX >= 40) {
+      // Swiped right -> previous
+      animateCategoryTrack(state, fromOffset, wasDrag.baseOffset - step);
+    } else if (wasDrag.moved && velocity > 0.6) {
+      // Fast flick
+      if (deltaX < 0) {
+        animateCategoryTrack(state, fromOffset, wasDrag.baseOffset + step);
+      } else {
+        animateCategoryTrack(state, fromOffset, wasDrag.baseOffset - step);
+      }
+    } else {
+      // Snap back
+      animateCategoryTrack(state, fromOffset, wasDrag.baseOffset);
+    }
+  };
 
+  const cancelDrag = event => {
+    if (drag && event.pointerId === drag.pointerId) {
+      const baseOffset = drag.baseOffset;
+      drag = null;
+      track.classList.remove('dragging');
+      if (state.animating) {
+        finishCategoryTransition(state);
+      } else {
+        state.offset = baseOffset;
+        applyCategoryTransform(state, baseOffset, false);
+      }
+    }
+  };
+
+  on(track, 'pointerdown', beginDrag);
+  on(track, 'pointermove', moveDrag);
+  on(track, 'pointerup', endDrag);
+  on(track, 'pointercancel', cancelDrag);
+  on(track, 'lostpointercapture', cancelDrag);
+
+  // ---- Autoplay ----
   const startAutoplay = () => {
     state.autoplayTimer = setInterval(() => state.move(1), 3500);
   };
@@ -467,34 +565,23 @@ function initCircularCategoryCarousel() {
     if (!state.autoplayTimer) startAutoplay();
   });
 
-  state.move = direction => {
-    const step = measureCategoryCarousel(state);
-    if (!step || state.track.children.length < 2) return;
-
-    if (direction < 0 && track.scrollLeft <= 0) {
-      moveCategoryBackward(state);
-      return;
-    }
-
-    if (direction > 0 && track.scrollLeft + track.clientWidth >= track.scrollWidth - 1) {
-      rotateCategoryForward(state);
-      track.scrollTo({ left: step, behavior: 'smooth' });
-      return;
-    }
-
-    track.scrollBy({ left: step * direction, behavior: 'smooth' });
-  };
+  state.move = direction => moveCategoryCarousel(state, direction);
 
   state.destroy = () => {
     pauseAutoplay();
-    clearTimeout(state.scrollTimer);
+    if (state.transitionFallback) clearTimeout(state.transitionFallback);
     state.listeners.forEach(remove => remove());
     categoryCarouselState = null;
   };
 
   on(window, 'resize', () => {
-    requestAnimationFrame(() => measureCategoryCarousel(state));
+    requestAnimationFrame(() => {
+      measureCategoryCarousel(state);
+      finishCategoryTransition(state);
+    });
   });
+
+  track.style.touchAction = 'pan-y pinch-zoom';
 
   startAutoplay();
 }
