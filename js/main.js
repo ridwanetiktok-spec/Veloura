@@ -1365,8 +1365,23 @@ function setupScrollAnimations() {
 }
 
 // ===== Boot =====
-document.addEventListener('DOMContentLoaded', () => {
+function waitForSupabase() {
+  if (window.supabaseReady) return Promise.resolve(window.supabaseClient);
+
+  return new Promise(resolve => {
+    window.addEventListener('supabase-ready', event => {
+      resolve(event.detail.client);
+    }, { once: true });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
+  const client = await waitForSupabase();
+  if (!client) {
+    console.error('Storefront cannot load: Supabase is not configured.');
+    return;
+  }
   loadData().then(() => {
     renderFilterSidebar();
   });

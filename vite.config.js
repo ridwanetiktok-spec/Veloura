@@ -13,6 +13,12 @@ export default defineConfig({
         resolve(__dirname, 'admin-8f7k29x-private-dashboard/admin.js'),
         resolve(outputDirectory, 'admin.js')
       )
+      const publicScriptDirectory = resolve(__dirname, 'dist/js')
+      mkdirSync(publicScriptDirectory, { recursive: true })
+      copyFileSync(
+        resolve(__dirname, 'js/main.js'),
+        resolve(publicScriptDirectory, 'main.js')
+      )
     }
   }],
   server: {
