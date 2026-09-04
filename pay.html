@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Veloura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo/logo.png">
+    <link rel="apple-touch-icon" href="logo/logo.png">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Google Fonts (same as home page) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem("checkout-theme");
+            if (savedTheme === "dark" || savedTheme === "light") {
+                document.documentElement.dataset.theme = savedTheme;
+            } else {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="pay.css">
+</head>
+
+<body>
+
+    <div class="checkout-container">
+
+        <!-- =========================
+             ORDER SUMMARY
+        ========================== -->
+
+        <div class="order-summary">
+
+            <div class="header-left">
+                <a href="index.html" class="back-arrow" aria-label="Go back">
+                    &larr;
+                </a>
+
+                <a href="index.html" class="logo">
+                    <img class="logo-mark" src="logo/logo.png" alt="Veloura">
+                    Veloura
+                </a>
+            </div>
+
+            <div class="amount-section">
+                <div class="testpay-title">
+                    Order Summary
+                </div>
+                <div class="total-amount" id="totalAmount">
+                    $0.00
+                </div>
+            </div>
+
+            <!-- CART ITEMS - DYNAMIC -->
+            <div class="cart-items" id="cartItems">
+                <!-- Items will be injected here by JavaScript -->
+            </div>
+
+            <!-- TOTALS -->
+            <div class="totals-table">
+                <div class="row">
+                    <span>Subtotal</span>
+                    <span id="subtotalDisplay">$0.00</span>
+                </div>
+                <div class="row total-due">
+                    <span>Total due</span>
+                    <span id="totalDueDisplay">$0.00</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                Powered by <strong>Demo</strong> |
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </div>
+
+        </div>
+
+        <!-- =========================
+             PAYMENT FORM
+        ========================== -->
+
+        <div class="testpayment-form">
+
+            <div class="form-header">
+                <h3>Payment details</h3>
+            </div>
+
+            <form id="checkout-form" novalidate>
+
+                <!-- NAME -->
+                <div class="form-group">
+                    <label for="card-name">Name on card</label>
+                    <input type="text" id="card-name" placeholder="John Doe" required>
+                </div>
+
+                <!-- CARD NUMBER -->
+                <div class="form-group">
+                    <label for="cnumber">Card number</label>
+                    <div class="card-input-wrapper">
+                        <input type="text" id="cnumber" inputmode="numeric" placeholder="1234 1234 1234 1234" maxlength="23" required aria-label="Card number">
+                        <div id="brand-container" class="card-brand-icons" aria-hidden="true">
+                            <img src="types/v.png" class="brand-icon" alt="Visa">
+                            <img src="types/m.png" class="brand-icon" alt="Mastercard">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXPIRY / CVC -->
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="cexpiry">Expiration date</label>
+                        <input type="text" id="cexpiry" inputmode="numeric" placeholder="MM / YY" maxlength="7" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="ccv">CVC</label>
+                        <input type="text" id="ccv" inputmode="numeric" placeholder="CVC" maxlength="4" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="testpay-btn" id="payButton">
+                    Pay Now
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Popup Overlay -->
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-message"></div>
+            <button id="popup-close">OK</button>
+        </div>
+    </div>
+
+    <script src="pay.js"></script>
+
+</body>
+
+</html>

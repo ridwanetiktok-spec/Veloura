@@ -3814,7 +3814,7 @@ function setupEventListeners() {
   // ❌ REMOVED: Duplicate newsletter handler
   // The newsletter is now handled by setupNewsletterForm()
 
-  // Checkout
+  // ✅ CHECKOUT BUTTON - Redirect to pay.html if cart has items
   const checkoutBtn =
     document.getElementById(
       'checkoutBtn'
@@ -3829,17 +3829,14 @@ function setupEventListeners() {
           0
         ) {
           showToast(
-            'Your cart is empty.',
+            'Your cart is empty. Add some products first!',
             'error'
           );
-
           return;
         }
 
-        showToast(
-          'Checkout is a demo in this static site. Thank you!',
-          'success'
-        );
+        // ✅ Redirect to payment page
+        window.location.href = 'pay.html';
       }
     );
   }
