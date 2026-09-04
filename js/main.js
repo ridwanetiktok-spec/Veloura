@@ -124,6 +124,7 @@ async function loadData() {
 // ===== Seamless Carousel Controller =====
 const carouselTimers = {};
 const carouselStates = {};
+let categoryCarouselState = null;
 
 function getCarouselTarget(track, index) {
   const item = track.children[index];
@@ -327,11 +328,175 @@ function initCarouselAutoLoop(trackId, intervalMs = 3000) {
 }
 
 function scrollCarousel(trackId, direction) {
+  if (trackId === 'categoriesGrid') {
+    categoryCarouselState?.move(direction);
+    return;
+  }
   if (trackId === 'testimonialsTrack') {
     testimonialsCarouselState?.move(direction);
     return;
   }
   moveCarousel(carouselStates[trackId], direction);
+}
+
+function measureCategoryCarousel(state) {
+  const first = state.track.children[0];
+  const second = state.track.children[1];
+  if (!first || !second) return 0;
+
+  const firstRect = first.getBoundingClientRect();
+  const secondRect = second.getBoundingClientRect();
+  state.step = secondRect.left - firstRect.left;
+  return state.step;
+}
+
+function rotateCategoryForward(state) {
+  const step = measureCategoryCarousel(state);
+  const first = state.track.firstElementChild;
+  if (!step || !first) return;
+
+  state.rotating = true;
+  state.track.appendChild(first);
+  state.track.scrollLeft -= step;
+  state.rotating = false;
+}
+
+function rotateCategoryBackward(state) {
+  const step = measureCategoryCarousel(state);
+  const last = state.track.lastElementChild;
+  if (!step || !last) return;
+
+  state.rotating = true;
+  state.track.prepend(last);
+  state.track.scrollLeft += step;
+  state.rotating = false;
+}
+
+function settleCategoryScroll(state) {
+  if (state.rotating) return;
+  const step = measureCategoryCarousel(state);
+  if (!step) return;
+
+  while (state.track.scrollLeft >= step) {
+    rotateCategoryForward(state);
+  }
+}
+
+function moveCategoryBackward(state, remainingDistance = 0) {
+  const step = measureCategoryCarousel(state);
+  if (!step) return;
+
+  rotateCategoryBackward(state);
+  state.track.scrollTo({
+    left: remainingDistance ? Math.max(0, step - remainingDistance) : 0,
+    behavior: 'smooth'
+  });
+}
+
+function initCircularCategoryCarousel() {
+  const track = document.getElementById('categoriesGrid');
+  if (!track || categoryCarouselState) return;
+
+  const state = categoryCarouselState = {
+    track,
+    step: 0,
+    rotating: false,
+    pointerStartX: null,
+    autoplayTimer: null,
+    scrollTimer: null,
+    listeners: []
+  };
+
+  const on = (target, type, handler, options) => {
+    target.addEventListener(type, handler, options);
+    state.listeners.push(() => target.removeEventListener(type, handler, options));
+  };
+
+  measureCategoryCarousel(state);
+
+  const handleScroll = () => {
+    clearTimeout(state.scrollTimer);
+    state.scrollTimer = setTimeout(() => settleCategoryScroll(state), 80);
+    settleCategoryScroll(state);
+  };
+
+  on(track, 'scroll', handleScroll, { passive: true });
+  on(track, 'scrollend', () => {
+    clearTimeout(state.scrollTimer);
+    settleCategoryScroll(state);
+  }, { passive: true });
+
+  on(track, 'wheel', event => {
+    if (event.deltaX >= 0 || track.scrollLeft > 0) return;
+    moveCategoryBackward(state, Math.min(Math.abs(event.deltaX), state.step));
+  }, { passive: true });
+
+  on(track, 'pointerdown', event => {
+    if (!event.isPrimary) return;
+    state.pointerStartX = event.clientX;
+  });
+
+  on(track, 'pointerup', event => {
+    if (!event.isPrimary || state.pointerStartX === null) return;
+    const deltaX = event.clientX - state.pointerStartX;
+    state.pointerStartX = null;
+
+    if (track.scrollLeft <= 0 && deltaX > 40) {
+      moveCategoryBackward(state, Math.min(deltaX, measureCategoryCarousel(state)));
+    } else {
+      settleCategoryScroll(state);
+    }
+  });
+
+  on(track, 'pointercancel', () => {
+    state.pointerStartX = null;
+  });
+
+  const startAutoplay = () => {
+    state.autoplayTimer = setInterval(() => state.move(1), 3500);
+  };
+
+  const pauseAutoplay = () => {
+    clearInterval(state.autoplayTimer);
+    state.autoplayTimer = null;
+  };
+
+  const wrapper = track.closest('.carousel-wrapper') || track;
+  on(wrapper, 'mouseenter', pauseAutoplay);
+  on(wrapper, 'mouseleave', () => {
+    if (!state.autoplayTimer) startAutoplay();
+  });
+
+  state.move = direction => {
+    const step = measureCategoryCarousel(state);
+    if (!step || state.track.children.length < 2) return;
+
+    if (direction < 0 && track.scrollLeft <= 0) {
+      moveCategoryBackward(state);
+      return;
+    }
+
+    if (direction > 0 && track.scrollLeft + track.clientWidth >= track.scrollWidth - 1) {
+      rotateCategoryForward(state);
+      track.scrollTo({ left: step, behavior: 'smooth' });
+      return;
+    }
+
+    track.scrollBy({ left: step * direction, behavior: 'smooth' });
+  };
+
+  state.destroy = () => {
+    pauseAutoplay();
+    clearTimeout(state.scrollTimer);
+    state.listeners.forEach(remove => remove());
+    categoryCarouselState = null;
+  };
+
+  on(window, 'resize', () => {
+    requestAnimationFrame(() => measureCategoryCarousel(state));
+  });
+
+  startAutoplay();
 }
 
 window.addEventListener('resize', () => {
@@ -372,7 +537,7 @@ function initSite() {
   initCustomSortDropdown();
 
   // Initialize infinite carousels with hover-pause
-  initCarouselAutoLoop('categoriesGrid', 3500);
+  initCircularCategoryCarousel();
   initCarouselAutoLoop('featuredProducts', 3500);
   initCarouselAutoLoop('bestSellers', 3000);
   initCarouselAutoLoop('newArrivals', 3800);
@@ -449,6 +614,7 @@ function startAutoPlay() {
 function renderCategories() {
   const container = document.getElementById('categoriesGrid');
   if (!container) return;
+  categoryCarouselState?.destroy?.();
   const featured = categories.filter(c => c.featured);
   container.innerHTML = featured.map(cat => `
     <div class="category-card" onclick="filterByCategory('${cat.name}')">

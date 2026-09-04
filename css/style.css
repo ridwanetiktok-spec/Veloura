@@ -739,7 +739,7 @@ input, select, textarea { font-family: inherit; }
 
 @media (max-width: 480px) {
   .categories-grid.carousel-track .category-card {
-    flex-basis: 85%;
+    flex-basis: calc(50% - 12px);
   }
 }
 
