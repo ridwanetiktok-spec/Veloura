@@ -20,6 +20,10 @@
       "destination": "/blog.html"
     },
     {
+        "source": "/delivery-infos",
+        "destination": "/delivery.html"
+    },
+    {
       "source": "/checkout",
       "destination": "/pay.html"
     },

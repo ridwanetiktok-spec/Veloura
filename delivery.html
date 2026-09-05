@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Information - Veloura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo/logo.png">
+    <link rel="apple-touch-icon" href="logo/logo.png">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="delivery.css">
+    
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem("checkout-theme");
+            if (savedTheme === "dark" || savedTheme === "light") {
+                document.documentElement.dataset.theme = savedTheme;
+            } else {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="delivery-container">
+
+        <!-- =========================
+             LEFT: ORDER SUMMARY
+        ========================== -->
+
+        <div class="order-summary">
+
+            <div class="header-left">
+                <a href="/" class="back-arrow" aria-label="Go back">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+
+                <a href="/" class="logo">
+                    <img class="logo-mark" src="logo/logo.png" alt="Veloura">
+                    Veloura
+                </a>
+            </div>
+
+            <div class="amount-section">
+                <div class="delivery-title">Order Summary</div>
+                <div class="total-amount" id="totalAmount">$0.00</div>
+            </div>
+
+            <!-- CART ITEMS -->
+            <div class="cart-items" id="cartItems">
+                <!-- Injected by JavaScript -->
+            </div>
+
+            <!-- TOTALS -->
+            <div class="totals-table">
+                <div class="row">
+                    <span>Subtotal</span>
+                    <span id="subtotalDisplay">$0.00</span>
+                </div>
+                <div class="row">
+                    <span>Delivery</span>
+                    <span id="deliveryDisplay">Free</span>
+                </div>
+                <div class="row total-due">
+                    <span>Total due</span>
+                    <span id="totalDueDisplay">$0.00</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                Powered by <strong>Veloura</strong> |
+                <a href="/privacy">Privacy Policy</a>
+            </div>
+
+        </div>
+
+        <!-- =========================
+             RIGHT: DELIVERY FORM
+        ========================== -->
+
+        <div class="delivery-form-wrapper">
+
+            <div class="form-header">
+                <h3>Delivery Information</h3>
+                <p>Enter your shipping details below</p>
+            </div>
+
+            <form id="deliveryForm" novalidate>
+
+                <!-- FULL NAME -->
+                <div class="form-group">
+                    <label for="fullName">Full Name <span class="required">*</span></label>
+                    <input type="text" id="fullName" placeholder="John Doe" required>
+                </div>
+
+                <!-- EMAIL & PHONE -->
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="phone">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="phone" placeholder="(555) 555-5555" required>
+                    </div>
+                </div>
+
+                <!-- ADDRESS LINE 1 -->
+                <div class="form-group">
+                    <label for="addressLine1">Address Line 1 <span class="required">*</span></label>
+                    <input type="text" id="addressLine1" placeholder="123 Main Street" required>
+                </div>
+
+                <!-- ADDRESS LINE 2 -->
+                <div class="form-group">
+                    <label for="addressLine2">Address Line 2 <span class="optional">(Optional)</span></label>
+                    <input type="text" id="addressLine2" placeholder="Apartment, suite, or unit #">
+                </div>
+
+                <!-- CITY, STATE, ZIP -->
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="city">City <span class="required">*</span></label>
+                        <input type="text" id="city" placeholder="Los Angeles" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="state">State / Province <span class="required">*</span></label>
+                        <input type="text" id="state" placeholder="California" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="zipCode">ZIP / Postal Code <span class="required">*</span></label>
+                        <input type="text" id="zipCode" placeholder="90210" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="country">Country <span class="required">*</span></label>
+                        <div class="country-select-wrapper">
+                            <input type="text" id="countrySearch" placeholder="Search country..." autocomplete="off">
+                            <select id="country" required>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DELIVERY NOTES -->
+                <div class="form-group">
+                    <label for="deliveryNotes">Delivery Notes <span class="optional">(Optional)</span></label>
+                    <textarea id="deliveryNotes" placeholder="Special instructions for delivery (e.g., leave at front door)..." rows="2"></textarea>
+                </div>
+
+                <button type="submit" class="delivery-btn" id="continueBtn">
+                    <i class="fas fa-arrow-right"></i> Continue to Payment
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Popup Overlay -->
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-message"></div>
+            <button id="popup-close">OK</button>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load delivery.js -->
+    <script type="module" src="delivery.js"></script>
+
+</body>
+</html>
