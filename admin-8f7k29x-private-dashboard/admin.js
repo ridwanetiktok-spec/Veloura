@@ -1721,6 +1721,17 @@ function switchTab(tabId, btn) {
   btn.classList.add('active');
 }
 
+
+// Make media library functions globally accessible for inline onclick handlers
+window.addMedia = addMedia;
+window.selectMedia = selectMedia;
+window.deleteMediaItem = deleteMediaItem;
+window.replaceMediaItem = replaceMediaItem;
+window.closeReplaceMediaModal = closeReplaceMediaModal;
+window.renderMediaLibrary = renderMediaLibrary;
+window.updateFolderFilter = updateFolderFilter;
+
+
 // ===== Boot =====
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
