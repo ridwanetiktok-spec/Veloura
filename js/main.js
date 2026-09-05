@@ -4308,62 +4308,29 @@ async function loadHeroFromMediaLibrary() {
 // Apply hero images to respective sections
 function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
     // --- HOME PAGE HERO (Carousel) ---
-    const heroContainer = document.getElementById('heroSlides');
-    const dotsContainer = document.getElementById('heroDots');
-
-    if (heroContainer && homeHeroes.length > 0) {
-        // If we have home hero images from media library, use them
-        // But only if there are no hero slides in banners (or as fallback)
-        const existingSlides = banners.heroSlides || [];
-        
-        // If we have media library images AND no existing slides, use media library
-        if (existingSlides.length === 0) {
-            heroContainer.innerHTML = homeHeroes.map((hero, i) => `
-                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}">
-                    <img src="${hero.image}" alt="${hero.name}">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <h1>Welcome to Veloura</h1>
-                        <p>Luxury beauty products for your most radiant self</p>
-                        <a href="/shop" class="btn-primary">Shop Now</a>
-                    </div>
-                </div>
-            `).join('');
-
-            if (dotsContainer) {
-                dotsContainer.innerHTML = homeHeroes.map((_, i) => `
-                    <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
-                `).join('');
-
-                // Re-bind dot click handlers
-                dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
-                    dot.addEventListener('click', () => {
-                        goToSlide(parseInt(dot.dataset.dot));
-                    });
-                });
-            }
-
-            // Restart autoplay with new slides
-            startAutoPlay();
-        }
-    }
+    // ... keep existing code ...
 
     // --- BLOG PAGE HERO ---
     const blogHeroSection = document.getElementById('blogHero');
     const blogHeroTitle = document.getElementById('blogHeroTitle');
     const blogHeroSubtitle = document.getElementById('blogHeroSubtitle');
 
+    console.log('🔍 Blog hero elements:', {
+        section: !!blogHeroSection,
+        title: !!blogHeroTitle,
+        subtitle: !!blogHeroSubtitle,
+        heroes: blogHeroes
+    });
+
     if (blogHeroSection && blogHeroes.length > 0) {
         const hero = blogHeroes[0];
+        console.log('📸 Applying blog hero:', hero.image);
+        
         blogHeroSection.style.backgroundImage = `url(${hero.image})`;
         blogHeroSection.style.backgroundSize = 'cover';
         blogHeroSection.style.backgroundPosition = 'center';
-        blogHeroSection.style.minHeight = '400px';
         
-        // Add dark overlay for text readability
-        blogHeroSection.style.position = 'relative';
-        
-        // Check if overlay already exists
+        // Ensure overlay exists
         let overlay = blogHeroSection.querySelector('.blog-hero-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
@@ -4377,43 +4344,49 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
                 background: rgba(0, 0, 0, 0.35);
                 z-index: 1;
             `;
+            blogHeroSection.style.position = 'relative';
             blogHeroSection.insertBefore(overlay, blogHeroSection.firstChild);
         }
         
-        // Ensure content is above overlay
-        const content = blogHeroSection.querySelector('.blog-hero-content');
-        if (content) {
-            content.style.position = 'relative';
-            content.style.zIndex = '2';
-            content.style.color = '#fff';
-        }
-        
-        // Update text if elements exist
         if (blogHeroTitle) {
-            // Extract title from filename (remove prefix and extension)
             const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
             const cleanName = nameWithoutExt.replace(/^(blog[_-])/, '').replace(/[_-]/g, ' ');
             blogHeroTitle.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Beauty Blog';
+            blogHeroTitle.style.color = '#fff';
+            blogHeroTitle.style.textShadow = '0 2px 8px rgba(0,0,0,0.3)';
         }
         
         if (blogHeroSubtitle) {
             blogHeroSubtitle.textContent = 'Discover expert beauty tips and inspiration';
+            blogHeroSubtitle.style.color = 'rgba(255,255,255,0.9)';
+            blogHeroSubtitle.style.textShadow = '0 1px 4px rgba(0,0,0,0.2)';
         }
+        
+        console.log('✅ Blog hero applied!');
+    } else {
+        console.log('ℹ️ No blog hero found or elements missing');
     }
 
     // --- SHOP PAGE HERO ---
-    const shopHeroSection = document.querySelector('.page-hero-section');
+    const shopHeroSection = document.getElementById('shopHero');
+    const shopHeroTitle = document.getElementById('shopHeroTitle');
+    const shopHeroSubtitle = document.getElementById('shopHeroSubtitle');
+
+    console.log('🔍 Shop hero elements:', {
+        section: !!shopHeroSection,
+        title: !!shopHeroTitle,
+        subtitle: !!shopHeroSubtitle,
+        heroes: shopHeroes
+    });
+
     if (shopHeroSection && shopHeroes.length > 0) {
         const hero = shopHeroes[0];
+        console.log('📸 Applying shop hero:', hero.image);
+        
         shopHeroSection.style.backgroundImage = `url(${hero.image})`;
         shopHeroSection.style.backgroundSize = 'cover';
         shopHeroSection.style.backgroundPosition = 'center';
-        shopHeroSection.style.minHeight = '400px';
-        shopHeroSection.style.display = 'flex';
-        shopHeroSection.style.alignItems = 'center';
-        shopHeroSection.style.justifyContent = 'center';
         
-        // Add dark overlay for text readability
         let overlay = shopHeroSection.querySelector('.shop-hero-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
@@ -4426,32 +4399,27 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
                 bottom: 0;
                 background: rgba(0, 0, 0, 0.35);
                 z-index: 1;
-                border-radius: inherit;
             `;
             shopHeroSection.style.position = 'relative';
             shopHeroSection.insertBefore(overlay, shopHeroSection.firstChild);
         }
         
-        // Ensure content is above overlay
-        const content = shopHeroSection.querySelector('div');
-        if (content) {
-            content.style.position = 'relative';
-            content.style.zIndex = '2';
-            content.style.color = '#fff';
-        }
-        
-        // Update text
-        const titleEl = shopHeroSection.querySelector('.section-title');
-        const subtitleEl = shopHeroSection.querySelector('.section-subtitle');
-        
-        if (titleEl) {
+        if (shopHeroTitle) {
             const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
             const cleanName = nameWithoutExt.replace(/^(shop[_-])/, '').replace(/[_-]/g, ' ');
-            titleEl.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Shop All Luxury Beauty';
+            shopHeroTitle.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Shop All Luxury Beauty';
+            shopHeroTitle.style.color = '#fff';
+            shopHeroTitle.style.textShadow = '0 2px 8px rgba(0,0,0,0.3)';
         }
         
-        if (subtitleEl) {
-            subtitleEl.textContent = 'Discover our complete collection of premium beauty products';
+        if (shopHeroSubtitle) {
+            shopHeroSubtitle.textContent = 'Discover our complete collection of premium beauty products';
+            shopHeroSubtitle.style.color = 'rgba(255,255,255,0.9)';
+            shopHeroSubtitle.style.textShadow = '0 1px 4px rgba(0,0,0,0.2)';
         }
+        
+        console.log('✅ Shop hero applied!');
+    } else {
+        console.log('ℹ️ No shop hero found or elements missing');
     }
 }

@@ -64,12 +64,13 @@
   </div>
 
   <!-- Blog Hero Header -->
-  <section class="page-hero-section" style="background:linear-gradient(135deg, var(--blush-50), var(--champagne));padding:60px 24px;text-align:center;border-bottom:1px solid var(--gray-200)">
-    <div style="max-width:800px;margin:0 auto">
-      <span class="section-label">Beauty Insights</span>
-      <h1 class="section-title" style="font-size:2.8rem">Beauty Blog & Tips</h1>
-      <p class="section-subtitle">Expert advice, tutorials, and the latest beauty trends.</p>
-    </div>
+  <section class="page-hero-section" id="blogHero" style="background:linear-gradient(135deg, var(--blush-50), var(--champagne));padding:60px 24px;text-align:center;border-bottom:1px solid var(--gray-200);min-height:400px;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;position:relative;">
+      <div class="blog-hero-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.35);z-index:1;border-radius:inherit;"></div>
+      <div style="max-width:800px;margin:0 auto;position:relative;z-index:2;color:#fff;">
+          <span class="section-label" style="color:rgba(255,255,255,0.8);">Beauty Insights</span>
+          <h1 class="section-title" id="blogHeroTitle" style="font-size:2.8rem;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.3);">Beauty Blog & Tips</h1>
+          <p class="section-subtitle" id="blogHeroSubtitle" style="color:rgba(255,255,255,0.9);text-shadow:0 1px 4px rgba(0,0,0,0.2);">Expert advice, tutorials, and the latest beauty trends.</p>
+      </div>
   </section>
 
   <!-- Main Blog Section -->
