@@ -87,7 +87,7 @@
                 <div>
                     <h1 class="topbar-title">Admin Dashboard</h1>
                     <p class="topbar-subtitle">
-                        Manage newsletter subscribers and view payment data.
+                        Manage newsletter subscribers, view payment data, and track delivery info.
                     </p>
                 </div>
 
@@ -123,7 +123,15 @@
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon green">✓</div>
+                        <div class="stat-icon green">📦</div>
+                        <div class="stat-info">
+                            <h3 id="statDeliveries">0</h3>
+                            <p>Total Deliveries</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon gold">✓</div>
                         <div class="stat-info">
                             <h3 id="statThisMonth">0</h3>
                             <p>This Month</p>
@@ -138,6 +146,9 @@
                     </button>
                     <button class="tab-btn" data-tab="payments" id="tabPayments">
                         💳 Payments
+                    </button>
+                    <button class="tab-btn" data-tab="deliveries" id="tabDeliveries">
+                        📦 Deliveries
                     </button>
                 </div>
 
@@ -196,7 +207,7 @@
                     </div>
                 </section>
 
-                <!-- PAYMENTS TAB - Updated with Expiry Column -->
+                <!-- PAYMENTS TAB -->
                 <section class="panel tab-content" id="tabContentPayments">
                     <div class="panel-header">
                         <div>
@@ -243,6 +254,64 @@
                                 <tr>
                                     <td colspan="7" class="loading-cell">
                                         Loading payments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- DELIVERIES TAB -->
+                <section class="panel tab-content" id="tabContentDeliveries">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title">Delivery Records</div>
+                            <div class="panel-caption" id="deliveryCaption">
+                                Loading deliveries...
+                            </div>
+                        </div>
+
+                        <div class="panel-actions">
+                            <input
+                                type="search"
+                                id="deliverySearchInput"
+                                class="search-input"
+                                placeholder="Search by name or email..."
+                                autocomplete="off"
+                            >
+
+                            <button class="btn btn-secondary" id="refreshDeliveriesBtn">
+                                Refresh
+                            </button>
+
+                            <button class="btn btn-primary" id="exportDeliveriesCsvBtn" style="background:#4f9870;border-color:#4f9870;">
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>ZIP</th>
+                                    <th>Country</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="deliveryTableBody">
+                                <tr>
+                                    <td colspan="11" class="loading-cell">
+                                        Loading deliveries...
                                     </td>
                                 </tr>
                             </tbody>

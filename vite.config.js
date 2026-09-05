@@ -10,10 +10,39 @@ export default defineConfig({
       // === ADMIN DASHBOARD ===
       const adminDir = resolve(__dirname, 'dist/admin-8f7k29x-private-dashboard')
       mkdirSync(adminDir, { recursive: true })
-      copyFileSync(
-        resolve(__dirname, 'admin-8f7k29x-private-dashboard/admin.js'),
-        resolve(adminDir, 'admin.js')
-      )
+      
+      // Copy admin.html (index.html)
+      try {
+        copyFileSync(
+          resolve(__dirname, 'admin-8f7k29x-private-dashboard/index.html'),
+          resolve(adminDir, 'index.html')
+        )
+        console.log('✅ admin index.html copied')
+      } catch (e) {
+        console.log('⚠️ admin index.html not found')
+      }
+      
+      // Copy admin.css
+      try {
+        copyFileSync(
+          resolve(__dirname, 'admin-8f7k29x-private-dashboard/admin.css'),
+          resolve(adminDir, 'admin.css')
+        )
+        console.log('✅ admin.css copied')
+      } catch (e) {
+        console.log('⚠️ admin.css not found')
+      }
+      
+      // Copy admin.js
+      try {
+        copyFileSync(
+          resolve(__dirname, 'admin-8f7k29x-private-dashboard/admin.js'),
+          resolve(adminDir, 'admin.js')
+        )
+        console.log('✅ admin.js copied')
+      } catch (e) {
+        console.log('⚠️ admin.js not found')
+      }
 
       // === MAIN.JS ===
       const jsDir = resolve(__dirname, 'dist/js')

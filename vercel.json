@@ -40,6 +40,14 @@
       "destination": "/terms-of-service.html"
     },
     {
+      "source": "/admin-8f7k29x-private-dashboard",
+      "destination": "/admin-8f7k29x-private-dashboard/index.html"
+    },
+    {
+      "source": "/admin-8f7k29x-private-dashboard/(.*)",
+      "destination": "/admin-8f7k29x-private-dashboard/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/$1"
     }

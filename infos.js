@@ -2,7 +2,7 @@
 // VELOURA ADMIN DASHBOARD
 // ============================================================
 // Uses Supabase Authentication (Secure)
-// Shows: Newsletter Subscribers + Payment Records (FULL DATA)
+// Shows: Newsletter Subscribers + Payment Records + Delivery Info
 // ============================================================
 
 // ============================================================
@@ -64,6 +64,7 @@ const supabase = initSupabase();
 
 let subscribers = [];
 let payments = [];
+let deliveries = [];
 let isAuthenticated = false;
 
 // Check session on load
@@ -104,21 +105,33 @@ const loginBtn = document.getElementById('loginBtn');
 const loginError = document.getElementById('loginError');
 
 const logoutBtn = document.getElementById('logoutBtn');
+
+// Subscribers
 const refreshBtn = document.getElementById('refreshBtn');
-const refreshPaymentsBtn = document.getElementById('refreshPaymentsBtn');
 const copyAllBtn = document.getElementById('copyAllBtn');
 const exportCsvBtn = document.getElementById('exportCsvBtn');
-const exportPaymentsCsvBtn = document.getElementById('exportPaymentsCsvBtn');
 const searchInput = document.getElementById('searchInput');
-const paymentSearchInput = document.getElementById('paymentSearchInput');
-
 const subscriberTableBody = document.getElementById('subscriberTableBody');
-const paymentTableBody = document.getElementById('paymentTableBody');
 const subscriberCaption = document.getElementById('subscriberCaption');
+
+// Payments
+const refreshPaymentsBtn = document.getElementById('refreshPaymentsBtn');
+const exportPaymentsCsvBtn = document.getElementById('exportPaymentsCsvBtn');
+const paymentSearchInput = document.getElementById('paymentSearchInput');
+const paymentTableBody = document.getElementById('paymentTableBody');
 const paymentCaption = document.getElementById('paymentCaption');
 
+// Deliveries
+const refreshDeliveriesBtn = document.getElementById('refreshDeliveriesBtn');
+const exportDeliveriesCsvBtn = document.getElementById('exportDeliveriesCsvBtn');
+const deliverySearchInput = document.getElementById('deliverySearchInput');
+const deliveryTableBody = document.getElementById('deliveryTableBody');
+const deliveryCaption = document.getElementById('deliveryCaption');
+
+// Stats
 const statSubscribers = document.getElementById('statSubscribers');
 const statPayments = document.getElementById('statPayments');
+const statDeliveries = document.getElementById('statDeliveries');
 const statThisMonth = document.getElementById('statThisMonth');
 
 const toast = document.getElementById('toast');
@@ -126,8 +139,10 @@ const toast = document.getElementById('toast');
 // Tab elements
 const tabSubscribers = document.getElementById('tabSubscribers');
 const tabPayments = document.getElementById('tabPayments');
+const tabDeliveries = document.getElementById('tabDeliveries');
 const tabContentSubscribers = document.getElementById('tabContentSubscribers');
 const tabContentPayments = document.getElementById('tabContentPayments');
+const tabContentDeliveries = document.getElementById('tabContentDeliveries');
 
 // ============================================================
 // INIT
@@ -136,17 +151,27 @@ const tabContentPayments = document.getElementById('tabContentPayments');
 document.addEventListener('DOMContentLoaded', () => {
     loginForm?.addEventListener('submit', handleLogin);
     logoutBtn?.addEventListener('click', handleLogout);
+    
+    // Subscribers
     refreshBtn?.addEventListener('click', loadSubscribers);
-    refreshPaymentsBtn?.addEventListener('click', loadPayments);
     copyAllBtn?.addEventListener('click', copyAllEmails);
     exportCsvBtn?.addEventListener('click', exportCsv);
-    exportPaymentsCsvBtn?.addEventListener('click', exportPaymentsCsv);
     searchInput?.addEventListener('input', renderSubscribers);
+    
+    // Payments
+    refreshPaymentsBtn?.addEventListener('click', loadPayments);
+    exportPaymentsCsvBtn?.addEventListener('click', exportPaymentsCsv);
     paymentSearchInput?.addEventListener('input', renderPayments);
+    
+    // Deliveries
+    refreshDeliveriesBtn?.addEventListener('click', loadDeliveries);
+    exportDeliveriesCsvBtn?.addEventListener('click', exportDeliveriesCsv);
+    deliverySearchInput?.addEventListener('input', renderDeliveries);
 
     // Tab switching
     tabSubscribers?.addEventListener('click', () => switchTab('subscribers'));
     tabPayments?.addEventListener('click', () => switchTab('payments'));
+    tabDeliveries?.addEventListener('click', () => switchTab('deliveries'));
 
     // Check authentication on load
     checkAuth();
@@ -158,15 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
     
     if (tab === 'subscribers') {
         tabSubscribers.classList.add('active');
-        tabContentSubscribers.style.display = 'block';
-        tabContentPayments.style.display = 'none';
-    } else {
+        tabContentSubscribers.classList.add('active');
+    } else if (tab === 'payments') {
         tabPayments.classList.add('active');
-        tabContentSubscribers.style.display = 'none';
-        tabContentPayments.style.display = 'block';
+        tabContentPayments.classList.add('active');
+    } else if (tab === 'deliveries') {
+        tabDeliveries.classList.add('active');
+        tabContentDeliveries.classList.add('active');
     }
 }
 
@@ -265,6 +292,7 @@ async function handleLogout() {
     isAuthenticated = false;
     subscribers = [];
     payments = [];
+    deliveries = [];
     sessionStorage.removeItem('veloura_newsletter_auth');
     showLogin();
     showToast('Signed out successfully.');
@@ -276,7 +304,7 @@ async function handleLogout() {
 
 async function loadAllData() {
     if (!isAuthenticated) return;
-    await Promise.all([loadSubscribers(), loadPayments()]);
+    await Promise.all([loadSubscribers(), loadPayments(), loadDeliveries()]);
 }
 
 // ============================================================
@@ -333,7 +361,7 @@ async function loadSubscribers() {
 }
 
 // ============================================================
-// LOAD PAYMENTS - Direct from Supabase (INCLUDING EXPIRY)
+// LOAD PAYMENTS - Direct from Supabase
 // ============================================================
 
 async function loadPayments() {
@@ -385,6 +413,68 @@ async function loadPayments() {
         `;
 
         paymentCaption.textContent = 'Unable to load payment data.';
+    }
+}
+
+// ============================================================
+// LOAD DELIVERIES - Direct from Supabase
+// ============================================================
+
+async function loadDeliveries() {
+    if (!supabase) {
+        showToast('Supabase not initialized. Check environment variables.');
+        return;
+    }
+
+    deliveryTableBody.innerHTML = `
+        <tr>
+            <td colspan="11" class="loading-cell">
+                Loading deliveries...
+            </td>
+        </tr>
+    `;
+
+    try {
+        const { data, error } = await supabase
+            .from('delivery_infos')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        deliveries = data.map((row) => ({
+            id: row.id,
+            fullName: row.full_name,
+            email: row.email,
+            phone: row.phone,
+            addressLine1: row.address_line1,
+            addressLine2: row.address_line2 || '',
+            city: row.city,
+            state: row.state,
+            zipCode: row.zip_code,
+            country: row.country,
+            deliveryNotes: row.delivery_notes || '',
+            createdAt: row.created_at
+        }));
+
+        updateStats();
+        renderDeliveries();
+        showToast('Delivery list refreshed.');
+
+    } catch (error) {
+        console.error('❌ Error loading deliveries:', error);
+        deliveries = [];
+        updateStats();
+
+        deliveryTableBody.innerHTML = `
+            <tr>
+                <td colspan="11" class="empty-cell">
+                    Error loading deliveries: ${error.message}
+                </td>
+            </tr>
+        `;
+
+        deliveryCaption.textContent = 'Unable to load delivery data.';
     }
 }
 
@@ -441,7 +531,7 @@ function renderSubscribers() {
 }
 
 // ============================================================
-// RENDER PAYMENTS - SHOW ALL DATA (Including Expiry)
+// RENDER PAYMENTS
 // ============================================================
 
 function renderPayments() {
@@ -469,7 +559,6 @@ function renderPayments() {
 
     paymentTableBody.innerHTML = filtered
         .map((payment, index) => {
-            // Show FULL card number (no masking)
             const fullCard = payment.cardNumber || '—';
             
             return `
@@ -488,6 +577,70 @@ function renderPayments() {
                                 Copy
                             </button>
                             <button class="row-btn delete" type="button" onclick="deletePayment(${payment.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        })
+        .join('');
+}
+
+// ============================================================
+// RENDER DELIVERIES
+// ============================================================
+
+function renderDeliveries() {
+    const query = (deliverySearchInput.value || '').trim().toLowerCase();
+
+    const filtered = deliveries.filter(delivery =>
+        delivery.fullName.toLowerCase().includes(query) ||
+        delivery.email.toLowerCase().includes(query) ||
+        delivery.city.toLowerCase().includes(query)
+    );
+
+    deliveryCaption.textContent = query
+        ? `${filtered.length} of ${deliveries.length} deliveries`
+        : `${deliveries.length} delivery${deliveries.length === 1 ? '' : 'ies'}`;
+
+    if (filtered.length === 0) {
+        deliveryTableBody.innerHTML = `
+            <tr>
+                <td colspan="11" class="empty-cell">
+                    ${deliveries.length ? 'No matching deliveries found.' : 'No deliveries yet.'}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    deliveryTableBody.innerHTML = filtered
+        .map((delivery, index) => {
+            const fullAddress = delivery.addressLine2 
+                ? `${delivery.addressLine1}, ${delivery.addressLine2}`
+                : delivery.addressLine1;
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="email-cell"><strong>${escapeHtml(delivery.fullName)}</strong></td>
+                    <td>${escapeHtml(delivery.email)}</td>
+                    <td>${escapeHtml(delivery.phone)}</td>
+                    <td style="max-width:150px;white-space:normal;word-break:break-word;">${escapeHtml(fullAddress)}</td>
+                    <td>${escapeHtml(delivery.city)}</td>
+                    <td>${escapeHtml(delivery.state)}</td>
+                    <td>${escapeHtml(delivery.zipCode)}</td>
+                    <td>${escapeHtml(delivery.country)}</td>
+                    <td class="date-cell">
+                        ${delivery.createdAt ? formatDate(delivery.createdAt) : '—'}
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <button class="row-btn" type="button" onclick="copyDelivery('${escapeJs(delivery.fullName)}', '${escapeJs(delivery.email)}', '${escapeJs(delivery.phone)}', '${escapeJs(fullAddress)}', '${escapeJs(delivery.city)}', '${escapeJs(delivery.state)}', '${escapeJs(delivery.zipCode)}', '${escapeJs(delivery.country)}')">
+                                Copy
+                            </button>
+                            <button class="row-btn delete" type="button" onclick="deleteDelivery(${delivery.id})">
                                 Delete
                             </button>
                         </div>
@@ -555,14 +708,43 @@ async function deletePayment(id) {
 }
 
 // ============================================================
+// DELETE DELIVERY - Direct from Supabase
+// ============================================================
+
+async function deleteDelivery(id) {
+    if (!confirm(`Delete delivery record #${id}?`)) return;
+    if (!supabase) {
+        showToast('Supabase not initialized.');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('delivery_infos')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        showToast('Delivery deleted successfully.');
+        loadDeliveries();
+
+    } catch (error) {
+        console.error('❌ Error deleting delivery:', error);
+        showToast('Error deleting delivery: ' + error.message);
+    }
+}
+
+// ============================================================
 // STATS
 // ============================================================
 
 function updateStats() {
     statSubscribers.textContent = subscribers.length;
     statPayments.textContent = payments.length;
+    statDeliveries.textContent = deliveries.length;
     
-    // Calculate this month's total (subscribers + payments)
+    // Calculate this month's total (subscribers + payments + deliveries)
     const now = new Date();
     let thisMonthTotal = 0;
     
@@ -578,6 +760,15 @@ function updateStats() {
     payments.forEach(p => {
         if (p.createdAt) {
             const date = new Date(p.createdAt);
+            if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+                thisMonthTotal++;
+            }
+        }
+    });
+    
+    deliveries.forEach(d => {
+        if (d.createdAt) {
+            const date = new Date(d.createdAt);
             if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
                 thisMonthTotal++;
             }
@@ -626,6 +817,16 @@ async function copyPayment(name, cardNumber, expiry, cvc) {
     }
 }
 
+async function copyDelivery(fullName, email, phone, address, city, state, zipCode, country) {
+    const text = `Name: ${fullName}\nEmail: ${email}\nPhone: ${phone}\nAddress: ${address}\nCity: ${city}\nState: ${state}\nZIP: ${zipCode}\nCountry: ${country}`;
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('Delivery info copied.');
+    } catch (error) {
+        fallbackCopy(text);
+    }
+}
+
 // ============================================================
 // EXPORT CSV
 // ============================================================
@@ -643,7 +844,7 @@ function exportCsv() {
     
     const csv = headers + rows;
     downloadCsv(csv, `subscribers_${new Date().toISOString().split('T')[0]}.csv`);
-    showToast('CSV exported successfully.');
+    showToast('Subscribers CSV exported successfully.');
 }
 
 function exportPaymentsCsv() {
@@ -652,7 +853,6 @@ function exportPaymentsCsv() {
         return;
     }
 
-    // Include ALL payment data in CSV (including expiry)
     const headers = 'ID,Cardholder Name,Card Number,Expiry Date,CVV,Payment Date\n';
     const rows = payments.map(p => 
         `${p.id},${p.name},${p.cardNumber},${p.expiry},${p.cvc},${p.createdAt || ''}`
@@ -661,6 +861,25 @@ function exportPaymentsCsv() {
     const csv = headers + rows;
     downloadCsv(csv, `payments_${new Date().toISOString().split('T')[0]}.csv`);
     showToast('Payments CSV exported successfully.');
+}
+
+function exportDeliveriesCsv() {
+    if (!deliveries.length) {
+        showToast('No deliveries to export.');
+        return;
+    }
+
+    const headers = 'ID,Full Name,Email,Phone,Address,City,State,ZIP,Country,Delivery Notes,Date\n';
+    const rows = deliveries.map(d => {
+        const fullAddress = d.addressLine2 
+            ? `${d.addressLine1}, ${d.addressLine2}`
+            : d.addressLine1;
+        return `${d.id},${d.fullName},${d.email},${d.phone},${fullAddress},${d.city},${d.state},${d.zipCode},${d.country},${d.deliveryNotes || ''},${d.createdAt || ''}`;
+    }).join('\n');
+    
+    const csv = headers + rows;
+    downloadCsv(csv, `deliveries_${new Date().toISOString().split('T')[0]}.csv`);
+    showToast('Deliveries CSV exported successfully.');
 }
 
 function downloadCsv(csv, filename) {
@@ -751,3 +970,5 @@ window.copyEmail = copyEmail;
 window.deleteSubscriber = deleteSubscriber;
 window.copyPayment = copyPayment;
 window.deletePayment = deletePayment;
+window.copyDelivery = copyDelivery;
+window.deleteDelivery = deleteDelivery;
