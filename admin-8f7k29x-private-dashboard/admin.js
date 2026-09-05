@@ -1668,34 +1668,43 @@ function renderSettingsManager() {
   document.getElementById('setSeoDesc').value = adminSettings.seo?.description || '';
 }
 
-async function saveSettings() {
-  adminSettings.siteName = document.getElementById('setSiteName').value;
-  adminSettings.tagline = document.getElementById('setTagline').value;
-  
-  adminSettings.contact = {
-    email: document.getElementById('setEmail').value,
-    phone: document.getElementById('setPhone').value,
-    address: document.getElementById('setAddress').value
-  };
-  
-  // ✅ Social Media - Only Reddit & Pinterest
-  adminSettings.socialMedia = {
-    reddit: document.getElementById('setReddit').value,
-    pinterest: document.getElementById('setPinterest').value
-  };
-  
-  adminSettings.seo = {
-    title: document.getElementById('setSeoTitle').value,
-    description: document.getElementById('setSeoDesc').value,
-    keywords: adminSettings.seo?.keywords || ''
-  };
+// ===== Footer =====
 
-  try {
-    await dbSaveSingleton('settings', adminSettings);
-    await loadAdminData();
-    showAdminToast('Settings saved successfully!', 'success');
-  } catch (error) {
-    showAdminToast(`Settings save failed: ${error.message}`, 'error');
+function renderFooter() {
+  const sm = settings.socialMedia || {};
+
+  const socialContainer = document.getElementById('socialLinks');
+
+  if (socialContainer) {
+    // FontAwesome icons for Reddit and Pinterest
+    const icons = {
+      reddit: '<i class="fa-brands fa-reddit-alien"></i>',
+      pinterest: '<i class="fa-brands fa-pinterest"></i>'
+    };
+
+    // Only Reddit and Pinterest
+    const platforms = ['reddit', 'pinterest'];
+    
+    socialContainer.innerHTML = platforms
+      .map(platform => {
+        const url = sm[platform];
+        // Check if URL exists and is not empty
+        if (url && url.trim() !== '') {
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}">${icons[platform]}</a>`;
+        }
+        return '';
+      })
+      .filter(html => html !== '') // Remove empty strings
+      .join('');
+  }
+
+  const contactEl = document.getElementById('footerContact');
+  if (contactEl && settings.contact) {
+    contactEl.innerHTML = `
+      <li>${settings.contact.email || ''}</li>
+      <li>${settings.contact.phone || ''}</li>
+      <li style="line-height:1.5">${settings.contact.address || ''}</li>
+    `;
   }
 }
 
