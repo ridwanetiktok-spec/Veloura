@@ -4478,14 +4478,15 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
         const hero = blogHeroes[0];
         console.log('📸 Applying blog hero:', hero.image);
         
-        // Clear any existing inline styles
-        blogHeroSection.style.backgroundImage = `url(${hero.image})`;
-        blogHeroSection.style.backgroundSize = 'cover';
-        blogHeroSection.style.backgroundPosition = 'center';
-        blogHeroSection.style.minHeight = '400px';
-        blogHeroSection.style.display = 'flex';
-        blogHeroSection.style.alignItems = 'center';
-        blogHeroSection.style.justifyContent = 'center';
+        // FORCE set background with !important using setProperty
+        blogHeroSection.style.setProperty('background-image', `url(${hero.image})`, 'important');
+        blogHeroSection.style.setProperty('background-size', 'cover', 'important');
+        blogHeroSection.style.setProperty('background-position', 'center', 'important');
+        blogHeroSection.style.setProperty('min-height', '400px', 'important');
+        blogHeroSection.style.setProperty('display', 'flex', 'important');
+        blogHeroSection.style.setProperty('align-items', 'center', 'important');
+        blogHeroSection.style.setProperty('justify-content', 'center', 'important');
+        blogHeroSection.style.setProperty('background', `url(${hero.image}) center/cover no-repeat`, 'important');
         
         // Ensure overlay exists
         let overlay = blogHeroSection.querySelector('.blog-hero-overlay');
@@ -4549,13 +4550,15 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
         const hero = shopHeroes[0];
         console.log('📸 Applying shop hero:', hero.image);
         
-        shopHeroSection.style.backgroundImage = `url(${hero.image})`;
-        shopHeroSection.style.backgroundSize = 'cover';
-        shopHeroSection.style.backgroundPosition = 'center';
-        shopHeroSection.style.minHeight = '400px';
-        shopHeroSection.style.display = 'flex';
-        shopHeroSection.style.alignItems = 'center';
-        shopHeroSection.style.justifyContent = 'center';
+        // FORCE set background with !important using setProperty
+        shopHeroSection.style.setProperty('background-image', `url(${hero.image})`, 'important');
+        shopHeroSection.style.setProperty('background-size', 'cover', 'important');
+        shopHeroSection.style.setProperty('background-position', 'center', 'important');
+        shopHeroSection.style.setProperty('min-height', '400px', 'important');
+        shopHeroSection.style.setProperty('display', 'flex', 'important');
+        shopHeroSection.style.setProperty('align-items', 'center', 'important');
+        shopHeroSection.style.setProperty('justify-content', 'center', 'important');
+        shopHeroSection.style.setProperty('background', `url(${hero.image}) center/cover no-repeat`, 'important');
         
         let overlay = shopHeroSection.querySelector('.shop-hero-overlay');
         if (!overlay) {

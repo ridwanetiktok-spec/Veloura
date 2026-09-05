@@ -2631,3 +2631,90 @@ html[data-theme="dark"] {
 [data-theme="dark"] .promo-banner-content p {
     color: rgba(255, 255, 255, 0.9) !important;
 }
+/* ============================================
+   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE FIX
+   ============================================ */
+
+/* CRITICAL: Remove any gradient that hides the image */
+[data-theme="dark"] .page-hero-section {
+    background: transparent !important;
+    background-color: #0F0D10 !important;
+}
+
+/* Blog hero - preserve background image */
+[data-theme="dark"] #blogHero {
+    background: transparent !important;
+    background-color: #0F0D10 !important;
+}
+
+[data-theme="dark"] #blogHero .blog-hero-overlay {
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="dark"] #blogHero .section-title,
+[data-theme="dark"] #blogHero h1,
+[data-theme="dark"] #blogHeroTitle {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] #blogHero .section-subtitle,
+[data-theme="dark"] #blogHero p,
+[data-theme="dark"] #blogHeroSubtitle {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Shop hero - preserve background image */
+[data-theme="dark"] #shopHero {
+    background: transparent !important;
+    background-color: #0F0D10 !important;
+}
+
+[data-theme="dark"] #shopHero .shop-hero-overlay {
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="dark"] #shopHero .section-title,
+[data-theme="dark"] #shopHero h1,
+[data-theme="dark"] #shopHeroTitle {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] #shopHero .section-subtitle,
+[data-theme="dark"] #shopHero p,
+[data-theme="dark"] #shopHeroSubtitle {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Fix for any inline styles that might be overriding */
+[data-theme="dark"] .page-hero-section[style*="background"] {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .page-hero-section[style*="background-image"] {
+    background-image: var(--hero-image, none) !important;
+}
+
+/* Ensure proper z-index stacking */
+[data-theme="dark"] .page-hero-section {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+[data-theme="dark"] .page-hero-section .blog-hero-overlay,
+[data-theme="dark"] .page-hero-section .shop-hero-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 2 !important;
+}
+
+[data-theme="dark"] .page-hero-section > div {
+    position: relative !important;
+    z-index: 3 !important;
+}
