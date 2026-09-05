@@ -74,12 +74,17 @@ function subscribeToPublicRealtime() {
 
 
 // ===== Data Loading =====
+// ===== Data Loading =====
 async function loadData() {
   try {
     await loadPublicFromSupabase();
     subscribeToPublicRealtime();
     // ✅ Save products to localStorage for checkout page
     saveProductsToLocalStorage();
+    
+    // ✅ Load hero images from media library
+    await loadHeroFromMediaLibrary();
+    
     initSite();
   } catch (e) {
     console.error('Error loading Supabase data:', e);
@@ -91,6 +96,10 @@ async function loadData() {
     settings = { siteName: 'Veloura' };
     // ✅ Save empty products to localStorage
     saveProductsToLocalStorage();
+    
+    // Still try to load hero images even if other data fails
+    await loadHeroFromMediaLibrary();
+    
     initSite();
   }
 }
@@ -873,7 +882,7 @@ window.addEventListener(
 
 function initSite() {
   renderNewsBanner();
-  renderHero();
+  renderHero();  // This will now use media library images if available
   renderCategories();
   renderFeaturedProducts();
   renderBestSellers();
@@ -897,30 +906,11 @@ function initSite() {
   // Initialize infinite carousels with hover-pause
   initCircularCategoryCarousel();
 
-  initCarouselAutoLoop(
-    'featuredProducts',
-    3500
-  );
-
-  initCarouselAutoLoop(
-    'bestSellers',
-    3000
-  );
-
-  initCarouselAutoLoop(
-    'newArrivals',
-    3800
-  );
-
-  initCarouselAutoLoop(
-    'jewelryCollection',
-    3400
-  );
-
-  initCarouselAutoLoop(
-    'nailStudio',
-    3600
-  );
+  initCarouselAutoLoop('featuredProducts', 3500);
+  initCarouselAutoLoop('bestSellers', 3000);
+  initCarouselAutoLoop('newArrivals', 3800);
+  initCarouselAutoLoop('jewelryCollection', 3400);
+  initCarouselAutoLoop('nailStudio', 3600);
 
   // ✅ Initialize the newsletter form with Supabase API
   setupNewsletterForm();
@@ -948,32 +938,53 @@ function renderNewsBanner() {
 
 // ===== Hero Slider =====
 
+// ===== Hero Slider =====
+
 function renderHero() {
-  const container =
-    document.getElementById(
-      'heroSlides'
-    );
+  const container = document.getElementById('heroSlides');
+  const dotsContainer = document.getElementById('heroDots');
 
-  const dotsContainer =
-    document.getElementById(
-      'heroDots'
-    );
+  if (!container) return;
 
-  if (
-    !container ||
-    !banners.heroSlides
-  ) {
+  // Check if we have hero slides from media library already loaded
+  // The media library images are applied in applyHeroImages()
+  // If the container already has content from media library, skip
+  
+  const slides = banners.heroSlides || [];
+  
+  // If no hero slides in banners but we have media library images,
+  // they would have been applied already in applyHeroImages()
+  // So only render from banners if there are slides OR if container is empty
+  
+  if (slides.length === 0) {
+    // Check if container already has content from media library
+    if (container.children.length > 0) {
+      return; // Media library already rendered hero
+    }
+    
+    // Fallback: show default hero
+    container.innerHTML = `
+      <div class="hero-slide active" data-slide="0">
+        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1400&q=80" alt="Veloura Beauty">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <h1>Discover Your Radiance</h1>
+          <p>Luxury beauty products crafted for your most radiant self</p>
+          <a href="/shop" class="btn-primary">Shop Now</a>
+        </div>
+      </div>
+    `;
+    
+    if (dotsContainer) {
+      dotsContainer.innerHTML = `<div class="hero-dot active" data-dot="0"></div>`;
+    }
+    
+    startAutoPlay();
     return;
   }
 
-  const slides =
-    banners.heroSlides.sort(
-      (a, b) => a.order - b.order
-    );
-
-  container.innerHTML =
-    slides.map(
-      (slide, i) => `
+  // Render from banners
+  container.innerHTML = slides.map((slide, i) => `
     <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}">
       <img src="${slide.image}" alt="${slide.headline}">
       <div class="hero-overlay"></div>
@@ -983,35 +994,22 @@ function renderHero() {
         <a href="${slide.buttonLink}" class="btn-primary">${slide.buttonText}</a>
       </div>
     </div>
-  `
-    ).join('');
+  `).join('');
 
-  dotsContainer.innerHTML =
-    slides.map(
-      (_, i) => `
-    <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
-  `
-    ).join('');
+  if (dotsContainer) {
+    dotsContainer.innerHTML = slides.map((_, i) => `
+      <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
+    `).join('');
 
-  // Dot click handlers
-  dotsContainer
-    .querySelectorAll('.hero-dot')
-    .forEach(dot => {
-      dot.addEventListener(
-        'click',
-        () =>
-          goToSlide(
-            parseInt(
-              dot.dataset.dot
-            )
-          )
-      );
+    // Dot click handlers
+    dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
+      dot.addEventListener('click', () => goToSlide(parseInt(dot.dataset.dot)));
     });
+  }
 
   // Auto-play
   startAutoPlay();
 }
-
 function goToSlide(index) {
   const slides =
     document.querySelectorAll(
@@ -4225,3 +4223,235 @@ document.querySelectorAll('.checkout-btn, [href="/pay"], [href="/checkout"]').fo
     });
   }
 });
+
+// ============================================
+// HERO IMAGES FROM MEDIA LIBRARY
+// ============================================
+
+// Load hero images from media library based on filename prefix
+async function loadHeroFromMediaLibrary() {
+    const client = window.supabaseClient;
+    if (!client) {
+        console.warn('⚠️ Supabase client not available');
+        return;
+    }
+
+    try {
+        // Fetch all media from media_library
+        const { data, error } = await client
+            .from('media_library')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            console.log('ℹ️ No media found in library');
+            return;
+        }
+
+        // Separate images by prefix
+        const homeHeroes = [];
+        const blogHeroes = [];
+        const shopHeroes = [];
+
+        data.forEach(media => {
+            const name = media.name.toLowerCase();
+            
+            // Check for home hero images (home_1, home_2, home_3, home_4)
+            if (name.startsWith('home_') || name.startsWith('home-')) {
+                homeHeroes.push({
+                    image: media.url,
+                    name: media.name,
+                    id: media.id
+                });
+            }
+            // Check for blog hero image
+            else if (name.startsWith('blog_') || name.startsWith('blog-')) {
+                if (blogHeroes.length === 0) { // Only keep the first one
+                    blogHeroes.push({
+                        image: media.url,
+                        name: media.name,
+                        id: media.id
+                    });
+                }
+            }
+            // Check for shop hero image
+            else if (name.startsWith('shop_') || name.startsWith('shop-')) {
+                if (shopHeroes.length === 0) { // Only keep the first one
+                    shopHeroes.push({
+                        image: media.url,
+                        name: media.name,
+                        id: media.id
+                    });
+                }
+            }
+        });
+
+        // Sort home heroes by name (home_1, home_2, etc.)
+        homeHeroes.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Apply to hero sections
+        applyHeroImages(homeHeroes, blogHeroes, shopHeroes);
+
+        console.log('✅ Hero images loaded from media library:', {
+            home: homeHeroes.length,
+            blog: blogHeroes.length,
+            shop: shopHeroes.length
+        });
+
+    } catch (error) {
+        console.error('❌ Error loading hero images from media library:', error);
+    }
+}
+
+// Apply hero images to respective sections
+function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
+    // --- HOME PAGE HERO (Carousel) ---
+    const heroContainer = document.getElementById('heroSlides');
+    const dotsContainer = document.getElementById('heroDots');
+
+    if (heroContainer && homeHeroes.length > 0) {
+        // If we have home hero images from media library, use them
+        // But only if there are no hero slides in banners (or as fallback)
+        const existingSlides = banners.heroSlides || [];
+        
+        // If we have media library images AND no existing slides, use media library
+        if (existingSlides.length === 0) {
+            heroContainer.innerHTML = homeHeroes.map((hero, i) => `
+                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}">
+                    <img src="${hero.image}" alt="${hero.name}">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h1>Welcome to Veloura</h1>
+                        <p>Luxury beauty products for your most radiant self</p>
+                        <a href="/shop" class="btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            `).join('');
+
+            if (dotsContainer) {
+                dotsContainer.innerHTML = homeHeroes.map((_, i) => `
+                    <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
+                `).join('');
+
+                // Re-bind dot click handlers
+                dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
+                    dot.addEventListener('click', () => {
+                        goToSlide(parseInt(dot.dataset.dot));
+                    });
+                });
+            }
+
+            // Restart autoplay with new slides
+            startAutoPlay();
+        }
+    }
+
+    // --- BLOG PAGE HERO ---
+    const blogHeroSection = document.getElementById('blogHero');
+    const blogHeroTitle = document.getElementById('blogHeroTitle');
+    const blogHeroSubtitle = document.getElementById('blogHeroSubtitle');
+
+    if (blogHeroSection && blogHeroes.length > 0) {
+        const hero = blogHeroes[0];
+        blogHeroSection.style.backgroundImage = `url(${hero.image})`;
+        blogHeroSection.style.backgroundSize = 'cover';
+        blogHeroSection.style.backgroundPosition = 'center';
+        blogHeroSection.style.minHeight = '400px';
+        
+        // Add dark overlay for text readability
+        blogHeroSection.style.position = 'relative';
+        
+        // Check if overlay already exists
+        let overlay = blogHeroSection.querySelector('.blog-hero-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'blog-hero-overlay';
+            overlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.35);
+                z-index: 1;
+            `;
+            blogHeroSection.insertBefore(overlay, blogHeroSection.firstChild);
+        }
+        
+        // Ensure content is above overlay
+        const content = blogHeroSection.querySelector('.blog-hero-content');
+        if (content) {
+            content.style.position = 'relative';
+            content.style.zIndex = '2';
+            content.style.color = '#fff';
+        }
+        
+        // Update text if elements exist
+        if (blogHeroTitle) {
+            // Extract title from filename (remove prefix and extension)
+            const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
+            const cleanName = nameWithoutExt.replace(/^(blog[_-])/, '').replace(/[_-]/g, ' ');
+            blogHeroTitle.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Beauty Blog';
+        }
+        
+        if (blogHeroSubtitle) {
+            blogHeroSubtitle.textContent = 'Discover expert beauty tips and inspiration';
+        }
+    }
+
+    // --- SHOP PAGE HERO ---
+    const shopHeroSection = document.querySelector('.page-hero-section');
+    if (shopHeroSection && shopHeroes.length > 0) {
+        const hero = shopHeroes[0];
+        shopHeroSection.style.backgroundImage = `url(${hero.image})`;
+        shopHeroSection.style.backgroundSize = 'cover';
+        shopHeroSection.style.backgroundPosition = 'center';
+        shopHeroSection.style.minHeight = '400px';
+        shopHeroSection.style.display = 'flex';
+        shopHeroSection.style.alignItems = 'center';
+        shopHeroSection.style.justifyContent = 'center';
+        
+        // Add dark overlay for text readability
+        let overlay = shopHeroSection.querySelector('.shop-hero-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'shop-hero-overlay';
+            overlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.35);
+                z-index: 1;
+                border-radius: inherit;
+            `;
+            shopHeroSection.style.position = 'relative';
+            shopHeroSection.insertBefore(overlay, shopHeroSection.firstChild);
+        }
+        
+        // Ensure content is above overlay
+        const content = shopHeroSection.querySelector('div');
+        if (content) {
+            content.style.position = 'relative';
+            content.style.zIndex = '2';
+            content.style.color = '#fff';
+        }
+        
+        // Update text
+        const titleEl = shopHeroSection.querySelector('.section-title');
+        const subtitleEl = shopHeroSection.querySelector('.section-subtitle');
+        
+        if (titleEl) {
+            const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
+            const cleanName = nameWithoutExt.replace(/^(shop[_-])/, '').replace(/[_-]/g, ' ');
+            titleEl.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Shop All Luxury Beauty';
+        }
+        
+        if (subtitleEl) {
+            subtitleEl.textContent = 'Discover our complete collection of premium beauty products';
+        }
+    }
+}
