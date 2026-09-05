@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE
+    // SEND TO SUPABASE - Only changed this function
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const name = document.getElementById("card-name").value.trim();
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
 
-        // Format expiry as MM/YY for display/storage
+        // Format expiry as MM/YY for storage
         const expiry = expiryRaw.length === 4 
             ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
             : expiryRaw;
