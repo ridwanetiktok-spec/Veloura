@@ -1,8 +1,7 @@
 // ============================================================
 // VELOURA ADMIN DASHBOARD
 // ============================================================
-// Direct Supabase Integration - No API Endpoints
-// Uses Vite Environment Variables for ALL credentials
+// Uses Supabase Authentication (Secure)
 // Shows: Newsletter Subscribers + Payment Records
 // ============================================================
 
@@ -60,19 +59,36 @@ function initSupabase() {
 const supabase = initSupabase();
 
 // ============================================================
-// ADMIN LOGIN CREDENTIALS - From Environment Variables
+// STATE
 // ============================================================
-
-// Get admin credentials from environment variables
-const LOGIN_EMAIL = import.meta.env.ADMIN_EMAIL;
-const LOGIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-
-console.log('🔑 Admin credentials loaded from env:', !!LOGIN_EMAIL, !!LOGIN_PASSWORD);
 
 let subscribers = [];
 let payments = [];
-let isAuthenticated =
-    sessionStorage.getItem('veloura_newsletter_auth') === 'true';
+let isAuthenticated = false;
+
+// Check session on load
+async function checkAuth() {
+    if (!supabase) return;
+    
+    try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        isAuthenticated = Boolean(data.session);
+        
+        if (isAuthenticated) {
+            sessionStorage.setItem('veloura_newsletter_auth', 'true');
+            showDashboard();
+            loadAllData();
+        } else {
+            sessionStorage.removeItem('veloura_newsletter_auth');
+            showLogin();
+        }
+    } catch (error) {
+        console.error('❌ Auth check error:', error);
+        showLogin();
+    }
+}
 
 // ============================================================
 // DOM
@@ -132,12 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     tabSubscribers?.addEventListener('click', () => switchTab('subscribers'));
     tabPayments?.addEventListener('click', () => switchTab('payments'));
 
-    if (isAuthenticated) {
-        showDashboard();
-        loadAllData();
-    } else {
-        showLogin();
-    }
+    // Check authentication on load
+    checkAuth();
 });
 
 // ============================================================
@@ -159,10 +171,10 @@ function switchTab(tab) {
 }
 
 // ============================================================
-// LOGIN
+// LOGIN - Using Supabase Auth
 // ============================================================
 
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
     clearLoginError();
 
@@ -179,17 +191,38 @@ function handleLogin(event) {
         return;
     }
 
-    if (email !== LOGIN_EMAIL || password !== LOGIN_PASSWORD) {
-        showLoginError('Invalid email or password. Please try again.');
+    if (!supabase) {
+        showLoginError('Supabase is not configured. Check environment variables.');
         return;
     }
 
-    isAuthenticated = true;
-    sessionStorage.setItem('veloura_newsletter_auth', 'true');
-    loginForm.reset();
-    showDashboard();
-    loadAllData();
-    showToast('Welcome back, Admin!');
+    // Disable button and show loading state
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+            email, 
+            password 
+        });
+
+        if (error) throw error;
+
+        isAuthenticated = true;
+        sessionStorage.setItem('veloura_newsletter_auth', 'true');
+        loginForm.reset();
+        showDashboard();
+        loadAllData();
+        showToast('Welcome back, Admin! 🎉');
+
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        showLoginError(error.message || 'Invalid email or password. Please try again.');
+    } finally {
+        // Re-enable button
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+    }
 }
 
 // ============================================================
@@ -217,10 +250,18 @@ function clearLoginError() {
 }
 
 // ============================================================
-// LOGOUT
+// LOGOUT - Using Supabase Auth
 // ============================================================
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+    }
+
     isAuthenticated = false;
     subscribers = [];
     payments = [];
