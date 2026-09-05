@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Robust version
+// SUPABASE INIT - Clean version with env vars only
 // ============================================
 
 function initSupabase() {
@@ -11,13 +11,12 @@ function initSupabase() {
         return window.supabaseClient;
     }
 
-    console.log('🔄 Initializing Supabase client...');
+    console.log('🔄 Initializing Supabase client from environment...');
     
     let supabaseUrl, supabaseKey;
     
-    // Try multiple sources for env vars
+    // Method 1: Try import.meta.env (Vite)
     try {
-        // 1. Try import.meta.env (Vite)
         if (typeof import.meta !== 'undefined' && import.meta.env) {
             supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -27,61 +26,88 @@ function initSupabase() {
         console.log('⚠️ import.meta.env not available');
     }
     
-    // 2. Try window.env (fallback)
-    if (!supabaseUrl && window.env) {
-        supabaseUrl = window.env.VITE_SUPABASE_URL;
-        supabaseKey = window.env.VITE_SUPABASE_ANON_KEY;
-        console.log('🔑 Using window.env');
+    // Method 2: Try window.__ENV (passed from HTML)
+    if (!supabaseUrl && window.__ENV) {
+        supabaseUrl = window.__ENV.VITE_SUPABASE_URL;
+        supabaseKey = window.__ENV.VITE_SUPABASE_ANON_KEY;
+        console.log('🔑 Using window.__ENV');
     }
     
-    // 3. Try hardcoded for development (LAST RESORT - remove in production!)
-    if (!supabaseUrl) {
-        // WARNING: Only use this for development/testing
-        // Replace with your actual values or remove this entirely
-        console.warn('⚠️ Using hardcoded Supabase values - REMOVE THIS IN PRODUCTION');
-        supabaseUrl = 'YOUR_SUPABASE_URL_HERE';
-        supabaseKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
+    // Method 3: Try process.env (Node.js fallback)
+    if (!supabaseUrl && typeof process !== 'undefined' && process.env) {
+        supabaseUrl = process.env.VITE_SUPABASE_URL;
+        supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+        console.log('🔑 Using process.env');
     }
     
     console.log('🔑 Supabase URL found:', !!supabaseUrl);
     console.log('🔑 Supabase Key found:', !!supabaseKey);
     
     if (!supabaseUrl || !supabaseKey) {
-        console.warn('⚠️ Supabase environment variables not found.');
+        console.error('❌ Supabase environment variables not found!');
+        console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file');
         showAdminToast('Supabase is not configured. Check your environment variables.', 'error');
         return null;
     }
 
-    // Create client if Supabase is available
-    if (typeof window.supabase !== 'undefined') {
-        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Supabase client initialized');
-        return window.supabaseClient;
+    // Validate URL
+    try {
+        new URL(supabaseUrl);
+    } catch (e) {
+        console.error('❌ Invalid Supabase URL:', supabaseUrl);
+        showAdminToast('Invalid Supabase URL format.', 'error');
+        return null;
     }
 
-    // Dynamic load fallback
+    // Create Supabase client
+    if (typeof window.supabase !== 'undefined') {
+        try {
+            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            console.log('✅ Supabase client initialized successfully');
+            
+            // Test the connection
+            window.supabaseClient.auth.getSession().then(({ data, error }) => {
+                if (error) {
+                    console.warn('⚠️ Supabase connection test failed:', error.message);
+                } else {
+                    console.log('✅ Supabase connection successful');
+                }
+            });
+            
+            return window.supabaseClient;
+        } catch (error) {
+            console.error('❌ Failed to create Supabase client:', error);
+            showAdminToast(`Failed to initialize Supabase: ${error.message}`, 'error');
+            return null;
+        }
+    }
+
+    // Dynamically load Supabase if not available
     console.log('📦 Loading Supabase library dynamically...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.onload = () => {
         if (typeof window.supabase !== 'undefined') {
-            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-            console.log('✅ Supabase client loaded and initialized');
-            // Retry loading data
-            loadAdminData();
+            try {
+                window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('✅ Supabase client loaded and initialized');
+                if (typeof loadAdminData === 'function') {
+                    loadAdminData();
+                }
+            } catch (error) {
+                console.error('❌ Failed to create Supabase client:', error);
+                showAdminToast(`Failed to initialize Supabase: ${error.message}`, 'error');
+            }
         }
     };
     script.onerror = () => {
         console.error('❌ Failed to load Supabase library');
-        showAdminToast('Failed to load Supabase library. Check your connection.', 'error');
+        showAdminToast('Failed to load Supabase library.', 'error');
     };
     document.head.appendChild(script);
     
     return null;
 }
-
-
-// ... rest of your code
 
 // Initialize Supabase
 const supabaseClient = initSupabase();
@@ -297,52 +323,101 @@ async function dbSaveBanners(banners) {
 }
 
 // ===== Auth Functions =====
+// ===== Auth Functions =====
 function initAuth() {
   const loginScreen = document.getElementById('loginScreen');
   const adminLayout = document.getElementById('adminLayout');
 
-  window.supabaseClient?.auth.getSession().then(({ data }) => {
-    isAuthenticated = Boolean(data.session);
-    if (isAuthenticated) {
-      loginScreen.classList.add('hidden');
-      adminLayout.classList.add('active');
-      initAdmin();
-    }
-  });
+  // Check for existing session
+  if (window.supabaseClient) {
+    window.supabaseClient.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.warn('Session check error:', error.message);
+        return;
+      }
+      
+      isAuthenticated = Boolean(data.session);
+      if (isAuthenticated) {
+        loginScreen.classList.add('hidden');
+        adminLayout.classList.add('active');
+        initAdmin();
+        showAdminToast('Welcome back, Admin!', 'success');
+      }
+    });
+  }
 
+  // Login form handler
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
-
+    const errorEl = document.getElementById('loginError');
+    
+    errorEl.style.display = 'none';
+    
     if (!window.supabaseClient) {
-      document.getElementById('loginError').textContent = 'Supabase is not configured.';
-      document.getElementById('loginError').style.display = 'block';
+      errorEl.textContent = 'Supabase is not configured. Please check your environment variables.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    if (!email || !password) {
+      errorEl.textContent = 'Please enter both email and password.';
+      errorEl.style.display = 'block';
       return;
     }
 
     showAdminToast('Signing in...', 'info');
-    const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
-    if (!error) {
-      isAuthenticated = true;
-      loginScreen.classList.add('hidden');
-      adminLayout.classList.add('active');
-      initAdmin();
-      showAdminToast('Welcome back, Admin!', 'success');
-    } else {
-      document.getElementById('loginError').textContent = error.message || 'Invalid credentials. Please try again.';
-      document.getElementById('loginError').style.display = 'block';
-      showAdminToast('Sign in failed', 'error');
+    
+    try {
+      const { data, error } = await window.supabaseClient.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        errorEl.textContent = error.message || 'Invalid credentials. Please try again.';
+        errorEl.style.display = 'block';
+        showAdminToast('Sign in failed: ' + error.message, 'error');
+        return;
+      }
+      
+      if (data.session) {
+        isAuthenticated = true;
+        loginScreen.classList.add('hidden');
+        adminLayout.classList.add('active');
+        initAdmin();
+        showAdminToast('Welcome back, Admin!', 'success');
+        document.getElementById('loginForm').reset();
+      } else {
+        errorEl.textContent = 'No session created. Please try again.';
+        errorEl.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Login exception:', error);
+      errorEl.textContent = 'An unexpected error occurred. Please try again.';
+      errorEl.style.display = 'block';
+      showAdminToast('Sign in failed: ' + error.message, 'error');
     }
   });
 
+  // Logout handler
   document.getElementById('logoutBtn').addEventListener('click', async () => {
-    isAuthenticated = false;
-    await window.supabaseClient?.auth.signOut();
-    loginScreen.classList.remove('hidden');
-    adminLayout.classList.remove('active');
-    document.getElementById('loginForm').reset();
-    showAdminToast('Signed out successfully', 'info');
+    try {
+      if (window.supabaseClient) {
+        await window.supabaseClient.auth.signOut();
+      }
+      isAuthenticated = false;
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('adminLayout').classList.remove('active');
+      document.getElementById('loginForm').reset();
+      showAdminToast('Signed out successfully', 'info');
+    } catch (error) {
+      console.error('Logout error:', error);
+      showAdminToast('Logout failed: ' + error.message, 'error');
+    }
   });
 }
 
