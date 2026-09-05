@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -779,16 +780,18 @@
         <!-- ===== SETTINGS PAGE ===== -->
         <div class="admin-page" id="page-settings">
           <div class="panel">
-            <div class="panel-header"><span class="panel-title">Website Branding</span></div>
+            <div class="panel-header"><span class="panel-title">Social Media</span></div>
             <div class="panel-body">
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Site Name</label>
-                  <input type="text" id="setSiteName">
+                  <label>Reddit</label>
+                  <input type="url" id="setReddit" placeholder="https://reddit.com/r/your-subreddit">
+                  <div class="form-hint">Enter your full Reddit URL</div>
                 </div>
                 <div class="form-group">
-                  <label>Tagline</label>
-                  <input type="text" id="setTagline">
+                  <label>Pinterest</label>
+                  <input type="url" id="setPinterest" placeholder="https://pinterest.com/your-profile">
+                  <div class="form-hint">Enter your full Pinterest URL</div>
                 </div>
               </div>
             </div>
@@ -819,16 +822,12 @@
             <div class="panel-body">
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Instagram URL</label>
-                  <input type="url" id="setInstagram">
+                  <label>Pinterest</label>
+                  <input type="url" id="setPinterest" placeholder="https://pinterest.com/your-profile">
                 </div>
                 <div class="form-group">
-                  <label>Facebook URL</label>
-                  <input type="url" id="setFacebook">
-                </div>
-                <div class="form-group">
-                  <label>Twitter URL</label>
-                  <input type="url" id="setTwitter">
+                  <label>Reddit</label>
+                  <input type="url" id="setReddit" placeholder="https://reddit.com/r/your-subreddit">
                 </div>
               </div>
             </div>

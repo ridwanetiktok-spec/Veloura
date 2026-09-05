@@ -3284,62 +3284,39 @@ function closeBlogModal() {
 
 // ===== Footer =====
 
-function renderFooter() {
-  const sm =
-    settings.socialMedia ||
-    {};
+// ===== Footer =====
 
-  const socialContainer =
-    document.getElementById(
-      'socialLinks'
-    );
+function renderFooter() {
+  const sm = settings.socialMedia || {};
+
+  const socialContainer = document.getElementById('socialLinks');
 
   if (socialContainer) {
+    // FontAwesome icons for Reddit and Pinterest
     const icons = {
-      reddit:
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M8.5 13.5c.8 1.1 2 1.7 3.5 1.7s2.7-.6 3.5-1.7M9 10.5h.01M15 10.5h.01M14.5 5.5l1.2-2.5 2.8.8"/></svg>',
-
-      pinterest:
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8.5 20.5c1-3 2-8 2-8"/><path d="M12 12a3 3 0 1 0-3-3"/><path d="M12 12a3 3 0 0 1 3 3c0 2-1 3-2 3"/></svg>'
+      reddit: '<i class="fa-brands fa-reddit-alien"></i>',
+      pinterest: '<i class="fa-brands fa-pinterest"></i>'
     };
 
-    socialContainer.innerHTML =
-      [
-        'reddit',
-        'pinterest'
-      ]
-        .map(platform => {
-          const url =
-            sm[platform];
-
-          return url
-            ? `<a href="${url}" target="_blank" title="${platform}">${icons[platform]}</a>`
-            : '';
-        })
-        .join('');
+    // Only Reddit and Pinterest
+    const platforms = ['reddit', 'pinterest'];
+    
+    socialContainer.innerHTML = platforms
+      .map(platform => {
+        const url = sm[platform];
+        return url && url.trim() !== ''
+          ? `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}">${icons[platform]}</a>`
+          : '';
+      })
+      .join('');
   }
 
-  const contactEl =
-    document.getElementById(
-      'footerContact'
-    );
-
-  if (
-    contactEl &&
-    settings.contact
-  ) {
+  const contactEl = document.getElementById('footerContact');
+  if (contactEl && settings.contact) {
     contactEl.innerHTML = `
-      <li>
-        ${settings.contact.email}
-      </li>
-
-      <li>
-        ${settings.contact.phone}
-      </li>
-
-      <li style="line-height:1.5">
-        ${settings.contact.address}
-      </li>
+      <li>${settings.contact.email || ''}</li>
+      <li>${settings.contact.phone || ''}</li>
+      <li style="line-height:1.5">${settings.contact.address || ''}</li>
     `;
   }
 }

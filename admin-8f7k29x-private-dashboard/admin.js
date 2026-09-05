@@ -1660,9 +1660,10 @@ function renderSettingsManager() {
   document.getElementById('setEmail').value = adminSettings.contact?.email || '';
   document.getElementById('setPhone').value = adminSettings.contact?.phone || '';
   document.getElementById('setAddress').value = adminSettings.contact?.address || '';
-  document.getElementById('setInstagram').value = adminSettings.socialMedia?.instagram || '';
-  document.getElementById('setFacebook').value = adminSettings.socialMedia?.facebook || '';
-  document.getElementById('setTwitter').value = adminSettings.socialMedia?.twitter || '';
+  // ✅ Social Media - Reddit & Pinterest only
+  document.getElementById('setReddit').value = adminSettings.socialMedia?.reddit || '';
+  document.getElementById('setPinterest').value = adminSettings.socialMedia?.pinterest || '';
+  
   document.getElementById('setSeoTitle').value = adminSettings.seo?.title || '';
   document.getElementById('setSeoDesc').value = adminSettings.seo?.description || '';
 }
@@ -1670,18 +1671,19 @@ function renderSettingsManager() {
 async function saveSettings() {
   adminSettings.siteName = document.getElementById('setSiteName').value;
   adminSettings.tagline = document.getElementById('setTagline').value;
+  
   adminSettings.contact = {
     email: document.getElementById('setEmail').value,
     phone: document.getElementById('setPhone').value,
     address: document.getElementById('setAddress').value
   };
+  
+  // ✅ Social Media - Only Reddit & Pinterest
   adminSettings.socialMedia = {
-    instagram: document.getElementById('setInstagram').value,
-    facebook: document.getElementById('setFacebook').value,
-    twitter: document.getElementById('setTwitter').value,
-    pinterest: adminSettings.socialMedia?.pinterest || '',
-    youtube: adminSettings.socialMedia?.youtube || ''
+    reddit: document.getElementById('setReddit').value,
+    pinterest: document.getElementById('setPinterest').value
   };
+  
   adminSettings.seo = {
     title: document.getElementById('setSeoTitle').value,
     description: document.getElementById('setSeoDesc').value,

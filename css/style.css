@@ -2718,3 +2718,42 @@ html[data-theme="dark"] {
     position: relative !important;
     z-index: 3 !important;
 }
+
+/* ===== Social Links ===== */
+.social-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.social-links a {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  background: var(--blush-500);
+  border-color: var(--blush-500);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(248, 92, 125, 0.3);
+}
+
+[data-theme="dark"] .social-links a {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .social-links a:hover {
+  background: var(--blush-500);
+  border-color: var(--blush-500);
+  color: #ffffff;
+}
