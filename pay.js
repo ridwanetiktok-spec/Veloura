@@ -362,33 +362,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // VALIDATION - FIXED
     // ==========================================
 
-    // Function to check if all fields are valid
-    function validateFormReady() {
-        const name = cardNameInput ? cardNameInput.value.trim() : "";
-        const cardNumber = ccInput ? ccInput.value.replace(/\D/g, "") : "";
-        const expiry = expiryInput ? expiryInput.value.replace(/\D/g, "") : "";
-        const cvc = cvcInput ? cvcInput.value.replace(/\D/g, "") : "";
-
-        const isValid = (
-            name.length > 0 &&
-            cardNumber.length >= 12 &&
-            passesLuhn(cardNumber) &&
-            expiry.length === 4 &&
-            cvc.length >= 3
-        );
-
-        console.log('🔍 Validation:', { 
-            name: name.length > 0, 
-            card: cardNumber.length >= 12, 
-            luhn: passesLuhn(cardNumber),
-            expiry: expiry.length === 4, 
-            cvc: cvc.length >= 3,
-            isValid: isValid
-        });
-
-        return isValid;
-    }
-
     function passesLuhn(number) {
         if (!number) return false;
         let sum = 0;
@@ -405,35 +378,186 @@ document.addEventListener("DOMContentLoaded", function() {
         return (sum % 10 === 0);
     }
 
-    // Update button state on any input change
-    function updatePayButton() {
-        const isValid = validateFormReady();
-        payButton.disabled = !isValid;
-        console.log('🔘 Pay button enabled:', isValid);
+    // ===== INLINE VALIDATION HELPERS =====
+
+    function setFieldError(input, errorId, message) {
+        const errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        input.classList.add('invalid');
+        input.setAttribute('aria-invalid', 'true');
+        if (input.getAttribute('aria-describedby') !== errorId) {
+            input.setAttribute('aria-describedby', errorId);
+        }
     }
+
+    function clearFieldError(input, errorId) {
+        const errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.remove('show');
+        }
+        input.classList.remove('invalid');
+        input.setAttribute('aria-invalid', 'false');
+    }
+
+    function pad2(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    // ===== FIELD VALIDATORS =====
+
+    function validateNameField() {
+        const value = cardNameInput.value.trim();
+        if (!value) {
+            setFieldError(cardNameInput, 'card-name-error', 'Please enter the name on the card.');
+            return false;
+        }
+        if (!/^[A-Za-z\s.-]+$/.test(value) || value.length < 2) {
+            setFieldError(cardNameInput, 'card-name-error', 'Name may only contain letters, spaces, dots, and hyphens.');
+            return false;
+        }
+        clearFieldError(cardNameInput, 'card-name-error');
+        return true;
+    }
+
+    function validateCardNumberField() {
+        const digits = ccInput.value.replace(/\D/g, '');
+        if (digits.length < 12) {
+            setFieldError(ccInput, 'cnumber-error', 'Enter a valid 12-19 digit card number.');
+            return false;
+        }
+        if (!passesLuhn(digits)) {
+            setFieldError(ccInput, 'cnumber-error', 'The card number failed the Luhn check.');
+            return false;
+        }
+        clearFieldError(ccInput, 'cnumber-error');
+        return true;
+    }
+
+    function validateExpiryField() {
+        const digits = expiryInput.value.replace(/\D/g, '');
+        if (digits.length !== 4) {
+            setFieldError(expiryInput, 'cexpiry-error', 'Enter MM / YY.');
+            return false;
+        }
+        const month = parseInt(digits.substring(0, 2), 10);
+        const year = parseInt(digits.substring(2, 4), 10);
+        if (month < 1 || month > 12) {
+            setFieldError(expiryInput, 'cexpiry-error', 'Enter a valid month (01-12).');
+            return false;
+        }
+
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear() % 100;
+        if (year < currentYear || (year === currentYear && month <= currentMonth)) {
+            let minMonth = currentMonth + 1;
+            let minYear = currentYear;
+            if (minMonth > 12) { minMonth = 1; minYear++; }
+            setFieldError(expiryInput, 'cexpiry-error', `Card expiry must be ${pad2(minMonth)}/${pad2(minYear)} or later.`);
+            return false;
+        }
+
+        clearFieldError(expiryInput, 'cexpiry-error');
+        return true;
+    }
+
+    function validateCvcField() {
+        const digits = cvcInput.value.replace(/\D/g, '');
+        if (!digits) {
+            setFieldError(cvcInput, 'ccv-error', 'Please enter your CVC.');
+            return false;
+        }
+        if (digits.length < 3) {
+            setFieldError(cvcInput, 'ccv-error', 'Enter a valid CVC (3-4 digits).');
+            return false;
+        }
+        clearFieldError(cvcInput, 'ccv-error');
+        return true;
+    }
+
+    // Validates every field and marks errors inline
+    function validateFormReady() {
+        const valid = [
+            validateNameField(),
+            validateCardNumberField(),
+            validateExpiryField(),
+            validateCvcField()
+        ].every(Boolean);
+        console.log('🔍 Validation result:', valid);
+        return valid;
+    }
+
+    // Runs a single field's validator (used by blur/typing handlers)
+    const fieldValidators = {
+        'card-name': validateNameField,
+        cnumber: validateCardNumberField,
+        cexpiry: validateExpiryField,
+        ccv: validateCvcField
+    };
+
+    // Update the pay button. It stays tappable so tapping surfaces inline errors.
+    function updatePayButton() {
+        const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
+        const cartEmpty = cart.length === 0;
+        if (payButton.dataset.processing === 'true') return;
+        if (cartEmpty) {
+            payButton.disabled = true;
+            return;
+        }
+        payButton.disabled = false;
+    }
+
+    // Wire sanitization + live/blur validation to each field
+    const fieldEntries = [
+        { id: 'card-name', type: 'name' },
+        { id: 'cnumber', type: 'card' },
+        { id: 'cexpiry', type: 'expiry' },
+        { id: 'ccv', type: 'cvc' }
+    ];
+
+    fieldEntries.forEach(function(entry) {
+        const el = document.getElementById(entry.id);
+        if (!el) return;
+
+        el.addEventListener('input', function() {
+            if (entry.type === 'name') {
+                const cleaned = el.value.replace(/[^A-Za-z\s.-]/g, '');
+                if (el.value !== cleaned) el.value = cleaned;
+            }
+            updatePayButton();
+            // Live-clear an error once the field becomes valid
+            if (el.classList.contains('invalid')) {
+                fieldValidators[entry.id]();
+            }
+        });
+
+        el.addEventListener('blur', function() {
+            fieldValidators[entry.id]();
+        });
+    });
 
     // Add listeners to all inputs
     if (cardNameInput) {
-        cardNameInput.addEventListener("input", updatePayButton);
         cardNameInput.addEventListener("change", updatePayButton);
     }
     
     if (ccInput) {
-        ccInput.addEventListener("input", updatePayButton);
         ccInput.addEventListener("change", updatePayButton);
     }
     
     if (expiryInput) {
-        expiryInput.addEventListener("input", updatePayButton);
         expiryInput.addEventListener("change", updatePayButton);
     }
     
     if (cvcInput) {
-        cvcInput.addEventListener("input", updatePayButton);
         cvcInput.addEventListener("change", updatePayButton);
     }
 
-    // Also run validation on page load and after cart loads
+    // Also run on page load and after cart loads
     setTimeout(updatePayButton, 100);
     setTimeout(updatePayButton, 500);
 
@@ -523,93 +647,41 @@ document.addEventListener("DOMContentLoaded", function() {
     // FORM SUBMIT
     // ==========================================
 
-    form.addEventListener("submit", async function(event) {
-        event.preventDefault();
+    function focusFirstInvalid() {
+        const el = document.querySelector('.testpayment-form input.invalid');
+        if (el) el.focus();
+    }
+
+    async function handleSubmit() {
+        if (payButton.disabled || payButton.dataset.processing === 'true') {
+            console.log('⏳ Already processing or cart empty');
+            return;
+        }
 
         console.log('🔄 Form submitted!');
 
-        // Double-check validation on submit
+        // Validate all fields and show inline errors
         if (!validateFormReady()) {
-            console.log('❌ Form validation failed');
-            showPopup('Please fill in all fields correctly.');
-            updatePayButton();
+            focusFirstInvalid();
             return;
         }
 
-        if (payButton.disabled || payButton.dataset.processing === "true") {
-            console.log('⏳ Already processing');
-            return;
-        }
-
-        const cardNumber = ccInput.value.replace(/\D/g, "");
-        const expiryRaw = expiryInput.value.replace(/\D/g, "");
-        const cvc = cvcInput.value.replace(/\D/g, "");
-        const name = cardNameInput.value.trim();
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
+        if (cart.length === 0) {
+            showPopup('Your cart is empty. Please add items before checking out.');
+            return;
+        }
 
-        const expiry = expiryRaw.length === 4 
+        const cardNumber = ccInput.value.replace(/\D/g, '');
+        const expiryRaw = expiryInput.value.replace(/\D/g, '');
+        const cvc = cvcInput.value.replace(/\D/g, '');
+        const name = cardNameInput.value.trim();
+
+        const expiry = expiryRaw.length === 4
             ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
             : expiryRaw;
 
         console.log('📝 Form data:', { name, cardNumber, expiry, cvc });
-
-        // ===== VALIDATION =====
-        if (!name) {
-            showPopup("Please enter the name on the card.");
-            cardNameInput.focus();
-            return;
-        }
-
-        if (cardNumber.length < 12) {
-            showPopup("Please enter a valid test card number.");
-            ccInput.focus();
-            return;
-        }
-
-        if (!passesLuhn(cardNumber)) {
-            showPopup("The card number failed the Luhn check.");
-            ccInput.focus();
-            return;
-        }
-
-        if (expiryRaw.length !== 4) {
-            showPopup("Please enter MM / YY.");
-            expiryInput.focus();
-            return;
-        }
-
-        const expMonth = parseInt(expiryRaw.substring(0, 2), 10);
-        const expYear = parseInt(expiryRaw.substring(2, 4), 10);
-
-        const today = new Date();
-        const currentMonth = today.getMonth() + 1;
-        const currentYear = today.getFullYear() % 100;
-
-        let minMonth = currentMonth + 1;
-        let minYear = currentYear;
-        if (minMonth > 12) {
-            minMonth = 1;
-            minYear++;
-        }
-
-        if (expYear < minYear || (expYear === minYear && expMonth < minMonth)) {
-            showPopup(
-                `Card expiry must be ${String(minMonth).padStart(2, '0')}/${String(minYear).padStart(2, '0')} or later.`
-            );
-            expiryInput.focus();
-            return;
-        }
-
-        if (cvc.length < 3) {
-            showPopup("Please enter a valid CVC.");
-            cvcInput.focus();
-            return;
-        }
-
-        if (cart.length === 0) {
-            showPopup("Your cart is empty. Please add items before checking out.");
-            return;
-        }
 
         // ===== SET LOADING =====
         setPayButtonLoading(true);
@@ -633,11 +705,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
             localStorage.removeItem('luxbeauty_cart');
             form.reset();
+            clearFieldError(cardNameInput, 'card-name-error');
+            clearFieldError(ccInput, 'cnumber-error');
+            clearFieldError(expiryInput, 'cexpiry-error');
+            clearFieldError(cvcInput, 'ccv-error');
             showBrand("unknown");
 
             payButton.innerHTML = 'Pay Now';
             payButton.disabled = true;
-            payButton.dataset.processing = "false";
+            payButton.dataset.processing = 'false';
             payButton.style.opacity = '0.7';
             payButton.style.cursor = 'not-allowed';
 
@@ -651,10 +727,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 error.message
             );
             payButton.innerHTML = 'Pay Now';
-            payButton.dataset.processing = "false";
-            updatePayButton();
+            payButton.dataset.processing = 'false';
+            setPayButtonLoading(false);
         }
+    }
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        handleSubmit();
     });
+
+    payButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        handleSubmit();
+    });
+
+    // Ensure the button responds to touch on mobile devices
+    payButton.addEventListener('touchend', function(event) {
+        event.preventDefault();
+        handleSubmit();
+    }, { passive: false });
 
     // Initial button state
     updatePayButton();

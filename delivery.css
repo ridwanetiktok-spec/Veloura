@@ -307,6 +307,25 @@ label {
     font-weight: 500;
 }
 
+.field-error {
+    display: none;
+    color: #b45868;
+    font-size: 12px;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.field-error.show {
+    display: block;
+}
+
+input.invalid,
+select.invalid,
+textarea.invalid {
+    border-color: #b45868 !important;
+    box-shadow: 0 0 0 3px rgba(180, 88, 104, 0.10) !important;
+}
+
 input, select, textarea {
     width: 100%;
     padding: 12px 14px;

@@ -78,7 +78,7 @@
             </div>
 
             <div class="footer">
-                Powered by <strong>Veloura</strong> |
+                Powered by <strong>Stripe</strong> |
                 <a href="/privacy">Privacy Policy</a>
             </div>
 
@@ -100,49 +100,56 @@
                 <!-- FULL NAME -->
                 <div class="form-group">
                     <label for="fullName">Full Name <span class="required">*</span></label>
-                    <input type="text" id="fullName" placeholder="John Doe" required>
+                    <input type="text" id="fullName" placeholder="John Doe" autocomplete="name" spellcheck="false" autocapitalize="words" aria-required="true" aria-describedby="fullName-error" required>
+                    <p class="field-error" id="fullName-error" role="alert" aria-live="polite"></p>
                 </div>
 
                 <!-- EMAIL & PHONE -->
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="email">Email Address <span class="required">*</span></label>
-                        <input type="email" id="email" placeholder="john@example.com" required>
+                        <input type="email" id="email" placeholder="john@example.com" autocomplete="email" aria-required="true" aria-describedby="email-error" required>
+                        <p class="field-error" id="email-error" role="alert" aria-live="polite"></p>
                     </div>
                     <div class="form-group half">
                         <label for="phone">Phone Number <span class="required">*</span></label>
-                        <input type="tel" id="phone" placeholder="+1 (555) 555-5555" required>
+                        <input type="tel" id="phone" placeholder="+1 (555) 555-5555" inputmode="tel" autocomplete="tel" aria-required="true" aria-describedby="phone-error" required>
+                        <p class="field-error" id="phone-error" role="alert" aria-live="polite"></p>
                     </div>
                 </div>
 
                 <!-- ADDRESS LINE 1 -->
                 <div class="form-group">
                     <label for="addressLine1">Address Line 1 <span class="required">*</span></label>
-                    <input type="text" id="addressLine1" placeholder="123 Main Street" required>
+                    <input type="text" id="addressLine1" placeholder="123 Main Street" autocomplete="address-line1" aria-required="true" aria-describedby="addressLine1-error" required>
+                    <p class="field-error" id="addressLine1-error" role="alert" aria-live="polite"></p>
                 </div>
 
                 <!-- ADDRESS LINE 2 -->
                 <div class="form-group">
                     <label for="addressLine2">Address Line 2 <span class="optional">(Optional)</span></label>
-                    <input type="text" id="addressLine2" placeholder="Apartment, suite, or unit #">
+                    <input type="text" id="addressLine2" placeholder="Apartment, suite, or unit #" autocomplete="address-line2">
                 </div>
 
                 <!-- CITY, STATE, ZIP -->
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="city">City <span class="required">*</span></label>
-                        <input type="text" id="city" placeholder="Los Angeles" required>
+                        <input type="text" id="city" placeholder="Los Angeles" autocomplete="address-level2" spellcheck="false" autocapitalize="words" aria-required="true" aria-describedby="city-error" required>
+                        <p class="field-error" id="city-error" role="alert" aria-live="polite"></p>
                     </div>
                     <div class="form-group half">
                         <label for="state">State / Province <span class="required">*</span></label>
-                        <input type="text" id="state" placeholder="California" required>
+                        <input type="text" id="state" placeholder="California" autocomplete="address-level1" spellcheck="false" autocapitalize="words" aria-required="true" aria-describedby="state-error" required>
+                        <p class="field-error" id="state-error" role="alert" aria-live="polite"></p>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="zipCode">ZIP / Postal Code <span class="required">*</span></label>
-                        <input type="text" id="zipCode" placeholder="90210" required>
+                        <input type="text" id="zipCode" placeholder="90210" inputmode="text" autocomplete="postal-code" maxlength="10" aria-required="true" aria-describedby="zipCode-error" required>
+                        <p class="field-error" id="zipCode-error" role="alert" aria-live="polite"></p>
                     </div>
                     <div class="form-group half">
                         <label for="country">Country <span class="required">*</span></label>

@@ -181,8 +181,11 @@ document.addEventListener("DOMContentLoaded", function() {
         countryHidden.value = country;
         renderCountryList('');
         closeDropdown();
-        // Trigger validation
-        validateForm();
+        // Re-format country-dependent fields
+        formatPhoneInput();
+        formatZipInput();
+        if (phone.classList.contains('invalid')) validatePhoneField();
+        if (zipCode.classList.contains('invalid')) validateZipField();
     }
 
     function openDropdown() {
@@ -378,6 +381,280 @@ document.addEventListener("DOMContentLoaded", function() {
     loadCart();
 
     // ==========================================
+    // INLINE VALIDATION HELPERS
+    // ==========================================
+
+    function setFieldError(input, errorId, message) {
+        const errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        input.classList.add('invalid');
+        input.setAttribute('aria-invalid', 'true');
+        if (input.getAttribute('aria-describedby') !== errorId) {
+            input.setAttribute('aria-describedby', errorId);
+        }
+    }
+
+    function clearFieldError(input, errorId) {
+        const errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.remove('show');
+        }
+        input.classList.remove('invalid');
+        input.setAttribute('aria-invalid', 'false');
+    }
+
+    // ==========================================
+    // PHONE AUTO-FORMATTING
+    // ==========================================
+
+    function formatPhoneInput() {
+        const country = countryHidden.value || 'United States';
+        const raw = phone.value;
+
+        if (country === 'United States') {
+            let digits = raw.replace(/\D/g, '');
+            // Normalize an 11-digit "1" prefixed US number (country code) to national
+            if (digits.length === 11 && digits.charAt(0) === '1') {
+                digits = digits.slice(1);
+            }
+            digits = digits.slice(0, 10);
+
+            let formatted = '';
+            if (digits.length > 0) {
+                formatted = '+1';
+                if (digits.length > 0) formatted += ' (';
+                if (digits.length <= 3) {
+                    formatted += digits;
+                } else {
+                    formatted += digits.slice(0, 3) + ') ';
+                }
+                if (digits.length > 3 && digits.length <= 6) {
+                    formatted += digits.slice(3);
+                } else if (digits.length > 6) {
+                    formatted += digits.slice(3, 6) + '-' + digits.slice(6);
+                }
+            }
+            if (phone.value !== formatted) phone.value = formatted;
+        } else {
+            // International: keep allowed characters, cap at 15 digits
+            let cleaned = '';
+            let digitCount = 0;
+            for (let i = 0; i < raw.length; i++) {
+                const ch = raw.charAt(i);
+                if (/[0-9]/.test(ch)) {
+                    if (digitCount < 15) {
+                        cleaned += ch;
+                        digitCount++;
+                    }
+                } else if (/[\s()+*#.-]/.test(ch)) {
+                    cleaned += ch;
+                }
+            }
+            if (phone.value !== cleaned) phone.value = cleaned;
+        }
+    }
+
+    // ==========================================
+    // ZIP CODE FORMATTING
+    // ==========================================
+
+    function formatZipInput() {
+        const country = countryHidden.value || 'United States';
+
+        if (country === 'United States') {
+            const digits = zipCode.value.replace(/\D/g, '').slice(0, 9);
+            let formatted = digits;
+            if (digits.length > 5) {
+                formatted = digits.slice(0, 5) + '-' + digits.slice(5);
+            }
+            if (zipCode.value !== formatted) zipCode.value = formatted;
+        } else {
+            const cleaned = zipCode.value.replace(/[^A-Za-z0-9\s-]/g, '').slice(0, 10);
+            if (zipCode.value !== cleaned) zipCode.value = cleaned;
+        }
+    }
+
+    function sanitizeAlphaInput(input, allowApostrophe) {
+        const pattern = allowApostrophe ? /[^A-Za-z\s'-]/g : /[^A-Za-z\s-]/g;
+        const cleaned = input.value.replace(pattern, '');
+        if (input.value !== cleaned) input.value = cleaned;
+    }
+
+    // ==========================================
+    // FIELD VALIDATORS
+    // ==========================================
+
+    const VALID_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    function validateNameField() {
+        const value = fullName.value.trim();
+        if (!value) {
+            setFieldError(fullName, 'fullName-error', 'Please enter your full name.');
+            return false;
+        }
+        if (!/^[A-Za-z\s'-]+$/.test(value) || value.length < 2) {
+            setFieldError(fullName, 'fullName-error', 'Names may only contain letters, spaces, hyphens, and apostrophes.');
+            return false;
+        }
+        clearFieldError(fullName, 'fullName-error');
+        return true;
+    }
+
+    function validateEmailField() {
+        const value = email.value.trim();
+        if (!value) {
+            setFieldError(email, 'email-error', 'Please enter your email address.');
+            return false;
+        }
+        if (!VALID_EMAIL.test(value)) {
+            setFieldError(email, 'email-error', 'Please enter a valid email address.');
+            return false;
+        }
+        clearFieldError(email, 'email-error');
+        return true;
+    }
+
+    function validatePhoneField() {
+        const value = phone.value.trim();
+        const digits = value.replace(/\D/g, '');
+        if (!value) {
+            setFieldError(phone, 'phone-error', 'Please enter your phone number.');
+            return false;
+        }
+        if (/[^\d\s()+-]/.test(value)) {
+            setFieldError(phone, 'phone-error', 'Phone numbers may only contain digits, spaces, parentheses, and hyphens.');
+            return false;
+        }
+        if (digits.length < 7 || digits.length > 15) {
+            setFieldError(phone, 'phone-error', 'Please enter a valid phone number (7-15 digits).');
+            return false;
+        }
+        clearFieldError(phone, 'phone-error');
+        return true;
+    }
+
+    function validateAddress1Field() {
+        const value = addressLine1.value.trim();
+        if (!value || value.length < 3) {
+            setFieldError(addressLine1, 'addressLine1-error', 'Please enter your street address.');
+            return false;
+        }
+        clearFieldError(addressLine1, 'addressLine1-error');
+        return true;
+    }
+
+    function validateCityField() {
+        const value = city.value.trim();
+        if (!value) {
+            setFieldError(city, 'city-error', 'Please enter your city.');
+            return false;
+        }
+        if (!/^[A-Za-z\s'-]+$/.test(value) || value.length < 2) {
+            setFieldError(city, 'city-error', 'City names may only contain letters, spaces, hyphens, and apostrophes.');
+            return false;
+        }
+        clearFieldError(city, 'city-error');
+        return true;
+    }
+
+    function validateStateField() {
+        const value = state.value.trim();
+        if (!value) {
+            setFieldError(state, 'state-error', 'Please enter your state/province.');
+            return false;
+        }
+        if (!/^[A-Za-z\s-]+$/.test(value) || value.length < 2) {
+            setFieldError(state, 'state-error', 'State/province may only contain letters, spaces, and hyphens.');
+            return false;
+        }
+        clearFieldError(state, 'state-error');
+        return true;
+    }
+
+    function validateZipField() {
+        const country = countryHidden.value || 'United States';
+        const value = zipCode.value.trim();
+
+        if (!value) {
+            setFieldError(zipCode, 'zipCode-error', 'Please enter your ZIP/postal code.');
+            return false;
+        }
+
+        if (country === 'United States') {
+            if (!/^\d{5}(-\d{4})?$/.test(value)) {
+                setFieldError(zipCode, 'zipCode-error', 'Enter a 5-digit ZIP code (e.g. 90210) or ZIP+4.');
+                return false;
+            }
+        } else {
+            if (value.length < 3 || !/^[A-Za-z0-9][A-Za-z0-9\s-]{1,9}$/.test(value)) {
+                setFieldError(zipCode, 'zipCode-error', 'Enter a valid postal code (3-10 characters).');
+                return false;
+            }
+        }
+
+        clearFieldError(zipCode, 'zipCode-error');
+        return true;
+    }
+
+    function validateForm() {
+        return [
+            validateNameField(),
+            validateEmailField(),
+            validatePhoneField(),
+            validateAddress1Field(),
+            validateCityField(),
+            validateStateField(),
+            validateZipField()
+        ].every(Boolean);
+    }
+
+    function focusFirstInvalid() {
+        const el = document.querySelector('.delivery-form-wrapper input.invalid');
+        if (el) el.focus();
+    }
+
+    // Wire sanitization + live/blur validation to each field
+    const fieldValidators = {
+        fullName: validateNameField,
+        email: validateEmailField,
+        phone: validatePhoneField,
+        addressLine1: validateAddress1Field,
+        city: validateCityField,
+        state: validateStateField,
+        zipCode: validateZipField
+    };
+
+    Object.keys(fieldValidators).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener('input', function() {
+            if (id === 'phone') {
+                formatPhoneInput();
+            } else if (id === 'zipCode') {
+                formatZipInput();
+            } else if (id === 'fullName' || id === 'city') {
+                sanitizeAlphaInput(el, true);
+            } else if (id === 'state') {
+                sanitizeAlphaInput(el, false);
+            }
+
+            // Live-clear an error once the field becomes valid
+            if (el.classList.contains('invalid')) {
+                fieldValidators[id]();
+            }
+        });
+
+        el.addEventListener('blur', function() {
+            fieldValidators[id]();
+        });
+    });
+
+    // ==========================================
     // SHOW ERROR POPUP (Only for errors)
     // ==========================================
 
@@ -437,63 +714,17 @@ document.addEventListener("DOMContentLoaded", function() {
     // FORM SUBMIT - DIRECT REDIRECT (No Success Popup)
     // ==========================================
 
-    form.addEventListener('submit', async function(event) {
-        event.preventDefault();
+    async function handleSubmit() {
+        if (continueBtn.disabled || continueBtn.dataset.processing === 'true') {
+            console.log('⏳ Already processing');
+            return;
+        }
 
         console.log('🔄 Form submitted!');
 
-        // Get values
-        const name = fullName.value.trim();
-        const emailVal = email.value.trim();
-        const phoneVal = phone.value.trim();
-        const addr1 = addressLine1.value.trim();
-        const addr2 = addressLine2.value.trim();
-        const cityVal = city.value.trim();
-        const stateVal = state.value.trim();
-        const zipVal = zipCode.value.trim();
-        const countryVal = countryHidden.value;
-        const notes = deliveryNotes.value.trim();
-
-        // ===== VALIDATION =====
-        if (!name) {
-            showErrorPopup('Please enter your full name.');
-            fullName.focus();
-            return;
-        }
-
-        if (!emailVal || !emailVal.includes('@')) {
-            showErrorPopup('Please enter a valid email address.');
-            email.focus();
-            return;
-        }
-
-        if (!phoneVal || phoneVal.length < 7) {
-            showErrorPopup('Please enter a valid phone number.');
-            phone.focus();
-            return;
-        }
-
-        if (!addr1) {
-            showErrorPopup('Please enter your address.');
-            addressLine1.focus();
-            return;
-        }
-
-        if (!cityVal) {
-            showErrorPopup('Please enter your city.');
-            city.focus();
-            return;
-        }
-
-        if (!stateVal) {
-            showErrorPopup('Please enter your state/province.');
-            state.focus();
-            return;
-        }
-
-        if (!zipVal || zipVal.length < 3) {
-            showErrorPopup('Please enter a valid ZIP/postal code.');
-            zipCode.focus();
+        // Show inline errors and stop if any field is invalid
+        if (!validateForm()) {
+            focusFirstInvalid();
             return;
         }
 
@@ -506,21 +737,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // ===== DISABLE BUTTON =====
         continueBtn.disabled = true;
+        continueBtn.dataset.processing = 'true';
         continueBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
         try {
-            // Prepare data
+            // Prepare data (all values trimmed on submission)
             const deliveryData = {
-                full_name: name,
-                email: emailVal,
-                phone: phoneVal,
-                address_line1: addr1,
-                address_line2: addr2 || null,
-                city: cityVal,
-                state: stateVal,
-                zip_code: zipVal,
-                country: countryVal,
-                delivery_notes: notes || null
+                full_name: fullName.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                address_line1: addressLine1.value.trim(),
+                address_line2: addressLine2.value.trim() || null,
+                city: city.value.trim(),
+                state: state.value.trim(),
+                zip_code: zipCode.value.trim(),
+                country: countryHidden.value,
+                delivery_notes: deliveryNotes.value.trim() || null
             };
 
             // Save to Supabase
@@ -536,55 +768,37 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch (error) {
             console.error('❌ Error:', error);
             showErrorPopup('Error saving delivery information: ' + error.message);
-            
+
             continueBtn.disabled = false;
+            delete continueBtn.dataset.processing;
             continueBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Continue to Payment';
         }
-    });
-
-    // ==========================================
-    // VALIDATION ON INPUT
-    // ==========================================
-
-    function validateForm() {
-        const name = fullName.value.trim();
-        const emailVal = email.value.trim();
-        const phoneVal = phone.value.trim();
-        const addr1 = addressLine1.value.trim();
-        const cityVal = city.value.trim();
-        const stateVal = state.value.trim();
-        const zipVal = zipCode.value.trim();
-
-        const isValid = (
-            name.length > 0 &&
-            emailVal.length > 0 &&
-            emailVal.includes('@') &&
-            phoneVal.length >= 7 &&
-            addr1.length > 0 &&
-            cityVal.length > 0 &&
-            stateVal.length > 0 &&
-            zipVal.length >= 3
-        );
-
-        continueBtn.disabled = !isValid;
-        return isValid;
     }
 
-    // Add listeners
-    [fullName, email, phone, addressLine1, addressLine2, city, state, zipCode, deliveryNotes].forEach(function(input) {
-        if (input) {
-            input.addEventListener('input', validateForm);
-            input.addEventListener('change', validateForm);
-        }
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        handleSubmit();
     });
+
+    continueBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        handleSubmit();
+    });
+
+    // Ensure the button responds to touch on mobile devices
+    continueBtn.addEventListener('touchend', function(event) {
+        event.preventDefault();
+        handleSubmit();
+    }, { passive: false });
+
+    // ==========================================
+    // VALIDATION SETUP (handlers wired above)
+    // ==========================================
 
     // Initialize country dropdown with default
     renderCountryList('');
     countrySearch.value = 'United States';
     countryHidden.value = 'United States';
-
-    // Initial validation
-    setTimeout(validateForm, 100);
 
     console.log('✅ Delivery page ready!');
     console.log('🌍 Countries loaded:', COUNTRIES.length);
