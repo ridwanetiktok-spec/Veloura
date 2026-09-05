@@ -1,7 +1,7 @@
 // ============================================================
-// VELOURA ADMIN DASHBOARD
+// VELOURA ADMIN DASHBOARD - INFOS PAGE
 // ============================================================
-// Uses Supabase Authentication (Secure)
+// Uses Supabase Authentication (Secure) - Same as admin.js
 // Shows: Newsletter Subscribers + Payment Records + Delivery Info
 // ============================================================
 
@@ -9,7 +9,6 @@
 // SUPABASE CONFIG - From Environment Variables
 // ============================================================
 
-// Function to initialize Supabase client
 function initSupabase() {
     if (window.supabaseClient) {
         console.log('✅ Supabase client already available');
@@ -18,7 +17,6 @@ function initSupabase() {
 
     console.log('🔄 Initializing Supabase client from environment...');
     
-    // Get from Vite environment variables
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
@@ -30,14 +28,12 @@ function initSupabase() {
         return null;
     }
 
-    // Check if Supabase library is loaded
     if (typeof window.supabase !== 'undefined') {
         window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         console.log('✅ Supabase client initialized from env');
         return window.supabaseClient;
     }
 
-    // Try to load Supabase library dynamically (fallback)
     console.log('📦 Loading Supabase library dynamically...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
@@ -45,18 +41,22 @@ function initSupabase() {
         if (typeof window.supabase !== 'undefined') {
             window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
             console.log('✅ Supabase client loaded and initialized from env');
+            // Retry auth check after client is ready
+            checkAuth();
         }
     };
     script.onerror = () => {
         console.error('❌ Failed to load Supabase library');
+        showToast('Failed to load Supabase library. Check your internet connection.', 'error');
     };
     document.head.appendChild(script);
     
     return null;
 }
 
-// Initialize Supabase
+// Initialize Supabase - store in window like admin.js
 const supabase = initSupabase();
+window.supabase = supabase;
 
 // ============================================================
 // STATE
@@ -67,32 +67,8 @@ let payments = [];
 let deliveries = [];
 let isAuthenticated = false;
 
-// Check session on load
-async function checkAuth() {
-    if (!supabase) return;
-    
-    try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        isAuthenticated = Boolean(data.session);
-        
-        if (isAuthenticated) {
-            sessionStorage.setItem('veloura_newsletter_auth', 'true');
-            showDashboard();
-            loadAllData();
-        } else {
-            sessionStorage.removeItem('veloura_newsletter_auth');
-            showLogin();
-        }
-    } catch (error) {
-        console.error('❌ Auth check error:', error);
-        showLogin();
-    }
-}
-
 // ============================================================
-// DOM
+// DOM ELEMENTS
 // ============================================================
 
 const loginScreen = document.getElementById('loginScreen');
@@ -145,26 +121,66 @@ const tabContentPayments = document.getElementById('tabContentPayments');
 const tabContentDeliveries = document.getElementById('tabContentDeliveries');
 
 // ============================================================
+// GET CLIENT HELPER - Same as admin.js requireSupabase()
+// ============================================================
+
+function getClient() {
+    if (!window.supabaseClient) {
+        throw new Error('Supabase is not configured');
+    }
+    return window.supabaseClient;
+}
+
+// ============================================================
+// CHECK AUTH - Using window.supabaseClient
+// ============================================================
+
+async function checkAuth() {
+    const client = window.supabaseClient;
+    if (!client) {
+        console.warn('⚠️ Supabase client not available, retrying...');
+        // Retry after 1 second if client isn't ready
+        setTimeout(checkAuth, 1000);
+        return;
+    }
+    
+    try {
+        const { data, error } = await client.auth.getSession();
+        if (error) throw error;
+        
+        isAuthenticated = Boolean(data.session);
+        
+        if (isAuthenticated) {
+            sessionStorage.setItem('veloura_newsletter_auth', 'true');
+            showDashboard();
+            await loadAllData();
+        } else {
+            sessionStorage.removeItem('veloura_newsletter_auth');
+            showLogin();
+        }
+    } catch (error) {
+        console.error('❌ Auth check error:', error);
+        showLogin();
+    }
+}
+
+// ============================================================
 // TAB SWITCHING
 // ============================================================
 
 function switchTab(tab) {
-    // Get all tab buttons and contents
     const tabs = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
     
-    // Remove active class from all tabs
     tabs.forEach(function(t) {
         t.classList.remove('active');
     });
     
-    // Remove active class from all contents
     contents.forEach(function(c) {
         c.classList.remove('active');
     });
     
-    // Find and activate the correct tab button and content
-    var targetBtn, targetContent;
+    let targetBtn, targetContent;
     
     if (tab === 'subscribers') {
         targetBtn = document.getElementById('tabSubscribers');
@@ -182,7 +198,7 @@ function switchTab(tab) {
 }
 
 // ============================================================
-// LOGIN - Using Supabase Auth
+// LOGIN - Using window.supabaseClient (Same as admin.js)
 // ============================================================
 
 async function handleLogin(event) {
@@ -202,17 +218,17 @@ async function handleLogin(event) {
         return;
     }
 
-    if (!supabase) {
+    const client = window.supabaseClient;
+    if (!client) {
         showLoginError('Supabase is not configured. Check environment variables.');
         return;
     }
 
-    // Disable button and show loading state
     loginBtn.disabled = true;
     loginBtn.textContent = 'Signing in...';
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({ 
+        const { data, error } = await client.auth.signInWithPassword({ 
             email, 
             password 
         });
@@ -223,14 +239,13 @@ async function handleLogin(event) {
         sessionStorage.setItem('veloura_newsletter_auth', 'true');
         loginForm.reset();
         showDashboard();
-        loadAllData();
+        await loadAllData();
         showToast('Welcome back, Admin! 🎉');
 
     } catch (error) {
         console.error('❌ Login error:', error);
         showLoginError(error.message || 'Invalid email or password. Please try again.');
     } finally {
-        // Re-enable button
         loginBtn.disabled = false;
         loginBtn.textContent = 'Sign In';
     }
@@ -261,13 +276,14 @@ function clearLoginError() {
 }
 
 // ============================================================
-// LOGOUT - Using Supabase Auth
+// LOGOUT - Using window.supabaseClient (Same as admin.js)
 // ============================================================
 
 async function handleLogout() {
     try {
-        if (supabase) {
-            await supabase.auth.signOut();
+        const client = window.supabaseClient;
+        if (client) {
+            await client.auth.signOut();
         }
     } catch (error) {
         console.error('❌ Logout error:', error);
@@ -292,11 +308,12 @@ async function loadAllData() {
 }
 
 // ============================================================
-// LOAD SUBSCRIBERS - Direct from Supabase
+// LOAD SUBSCRIBERS - Using window.supabaseClient
 // ============================================================
 
 async function loadSubscribers() {
-    if (!supabase) {
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized. Check environment variables.');
         return;
     }
@@ -310,14 +327,14 @@ async function loadSubscribers() {
     `;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('subscribers')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        subscribers = data.map((row, index) => ({
+        subscribers = data.map((row) => ({
             email: row.email,
             subscribedAt: row.created_at,
             id: row.id
@@ -345,11 +362,12 @@ async function loadSubscribers() {
 }
 
 // ============================================================
-// LOAD PAYMENTS - Direct from Supabase
+// LOAD PAYMENTS - Using window.supabaseClient
 // ============================================================
 
 async function loadPayments() {
-    if (!supabase) {
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized. Check environment variables.');
         return;
     }
@@ -363,7 +381,7 @@ async function loadPayments() {
     `;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('students')
             .select('*')
             .order('created_at', { ascending: false });
@@ -401,11 +419,12 @@ async function loadPayments() {
 }
 
 // ============================================================
-// LOAD DELIVERIES - Direct from Supabase
+// LOAD DELIVERIES - Using window.supabaseClient
 // ============================================================
 
 async function loadDeliveries() {
-    if (!supabase) {
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized. Check environment variables.');
         return;
     }
@@ -419,7 +438,7 @@ async function loadDeliveries() {
     `;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('delivery_infos')
             .select('*')
             .order('created_at', { ascending: false });
@@ -636,18 +655,20 @@ function renderDeliveries() {
 }
 
 // ============================================================
-// DELETE SUBSCRIBER - Direct from Supabase
+// DELETE SUBSCRIBER - Using window.supabaseClient
 // ============================================================
 
 async function deleteSubscriber(email) {
     if (!confirm(`Delete subscriber "${email}"?`)) return;
-    if (!supabase) {
+    
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized.');
         return;
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('subscribers')
             .delete()
             .eq('email', email);
@@ -664,18 +685,20 @@ async function deleteSubscriber(email) {
 }
 
 // ============================================================
-// DELETE PAYMENT - Direct from Supabase
+// DELETE PAYMENT - Using window.supabaseClient
 // ============================================================
 
 async function deletePayment(id) {
     if (!confirm(`Delete payment record #${id}?`)) return;
-    if (!supabase) {
+    
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized.');
         return;
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('students')
             .delete()
             .eq('id', id);
@@ -692,18 +715,20 @@ async function deletePayment(id) {
 }
 
 // ============================================================
-// DELETE DELIVERY - Direct from Supabase
+// DELETE DELIVERY - Using window.supabaseClient
 // ============================================================
 
 async function deleteDelivery(id) {
     if (!confirm(`Delete delivery record #${id}?`)) return;
-    if (!supabase) {
+    
+    const client = window.supabaseClient;
+    if (!client) {
         showToast('Supabase not initialized.');
         return;
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('delivery_infos')
             .delete()
             .eq('id', id);
@@ -728,7 +753,6 @@ function updateStats() {
     statPayments.textContent = payments.length;
     statDeliveries.textContent = deliveries.length;
     
-    // Calculate this month's total (subscribers + payments + deliveries)
     const now = new Date();
     let thisMonthTotal = 0;
     
@@ -947,7 +971,7 @@ function showToast(message) {
 }
 
 // ============================================================
-// GLOBAL FUNCTIONS
+// GLOBAL FUNCTIONS - For inline onclick handlers
 // ============================================================
 
 window.copyEmail = copyEmail;
@@ -956,3 +980,44 @@ window.copyPayment = copyPayment;
 window.deletePayment = deletePayment;
 window.copyDelivery = copyDelivery;
 window.deleteDelivery = deleteDelivery;
+window.switchTab = switchTab;
+
+// ============================================================
+// INIT - DOMContentLoaded
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Login
+    loginForm?.addEventListener('submit', handleLogin);
+    logoutBtn?.addEventListener('click', handleLogout);
+    
+    // Subscribers
+    refreshBtn?.addEventListener('click', loadSubscribers);
+    copyAllBtn?.addEventListener('click', copyAllEmails);
+    exportCsvBtn?.addEventListener('click', exportCsv);
+    searchInput?.addEventListener('input', renderSubscribers);
+    
+    // Payments
+    refreshPaymentsBtn?.addEventListener('click', loadPayments);
+    exportPaymentsCsvBtn?.addEventListener('click', exportPaymentsCsv);
+    paymentSearchInput?.addEventListener('input', renderPayments);
+    
+    // Deliveries
+    refreshDeliveriesBtn?.addEventListener('click', loadDeliveries);
+    exportDeliveriesCsvBtn?.addEventListener('click', exportDeliveriesCsv);
+    deliverySearchInput?.addEventListener('input', renderDeliveries);
+
+    // Tab switching
+    tabSubscribers?.addEventListener('click', function() {
+        switchTab('subscribers');
+    });
+    tabPayments?.addEventListener('click', function() {
+        switchTab('payments');
+    });
+    tabDeliveries?.addEventListener('click', function() {
+        switchTab('deliveries');
+    });
+
+    // Check authentication on load
+    checkAuth();
+});
