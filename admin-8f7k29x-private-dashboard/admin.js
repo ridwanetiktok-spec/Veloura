@@ -2,10 +2,9 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Using import.meta.env (Works with type="module")
+// SUPABASE INIT - Using import.meta.env (Same as infos.js)
 // ============================================
 
-// Initialize Supabase client
 function initSupabase() {
     if (window.supabaseClient) {
         console.log('✅ Supabase client already available');
@@ -14,7 +13,7 @@ function initSupabase() {
 
     console.log('🔄 Initializing Supabase client from environment...');
     
-    // ✅ Get from Vite environment variables (works with type="module")
+    // ✅ Get from Vite environment variables (same as infos.js)
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
@@ -22,27 +21,23 @@ function initSupabase() {
     console.log('🔑 Supabase Key found:', !!supabaseKey);
     
     if (!supabaseUrl || !supabaseKey) {
-        console.error('❌ Supabase environment variables not found.');
+        console.warn('⚠️ Supabase environment variables not found.');
         return null;
     }
 
     if (typeof window.supabase !== 'undefined') {
         window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Supabase client initialized');
+        console.log('✅ Supabase client initialized from env');
         return window.supabaseClient;
     }
 
-    // Load Supabase library dynamically
     console.log('📦 Loading Supabase library dynamically...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.onload = () => {
         if (typeof window.supabase !== 'undefined') {
             window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-            console.log('✅ Supabase client loaded');
-            if (typeof initAuth === 'function') {
-                initAuth();
-            }
+            console.log('✅ Supabase client loaded and initialized from env');
         }
     };
     script.onerror = () => {

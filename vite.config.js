@@ -160,6 +160,16 @@ function getHtmlInputs() {
     inputs[name] = resolve(__dirname, file)
   })
   
+  // ✅ ALSO add admin/index.html explicitly
+  try {
+    inputs['admin-8f7k29x-private-dashboard/index'] = resolve(
+      __dirname, 
+      'admin-8f7k29x-private-dashboard/index.html'
+    )
+  } catch (e) {
+    // File might not exist
+  }
+  
   return inputs
 }
 // === ADMIN LIB FOLDER (if needed) ===
