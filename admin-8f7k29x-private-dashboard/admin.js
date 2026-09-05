@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Clean version with env vars only
+// SUPABASE INIT - Using environment variables only
 // ============================================
 
 function initSupabase() {
@@ -15,7 +15,7 @@ function initSupabase() {
     
     let supabaseUrl, supabaseKey;
     
-    // Method 1: Try import.meta.env (Vite)
+    // Try import.meta.env (Vite)
     try {
         if (typeof import.meta !== 'undefined' && import.meta.env) {
             supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -26,36 +26,23 @@ function initSupabase() {
         console.log('⚠️ import.meta.env not available');
     }
     
-    // Method 2: Try window.__ENV (passed from HTML)
-    if (!supabaseUrl && window.__ENV) {
-        supabaseUrl = window.__ENV.VITE_SUPABASE_URL;
-        supabaseKey = window.__ENV.VITE_SUPABASE_ANON_KEY;
-        console.log('🔑 Using window.__ENV');
-    }
+    console.log('🔑 Supabase URL value:', supabaseUrl);
+    console.log('🔑 Supabase Key value:', supabaseKey ? '✅ Present' : '❌ Missing');
     
-    // Method 3: Try process.env (Node.js fallback)
-    if (!supabaseUrl && typeof process !== 'undefined' && process.env) {
-        supabaseUrl = process.env.VITE_SUPABASE_URL;
-        supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-        console.log('🔑 Using process.env');
-    }
-    
-    console.log('🔑 Supabase URL found:', !!supabaseUrl);
-    console.log('🔑 Supabase Key found:', !!supabaseKey);
-    
-    if (!supabaseUrl || !supabaseKey) {
-        console.error('❌ Supabase environment variables not found!');
+    if (!supabaseUrl || !supabaseKey || supabaseUrl === '' || supabaseUrl === '{{VITE_SUPABASE_URL}}') {
+        console.error('❌ Supabase environment variables not found or invalid!');
+        console.error('URL:', supabaseUrl);
         console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file');
         showAdminToast('Supabase is not configured. Check your environment variables.', 'error');
         return null;
     }
 
-    // Validate URL
+    // Validate URL format
     try {
         new URL(supabaseUrl);
     } catch (e) {
         console.error('❌ Invalid Supabase URL:', supabaseUrl);
-        showAdminToast('Invalid Supabase URL format.', 'error');
+        showAdminToast('Invalid Supabase URL format. Please check your .env file.', 'error');
         return null;
     }
 
@@ -102,7 +89,7 @@ function initSupabase() {
     };
     script.onerror = () => {
         console.error('❌ Failed to load Supabase library');
-        showAdminToast('Failed to load Supabase library.', 'error');
+        showAdminToast('Failed to load Supabase library. Check your internet connection.', 'error');
     };
     document.head.appendChild(script);
     

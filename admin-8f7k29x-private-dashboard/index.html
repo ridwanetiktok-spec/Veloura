@@ -877,20 +877,11 @@
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
 
-  <script>
-    // Pass environment variables to the global scope
-    window.__ENV = {
-      VITE_SUPABASE_URL: '{{VITE_SUPABASE_URL}}',
-      VITE_SUPABASE_ANON_KEY: '{{VITE_SUPABASE_ANON_KEY}}'
-    };
-  </script>
+<!-- Load Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
-  <!-- Load Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Load admin.js - NO module, regular script -->
-  <script type="module" src="admin.js"></script>
+<!-- Load admin.js as module -->
+<script type="module" src="admin.js"></script>
 
 </body>
 </html>
