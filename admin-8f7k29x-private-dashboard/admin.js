@@ -1741,6 +1741,7 @@ window.replaceMediaItem = replaceMediaItem;
 window.closeReplaceMediaModal = closeReplaceMediaModal;
 window.renderMediaLibrary = renderMediaLibrary;
 window.updateFolderFilter = updateFolderFilter;
+window.saveSettings = saveSettings;
 
 
 // ===== Boot =====
