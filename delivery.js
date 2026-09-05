@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const popupMessage = document.getElementById('popup-message');
     const popupClose = document.getElementById('popup-close');
 
-    let selectedCountry = 'United States';
+    let selectedCountry = null;
 
     // ==========================================
     // LUXURY COUNTRY DROPDOWN
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let html = '';
         filteredCountries.forEach(function(country) {
-            const isSelected = (country === selectedCountry);
+            const isSelected = (country === selectedCountry);  // Now handles null
             html += `
                 <div class="country-dropdown-item ${isSelected ? 'selected' : ''}" data-country="${country}">
                     <span class="country-name">${country}</span>
@@ -178,16 +178,21 @@ document.addEventListener("DOMContentLoaded", function() {
     function selectCountry(country) {
         selectedCountry = country;
         countrySearch.value = country;
-        countryHidden.value = country;
+        countryHidden.value = country || '';
         renderCountryList('');
         closeDropdown();
         // Re-format country-dependent fields
-        formatPhoneInput();
-        formatZipInput();
-        if (phone.classList.contains('invalid')) validatePhoneField();
-        if (zipCode.classList.contains('invalid')) validateZipField();
+        if (country) {
+            formatPhoneInput();
+            formatZipInput();
+            if (phone.classList.contains('invalid')) validatePhoneField();
+            if (zipCode.classList.contains('invalid')) validateZipField();
+        }
+        // Clear country error if exists
+        if (countrySearch.classList.contains('invalid')) {
+            clearFieldError(countrySearch, 'country-error');
+        }
     }
-
     function openDropdown() {
         const dropdown = document.querySelector('.country-dropdown');
         dropdown.classList.add('open');
@@ -229,9 +234,26 @@ document.addEventListener("DOMContentLoaded", function() {
         openDropdown();
     });
 
+    // Validate country on blur
     countrySearch.addEventListener('blur', function() {
-        // Delay close to allow click on dropdown item
         setTimeout(function() {
+            // If input has a value but no country selected, try to match it
+            if (countrySearch.value && !countryHidden.value) {
+                const matchingCountry = COUNTRIES.find(function(c) {
+                    return c.toLowerCase() === countrySearch.value.toLowerCase();
+                });
+                if (matchingCountry) {
+                    selectCountry(matchingCountry);
+                } else {
+                    // Clear invalid input and show error
+                    countrySearch.value = '';
+                    setFieldError(countrySearch, 'country-error', 'Please select a country from the list.');
+                }
+            }
+            // If field is empty, validate (will show error if empty)
+            if (!countryHidden.value) {
+                validateCountryField();
+            }
             closeDropdown();
         }, 200);
     });
@@ -412,9 +434,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // ==========================================
 
     function formatPhoneInput() {
-        const country = countryHidden.value || 'United States';
+        const country = countryHidden.value || '';
         const raw = phone.value;
 
+
+        if (!country) {
+            const cleaned = raw.replace(/[^\d\s()+-]/g, '');
+            if (phone.value !== cleaned) phone.value = cleaned;
+            return;
+        }
         if (country === 'United States') {
             let digits = raw.replace(/\D/g, '');
             // Normalize an 11-digit "1" prefixed US number (country code) to national
@@ -463,7 +491,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // ==========================================
 
     function formatZipInput() {
-        const country = countryHidden.value || 'United States';
+        const country = countryHidden.value || '';
+
+        if (!country) {
+            const cleaned = zipCode.value.replace(/[^A-Za-z0-9\s-]/g, '').slice(0, 10);
+            if (zipCode.value !== cleaned) zipCode.value = cleaned;
+            return;
+        }
 
         if (country === 'United States') {
             const digits = zipCode.value.replace(/\D/g, '').slice(0, 9);
@@ -576,7 +610,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function validateZipField() {
-        const country = countryHidden.value || 'United States';
+        const country = countryHidden.value || '';
         const value = zipCode.value.trim();
 
         if (!value) {
@@ -600,6 +634,17 @@ document.addEventListener("DOMContentLoaded", function() {
         return true;
     }
 
+
+    function validateCountryField() {
+        const value = countryHidden.value.trim();
+        if (!value) {
+            setFieldError(countrySearch, 'country-error', 'Please select your country.');
+            return false;
+        }
+        clearFieldError(countrySearch, 'country-error');
+        return true;
+    }
+
     function validateForm() {
         return [
             validateNameField(),
@@ -608,9 +653,11 @@ document.addEventListener("DOMContentLoaded", function() {
             validateAddress1Field(),
             validateCityField(),
             validateStateField(),
-            validateZipField()
+            validateZipField(),
+            validateCountryField()
         ].every(Boolean);
     }
+    
 
     function focusFirstInvalid() {
         const el = document.querySelector('.delivery-form-wrapper input.invalid');
@@ -625,7 +672,8 @@ document.addEventListener("DOMContentLoaded", function() {
         addressLine1: validateAddress1Field,
         city: validateCityField,
         state: validateStateField,
-        zipCode: validateZipField
+        zipCode: validateZipField,
+        countrySearch: validateCountryField
     };
 
     Object.keys(fieldValidators).forEach(function(id) {
@@ -797,8 +845,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Initialize country dropdown with default
     renderCountryList('');
-    countrySearch.value = 'United States';
-    countryHidden.value = 'United States';
+    countrySearch.value = '';
+    countrySearch.placeholder = 'Search and select your country...';
+    countryHidden.value = '';
 
     console.log('✅ Delivery page ready!');
     console.log('🌍 Countries loaded:', COUNTRIES.length);

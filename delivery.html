@@ -154,13 +154,15 @@
                     <div class="form-group half">
                         <label for="country">Country <span class="required">*</span></label>
                         <div class="country-select-wrapper">
-                            <input type="text" id="countrySearch" placeholder="Search country..." autocomplete="off">
+                            <input type="text" id="countrySearch" placeholder="Search and select your country..." autocomplete="off">
                             <div class="country-dropdown" id="countryDropdown">
                                 <div class="country-dropdown-list" id="countryList">
                                     <!-- Will be populated by JavaScript -->
                                 </div>
                             </div>
-                            <input type="hidden" id="country" value="United States">
+                            <input type="hidden" id="country" value="">
+                            <p class="field-error" id="country-error" role="alert" aria-live="polite"></p>  <!-- ← ADD THIS -->
+
                         </div>
                     </div>
                 </div>
