@@ -64,8 +64,8 @@ const supabase = initSupabase();
 // ============================================================
 
 // Get admin credentials from environment variables
-const LOGIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
-const LOGIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
+const LOGIN_EMAIL = import.meta.env.ADMIN_EMAIL;
+const LOGIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 
 console.log('🔑 Admin credentials loaded from env:', !!LOGIN_EMAIL, !!LOGIN_PASSWORD);
 
