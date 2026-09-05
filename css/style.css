@@ -92,12 +92,12 @@
 }
 
 * {
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE / old Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  display: none;              /* Chrome, Safari, Edge */
+  display: none;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -200,7 +200,6 @@ input, select, textarea { font-family: inherit; }
 
 @media (max-width: 768px) {
   .logo-mark { display: none; }
-
 }
 
 .logo span { font-weight: 400; font-style: italic; }
@@ -425,42 +424,10 @@ input, select, textarea { font-family: inherit; }
   padding: 60px 32px;
 }
 
-
-/* .section-header-with-nav {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 36px;
-} */
-
 .section-header-with-nav .section-header {
   text-align: center;
   margin-bottom: 0;
 }
-
-/* .carousel-nav-btns {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.carousel-nav-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--gray-200);
-  background: var(--white);
-  color: var(--charcoal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-  outline: none;
-} */
 
 .carousel-nav-btn:hover {
   background: var(--blush-500);
@@ -589,7 +556,6 @@ input, select, textarea { font-family: inherit; }
 
 .section-header {
   text-align: center;
-
   margin-bottom: 56px;
 }
 
@@ -983,7 +949,6 @@ input, select, textarea { font-family: inherit; }
 }
 
 .filter-group { margin-bottom: 28px; }
-
 .filter-group:last-child { margin-bottom: 0; }
 
 .filter-title {
@@ -1558,11 +1523,8 @@ select:focus, .sort-select:focus {
 .wishlist-drawer.open { right: 0; }
 
 /* ===== Luxury Notification System ===== */
-
-/* Keep the original toast-container in DOM but make it inert */
 .toast-container { display: none; }
 
-/* Backdrop behind notification card */
 .lux-notify-backdrop {
   position: fixed;
   inset: 0;
@@ -1581,7 +1543,6 @@ select:focus, .sort-select:focus {
 
 html.lux-notify-open { overflow: hidden; }
 
-/* The notification card */
 .lux-notify {
   position: fixed;
   top: 50%;
@@ -1607,7 +1568,6 @@ html.lux-notify-open { overflow: hidden; }
   animation: luxNotifyOut 0.35s cubic-bezier(0.4, 0, 0.8, 0) forwards;
 }
 
-/* Icon ring */
 .lux-notify-icon {
   width: 62px;
   height: 62px;
@@ -1630,7 +1590,6 @@ html.lux-notify-open { overflow: hidden; }
   height: 26px;
 }
 
-/* Elegant thin rule */
 .lux-notify-rule {
   width: 48px;
   height: 1px;
@@ -1638,7 +1597,6 @@ html.lux-notify-open { overflow: hidden; }
   margin: 2px 0;
 }
 
-/* Title */
 .lux-notify-title {
   font-family: var(--font-display);
   font-size: 1.2rem;
@@ -1649,7 +1607,6 @@ html.lux-notify-open { overflow: hidden; }
   margin: 0;
 }
 
-/* Subtitle */
 .lux-notify-sub {
   font-family: var(--font-body);
   font-size: 0.875rem;
@@ -1660,7 +1617,6 @@ html.lux-notify-open { overflow: hidden; }
   margin: 0;
 }
 
-/* Keyframes */
 @keyframes luxNotifyIn {
   from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -1677,9 +1633,6 @@ html.lux-notify-open { overflow: hidden; }
   from { opacity: 1; }
   to   { opacity: 0; }
 }
-
-
-
 
 /* ===== Product Modal ===== */
 .modal-overlay {
@@ -2354,12 +2307,6 @@ html[data-theme="dark"] {
   color: var(--gold-400);
 }
 
-/* ===== Shop & Blog Hero Sections (inline styled) ===== */
-[data-theme="dark"] .page-hero-section {
-  background: linear-gradient(135deg, #18151E 0%, #1C1820 100%) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
-}
-
 /* ===== About section text ===== */
 [data-theme="dark"] #about p { color: #B0A8BC; }
 [data-theme="dark"] #about div[style] { color: #7A7285; }
@@ -2420,8 +2367,6 @@ html[data-theme="dark"] {
     --testimonial-card-width: calc((100vw - 40px) * 0.85);
   }
 }
-
-
 
 
 /* =========================
@@ -2542,132 +2487,7 @@ html[data-theme="dark"] {
 }
 
 /* ============================================
-   HERO SECTION - DARK MODE FIX
-   ============================================ */
-
-/* Hero section background fix for dark mode */
-[data-theme="dark"] .hero-section {
-    background: #0F0D10;
-}
-
-/* Hero overlay - darker for better text contrast in dark mode */
-[data-theme="dark"] .hero-overlay {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(248, 92, 125, 0.20) 50%, rgba(201, 168, 76, 0.25) 100%);
-}
-
-/* Hero content text - ensure white in dark mode */
-[data-theme="dark"] .hero-content h1 {
-    color: #ffffff;
-    text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="dark"] .hero-content p {
-    color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-}
-
-/* Hero dots in dark mode */
-[data-theme="dark"] .hero-dot {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .hero-dot.active {
-    background: var(--gold-400);
-    border-color: var(--gold-500);
-    box-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
-}
-
-/* ============================================
-   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE
-   ============================================ */
-
-/* Blog hero dark mode */
-[data-theme="dark"] .blog-hero-overlay {
-    background: rgba(0, 0, 0, 0.55) !important;
-}
-
-[data-theme="dark"] #blogHero .section-title {
-    color: #ffffff !important;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] #blogHero .section-subtitle {
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-theme="dark"] #blogHero .section-label {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Shop hero dark mode */
-[data-theme="dark"] .shop-hero-overlay {
-    background: rgba(0, 0, 0, 0.55) !important;
-}
-
-[data-theme="dark"] #shopHero .section-title {
-    color: #ffffff !important;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] #shopHero .section-subtitle {
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-theme="dark"] #shopHero .section-label {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Page hero sections with background images */
-[data-theme="dark"] .page-hero-section {
-    background: linear-gradient(135deg, #18151E 0%, #1C1820 100%) !important;
-}
-
-[data-theme="dark"] .page-hero-section .section-title {
-    color: #ffffff !important;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-theme="dark"] .page-hero-section .section-subtitle {
-    color: rgba(255, 255, 255, 0.85) !important;
-}
-
-[data-theme="dark"] .page-hero-section .section-label {
-    color: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* ============================================
-   HERO IMAGE FALLBACK FOR DARK MODE
-   ============================================ */
-
-/* Ensure hero images are visible in dark mode */
-[data-theme="dark"] .hero-slide img {
-    filter: brightness(0.85) contrast(1.05);
-}
-
-[data-theme="dark"] .hero-slide.active img {
-    filter: brightness(0.9) contrast(1.05);
-}
-
-/* ============================================
-   PROMO BANNER - DARK MODE FIX
-   ============================================ */
-
-[data-theme="dark"] .promo-banner-bg::after {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.75) 0%, rgba(248, 92, 125, 0.4) 100%);
-}
-
-[data-theme="dark"] .promo-banner-content h3 {
-    color: #ffffff;
-}
-
-[data-theme="dark"] .promo-banner-content p {
-    color: rgba(255, 255, 255, 0.9);
-}
-/* ============================================
-   HERO SECTION - DARK MODE FIX
+   HERO SECTION - DARK MODE FINAL
    ============================================ */
 
 /* Hero section background fix for dark mode */
@@ -2713,81 +2533,17 @@ html[data-theme="dark"] {
 }
 
 /* ============================================
-   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE
+   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE FINAL
    ============================================ */
 
-/* Blog hero dark mode */
-[data-theme="dark"] .blog-hero-overlay {
-    background: rgba(0, 0, 0, 0.65) !important;
-}
-
-[data-theme="dark"] #blogHero .section-title,
-[data-theme="dark"] #blogHero h1 {
-    color: #ffffff !important;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6) !important;
-}
-
-[data-theme="dark"] #blogHero .section-subtitle,
-[data-theme="dark"] #blogHero p {
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] #blogHero .section-label {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Shop hero dark mode */
-[data-theme="dark"] .shop-hero-overlay {
-    background: rgba(0, 0, 0, 0.65) !important;
-}
-
-[data-theme="dark"] #shopHero .section-title,
-[data-theme="dark"] #shopHero h1 {
-    color: #ffffff !important;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6) !important;
-}
-
-[data-theme="dark"] #shopHero .section-subtitle,
-[data-theme="dark"] #shopHero p {
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] #shopHero .section-label {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* ============================================
-   PROMO BANNER - DARK MODE FIX
-   ============================================ */
-
-[data-theme="dark"] .promo-banner-bg::after {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(248, 92, 125, 0.4) 100%);
-}
-
-[data-theme="dark"] .promo-banner-content h3 {
-    color: #ffffff !important;
-}
-
-[data-theme="dark"] .promo-banner-content p {
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* ============================================
-   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE FIX
-   ============================================ */
-
-/* IMPORTANT: Keep the background image in dark mode */
+/* Remove gradient background in dark mode so images show */
 [data-theme="dark"] .page-hero-section {
     background: var(--bg-page) !important;
-    /* Allow background-image to show through */
 }
 
 /* Blog hero dark mode - preserve background image */
 [data-theme="dark"] #blogHero {
     background-color: #0F0D10 !important;
-    /* Background image will overlay this */
 }
 
 [data-theme="dark"] #blogHero .blog-hero-overlay {
@@ -2815,7 +2571,6 @@ html[data-theme="dark"] {
 /* Shop hero dark mode - preserve background image */
 [data-theme="dark"] #shopHero {
     background-color: #0F0D10 !important;
-    /* Background image will overlay this */
 }
 
 [data-theme="dark"] #shopHero .shop-hero-overlay {
@@ -2840,17 +2595,7 @@ html[data-theme="dark"] {
     color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* ============================================
-   PAGE HERO - OVERRIDE INLINE GRADIENT
-   ============================================ */
-
-/* Remove the gradient background in dark mode so the image shows */
-[data-theme="dark"] .page-hero-section[style*="background:linear-gradient"] {
-    background: var(--bg-page) !important;
-    /* The background-image from JS will be applied inline and should take priority */
-}
-
-/* Ensure the hero section has proper z-index stacking */
+/* Ensure proper z-index stacking */
 [data-theme="dark"] .page-hero-section {
     position: relative;
     z-index: 1;
@@ -2869,4 +2614,20 @@ html[data-theme="dark"] {
 [data-theme="dark"] .page-hero-section > div {
     position: relative;
     z-index: 3;
+}
+
+/* ============================================
+   PROMO BANNER - DARK MODE FINAL
+   ============================================ */
+
+[data-theme="dark"] .promo-banner-bg::after {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(248, 92, 125, 0.4) 100%);
+}
+
+[data-theme="dark"] .promo-banner-content h3 {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .promo-banner-content p {
+    color: rgba(255, 255, 255, 0.9) !important;
 }
