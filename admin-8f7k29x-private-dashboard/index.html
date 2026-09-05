@@ -601,48 +601,6 @@
         </div>
 
         <!-- ===== MEDIA LIBRARY PAGE ===== -->
-        <!-- <div class="admin-page" id="page-media">
-          <div class="panel">
-            <div class="panel-header"><span class="panel-title">Add New Media</span></div>
-            <div class="panel-body">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Image URL *</label>
-                  <input type="url" id="newMediaUrl" placeholder="https://example.com/image.jpg">
-                </div>
-                <div class="form-group">
-                  <label>Name</label>
-                  <input type="text" id="newMediaName" placeholder="e.g., Lipstick Hero Shot">
-                </div>
-                <div class="form-group">
-                  <label>Folder</label>
-                  <select id="newMediaFolder">
-                    <option value="products">Products</option>
-                    <option value="banners">Banners</option>
-                    <option value="hero">Hero</option>
-                    <option value="blog">Blog</option>
-                    <option value="general">General</option>
-                  </select>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="margin-top:16px" onclick="addMedia()">Add to Library</button>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <span class="panel-title">Media Library</span>
-              <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none">
-            </div>
-            <div class="panel-body">
-              <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">Click any image to copy its URL.</p>
-              <div class="media-grid" id="mediaGrid"></div>
-            </div>
-          </div>
-        </div> -->
-
-
-        <!-- ===== MEDIA LIBRARY PAGE ===== -->
         <div class="admin-page" id="page-media">
           <div class="panel">
             <div class="panel-header"><span class="panel-title">Add New Media</span></div>
@@ -687,8 +645,6 @@
             </div>
           </div>
         </div>
-
-
 
         <!-- ===== REVIEWS PAGE ===== -->
         <div class="admin-page" id="page-reviews">
@@ -735,7 +691,6 @@
           </div>
         </div>
 
-
         <!-- ===== PROMOTIONS PAGE ===== -->
         <div class="admin-page" id="page-promotions">
           <div class="panel">
@@ -779,17 +734,35 @@
 
         <!-- ===== SETTINGS PAGE ===== -->
         <div class="admin-page" id="page-settings">
+          <!-- ===== WEBSITE BRANDING ===== -->
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Website Branding</span></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Site Name</label>
+                  <input type="text" id="setSiteName">
+                </div>
+                <div class="form-group">
+                  <label>Tagline</label>
+                  <input type="text" id="setTagline">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== SOCIAL MEDIA - ONLY ONE PANEL ===== -->
           <div class="panel">
             <div class="panel-header"><span class="panel-title">Social Media</span></div>
             <div class="panel-body">
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Reddit</label>
+                  <label>Reddit URL</label>
                   <input type="url" id="setReddit" placeholder="https://reddit.com/r/your-subreddit">
                   <div class="form-hint">Enter your full Reddit URL</div>
                 </div>
                 <div class="form-group">
-                  <label>Pinterest</label>
+                  <label>Pinterest URL</label>
                   <input type="url" id="setPinterest" placeholder="https://pinterest.com/your-profile">
                   <div class="form-hint">Enter your full Pinterest URL</div>
                 </div>
@@ -797,6 +770,7 @@
             </div>
           </div>
 
+          <!-- ===== CONTACT INFORMATION ===== -->
           <div class="panel">
             <div class="panel-header"><span class="panel-title">Contact Information</span></div>
             <div class="panel-body">
@@ -817,22 +791,7 @@
             </div>
           </div>
 
-          <div class="panel">
-            <div class="panel-header"><span class="panel-title">Social Media</span></div>
-            <div class="panel-body">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Pinterest</label>
-                  <input type="url" id="setPinterest" placeholder="https://pinterest.com/your-profile">
-                </div>
-                <div class="form-group">
-                  <label>Reddit</label>
-                  <input type="url" id="setReddit" placeholder="https://reddit.com/r/your-subreddit">
-                </div>
-              </div>
-            </div>
-          </div>
-
+          <!-- ===== SEO SETTINGS ===== -->
           <div class="panel">
             <div class="panel-header"><span class="panel-title">SEO Settings</span></div>
             <div class="panel-body">
@@ -875,12 +834,11 @@
   <!-- Toast Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
+  <!-- Load Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Load Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Load admin.js as module -->
-<script type="module" src="admin.js"></script>
+  <!-- Load admin.js as module -->
+  <script type="module" src="admin.js"></script>
 
 </body>
 </html>
