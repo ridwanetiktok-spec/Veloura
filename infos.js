@@ -185,29 +185,118 @@ document.addEventListener('DOMContentLoaded', () => {
 // TAB SWITCHING - FIXED
 // ============================================================
 
+// ============================================================
+// TAB SWITCHING - FIXED
+// ============================================================
+
 function switchTab(tab) {
-    // Remove active class from all tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
+    // Get all tab buttons and contents
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    // Remove active class from all tabs
+    tabs.forEach(function(t) {
+        t.classList.remove('active');
     });
     
-    // Remove active class from all tab contents
-    document.querySelectorAll('.tab-content').forEach(tc => {
-        tc.classList.remove('active');
+    // Remove active class from all contents
+    contents.forEach(function(c) {
+        c.classList.remove('active');
     });
     
-    // Add active class to selected tab button
+    // Find and activate the correct tab button and content
+    var targetBtn, targetContent;
+    
     if (tab === 'subscribers') {
-        tabSubscribers.classList.add('active');
-        tabContentSubscribers.classList.add('active');
+        targetBtn = document.getElementById('tabSubscribers');
+        targetContent = document.getElementById('tabContentSubscribers');
     } else if (tab === 'payments') {
-        tabPayments.classList.add('active');
-        tabContentPayments.classList.add('active');
+        targetBtn = document.getElementById('tabPayments');
+        targetContent = document.getElementById('tabContentPayments');
     } else if (tab === 'deliveries') {
-        tabDeliveries.classList.add('active');
-        tabContentDeliveries.classList.add('active');
+        targetBtn = document.getElementById('tabDeliveries');
+        targetContent = document.getElementById('tabContentDeliveries');
     }
+    
+    if (targetBtn) targetBtn.classList.add('active');
+    if (targetContent) targetContent.classList.add('active');
 }
+
+// ============================================================
+// INIT - FIXED
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Login
+    var loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    var logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    // Subscribers
+    var refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadSubscribers);
+    
+    var copyAllBtn = document.getElementById('copyAllBtn');
+    if (copyAllBtn) copyAllBtn.addEventListener('click', copyAllEmails);
+    
+    var exportCsvBtn = document.getElementById('exportCsvBtn');
+    if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCsv);
+    
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('input', renderSubscribers);
+    
+    // Payments
+    var refreshPaymentsBtn = document.getElementById('refreshPaymentsBtn');
+    if (refreshPaymentsBtn) refreshPaymentsBtn.addEventListener('click', loadPayments);
+    
+    var exportPaymentsCsvBtn = document.getElementById('exportPaymentsCsvBtn');
+    if (exportPaymentsCsvBtn) exportPaymentsCsvBtn.addEventListener('click', exportPaymentsCsv);
+    
+    var paymentSearchInput = document.getElementById('paymentSearchInput');
+    if (paymentSearchInput) paymentSearchInput.addEventListener('input', renderPayments);
+    
+    // Deliveries
+    var refreshDeliveriesBtn = document.getElementById('refreshDeliveriesBtn');
+    if (refreshDeliveriesBtn) refreshDeliveriesBtn.addEventListener('click', loadDeliveries);
+    
+    var exportDeliveriesCsvBtn = document.getElementById('exportDeliveriesCsvBtn');
+    if (exportDeliveriesCsvBtn) exportDeliveriesCsvBtn.addEventListener('click', exportDeliveriesCsv);
+    
+    var deliverySearchInput = document.getElementById('deliverySearchInput');
+    if (deliverySearchInput) deliverySearchInput.addEventListener('input', renderDeliveries);
+
+    // ✅ TAB SWITCHING - FIXED
+    var tabSubscribers = document.getElementById('tabSubscribers');
+    var tabPayments = document.getElementById('tabPayments');
+    var tabDeliveries = document.getElementById('tabDeliveries');
+    
+    if (tabSubscribers) {
+        tabSubscribers.addEventListener('click', function() {
+            switchTab('subscribers');
+        });
+    }
+    
+    if (tabPayments) {
+        tabPayments.addEventListener('click', function() {
+            switchTab('payments');
+        });
+    }
+    
+    if (tabDeliveries) {
+        tabDeliveries.addEventListener('click', function() {
+            switchTab('deliveries');
+        });
+    }
+
+    // Check authentication on load
+    checkAuth();
+});
 
 // Also update the INIT section to use the correct tab switching
 document.addEventListener('DOMContentLoaded', () => {

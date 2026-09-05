@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Add this at the top!
+// SUPABASE INIT - NO import.meta (Works with regular script)
 // ============================================
 
 // Initialize Supabase client
@@ -14,8 +14,10 @@ function initSupabase() {
 
     console.log('🔄 Initializing Supabase client...');
     
-    const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || window.SUPABASE_URL;
-    const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
+    // Get from environment variables (Vite will replace these at build time)
+    // Fallback to window variables if not available
+    const supabaseUrl = window.SUPABASE_URL || 'https://jslinggtsisejnzmptdg.supabase.co';
+    const supabaseKey = window.SUPABASE_ANON_KEY || 'your-anon-key-here';
     
     console.log('🔑 Supabase URL found:', !!supabaseUrl);
     console.log('🔑 Supabase Key found:', !!supabaseKey);
@@ -40,7 +42,9 @@ function initSupabase() {
             window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
             console.log('✅ Supabase client loaded');
             // Re-init auth after client loads
-            initAuth();
+            if (typeof initAuth === 'function') {
+                initAuth();
+            }
         }
     };
     script.onerror = () => {
@@ -62,6 +66,7 @@ window.supabaseClient = supabaseClient;
 // ===== Auth =====
 let isAuthenticated = false;
 let adminRealtimeChannel;
+
 
 // ===== Data Store =====
 let adminProducts = [];
