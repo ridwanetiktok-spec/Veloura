@@ -19,9 +19,13 @@
       <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <a href="index.html" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
+      <a href="/" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
       <nav class="main-nav">
-        <a href="index.html">Home</a><a href="shop.html">Shop</a><a href="index.html#categories">Categories</a><a href="blog.html">Beauty Blog</a><a href="index.html#about">About</a>
+        <a href="/">Home</a>
+        <a href="/shop">Shop</a>
+        <a href="/#categories">Categories</a>
+        <a href="/blog">Beauty Blog</a>
+        <a href="/#about">About</a>
       </nav>
       <div class="header-actions">
         <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch theme">
@@ -33,44 +37,155 @@
   </header>
   <div class="mobile-menu" id="mobileMenu">
     <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">&times;</button>
-    <a href="index.html">Home</a><a href="shop.html">Shop</a><a href="index.html#categories">Categories</a><a href="blog.html">Beauty Blog</a><a href="index.html#about">About</a>
+    <a href="/">Home</a><a href="/shop">Shop</a><a href="/#categories">Categories</a><a href="/blog">Beauty Blog</a><a href="/#about">About</a>
   </div>
-  <main class="legal-main">
-    <article class="legal-content">
+
+  <section class="legal-hero">
+    <div class="legal-hero-content">
       <span class="section-label">Please Read Carefully</span>
       <h1>Terms of Service</h1>
-      <p class="legal-updated">Last updated: September 3, 2026</p>
-      <p>These Terms of Service govern your use of the Veloura website. By using the site, you agree to follow these terms and all applicable laws.</p>
-      <h2>Using Our Website</h2>
-      <p>You may use Veloura for personal, lawful purposes. Do not misuse the website, interfere with its operation, attempt unauthorized access, or use its content in a way that infringes another person's rights.</p>
-      <h2>Products and Availability</h2>
-      <p>We aim to keep product descriptions, prices, availability, and images accurate. Information may change without notice, and products may be unavailable or subject to limits.</p>
-      <h2>Orders and Payments</h2>
-      <p>Product selections and cart features are provided for shopping purposes. An order is accepted only when confirmed by Veloura. The current checkout experience is a demonstration and does not process a real payment.</p>
-      <h2>Intellectual Property</h2>
-      <p>Veloura's name, design, text, graphics, and other original content belong to Veloura or its licensors. You may not copy, reproduce, or redistribute that content without written permission.</p>
-      <h2>Disclaimer</h2>
-      <p>The website is provided on an as-is and as-available basis. To the extent permitted by law, Veloura is not responsible for interruptions, errors, or losses resulting from your use of the site.</p>
-      <h2>Changes to These Terms</h2>
-      <p>We may update these terms when the website or its services change. The revised version will be posted on this page with a new update date.</p>
-      <h2>Contact</h2>
-      <p>Questions about these terms can be sent to <a href="mailto:hello@veloura.com">hello@veloura.com</a>.</p>
-    </article>
+      <div class="legal-hero-flourish"></div>
+      <p class="legal-updated">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;opacity:.7"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Last updated: September 3, 2026
+      </p>
+    </div>
+  </section>
+
+  <main class="legal-main">
+    <div class="legal-layout">
+      <aside class="legal-sidebar">
+        <nav class="legal-toc" aria-label="Table of contents">
+          <div class="legal-toc-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Contents
+          </div>
+          <div class="legal-toc-list">
+            <a class="legal-toc-item active" href="#section-0">Using Our Website</a>
+            <a class="legal-toc-item" href="#section-1">Products and Availability</a>
+            <a class="legal-toc-item" href="#section-2">Orders and Payments</a>
+            <a class="legal-toc-item" href="#section-3">Intellectual Property</a>
+            <a class="legal-toc-item" href="#section-4">Disclaimer</a>
+            <a class="legal-toc-item" href="#section-5">Changes to These Terms</a>
+            <a class="legal-toc-item" href="#section-6">Contact</a>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="legal-content-wrapper">
+        <article class="legal-content">
+          <p>These Terms of Service govern your use of the Veloura website. By using the site, you agree to follow these terms and all applicable laws.</p>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">01</span>
+              <h2 id="section-0">Using Our Website</h2>
+            </div>
+            <p>You may use Veloura for personal, lawful purposes. Do not misuse the website, interfere with its operation, attempt unauthorized access, or use its content in a way that infringes another person's rights.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">02</span>
+              <h2 id="section-1">Products and Availability</h2>
+            </div>
+            <p>We aim to keep product descriptions, prices, availability, and images accurate. Information may change without notice, and products may be unavailable or subject to limits.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">03</span>
+              <h2 id="section-2">Orders and Payments</h2>
+            </div>
+            <p>Product selections and cart features are provided for shopping purposes. An order is accepted only when confirmed by Veloura. The current checkout experience is a demonstration and does not process a real payment.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">04</span>
+              <h2 id="section-3">Intellectual Property</h2>
+            </div>
+            <p>Veloura's name, design, text, graphics, and other original content belong to Veloura or its licensors. You may not copy, reproduce, or redistribute that content without written permission.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">05</span>
+              <h2 id="section-4">Disclaimer</h2>
+            </div>
+            <p>The website is provided on an as-is and as-available basis. To the extent permitted by law, Veloura is not responsible for interruptions, errors, or losses resulting from your use of the site.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">06</span>
+              <h2 id="section-5">Changes to These Terms</h2>
+            </div>
+            <p>We may update these terms when the website or its services change. The revised version will be posted on this page with a new update date.</p>
+          </div>
+
+          <div class="legal-divider"></div>
+
+          <div class="legal-section">
+            <div class="legal-section-header">
+              <span class="legal-section-number">07</span>
+              <h2 id="section-6">Contact</h2>
+            </div>
+            <p>Questions about these terms can be sent to <a href="mailto:hello@veloura.com">hello@veloura.com</a>.</p>
+          </div>
+        </article>
+
+        <div class="legal-toc-mobile">
+          <button class="legal-toc-toggle" aria-expanded="false" aria-controls="mobile-toc-panel">
+            <span>Table of Contents</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="legal-toc-mobile-panel" id="mobile-toc-panel">
+            <div class="legal-toc-mobile-list">
+              <a class="legal-toc-item" href="#section-0">Using Our Website</a>
+              <a class="legal-toc-item" href="#section-1">Products and Availability</a>
+              <a class="legal-toc-item" href="#section-2">Orders and Payments</a>
+              <a class="legal-toc-item" href="#section-3">Intellectual Property</a>
+              <a class="legal-toc-item" href="#section-4">Disclaimer</a>
+              <a class="legal-toc-item" href="#section-5">Changes to These Terms</a>
+              <a class="legal-toc-item" href="#section-6">Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <button class="legal-back-to-top" aria-label="Back to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
   <footer class="main-footer">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a href="index.html" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
+        <a href="/" class="logo"><img class="logo-mark" src="logo/logo.png" alt="">Veloura</a>
         <p>Where luxury meets beauty. Discover premium skincare, makeup, and fragrances crafted for your most radiant self.</p>
         <div class="social-links" id="socialLinks"></div>
       </div>
-      <div class="footer-col"><h4>Shop</h4><ul><li><a href="shop.html">All Products</a></li><li><a href="index.html#categories">Categories</a></li><li><a href="index.html#featured">Featured</a></li><li><a href="index.html#newArrivalsSection">New Arrivals</a></li><li><a href="index.html#bestSellersSection">Best Sellers</a></li></ul></div>
-      <div class="footer-col"><h4>Company</h4><ul><li><a href="index.html#about">About Us</a></li><li><a href="blog.html">Beauty Blog</a></li><li><a href="index.html#testimonials">Reviews</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li></ul></div>
+      <div class="footer-col"><h4>Shop</h4><ul><li><a href="/shop">All Products</a></li><li><a href="/#categories">Categories</a></li><li><a href="/#featured">Featured</a></li><li><a href="/#newArrivalsSection">New Arrivals</a></li><li><a href="/#bestSellersSection">Best Sellers</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="/#about">About Us</a></li><li><a href="/blog">Beauty Blog</a></li><li><a href="/#testimonials">Reviews</a></li></ul></div>
       <div class="footer-col"><h4>Contact</h4><ul id="footerContact"></ul></div>
     </div>
     <div class="footer-bottom">
       <span>&copy; 2026 Veloura. All rights reserved.</span>
-      <span><a href="privacy-policy.html">Privacy Policy</a> · <a href="terms-of-service.html">Terms of Service</a> · <a href="#">Shipping Info</a></span>
+      <span><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a> · <a href="#">Shipping Info</a></span>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

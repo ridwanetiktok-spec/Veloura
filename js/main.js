@@ -3666,8 +3666,8 @@ document.addEventListener(
   async () => {
     initTheme();
 
-    const client =
-      await waitForSupabase();
+    setupEventListeners();
+    const client = await waitForSupabase();
 
     if (!client) {
       console.error(
@@ -4469,3 +4469,71 @@ function shuffleArray(array) {
     }
     return shuffled;
 }
+
+// ============================================
+// LEGAL PAGES — INTERACTIVE ENHANCEMENTS
+// ============================================
+
+function initLegalPages() {
+  if (!document.body.classList.contains('legal-page')) return;
+
+  // Highlight active TOC section on scroll
+  const sections = document.querySelectorAll('.legal-section h2');
+  const tocItems = document.querySelectorAll('.legal-toc-item');
+
+  if (sections.length && tocItems.length) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          tocItems.forEach(item => {
+            item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, { rootMargin: '-12% 0px -75% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  // Mobile TOC toggle
+  const toggle = document.querySelector('.legal-toc-toggle');
+  const panel = document.querySelector('.legal-toc-mobile-panel');
+  if (toggle && panel) {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('open');
+      panel.classList.toggle('open');
+    });
+  }
+
+  // Smooth scroll for all TOC links
+  document.querySelectorAll('.legal-toc-item').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile panel
+        toggle?.classList.remove('open');
+        panel?.classList.remove('open');
+      }
+    });
+  });
+
+  // Back-to-top visibility
+  const backToTop = document.querySelector('.legal-back-to-top');
+  if (backToTop) {
+    window.addEventListener('scroll', () => {
+      backToTop.classList.toggle('visible', window.scrollY > 500);
+    }, { passive: true });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+}
+
+// Hook into existing boot sequence
+document.addEventListener('DOMContentLoaded', () => {
+  initLegalPages();
+});
