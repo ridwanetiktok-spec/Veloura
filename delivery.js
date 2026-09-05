@@ -113,7 +113,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const state = document.getElementById('state');
     const zipCode = document.getElementById('zipCode');
     const countrySearch = document.getElementById('countrySearch');
-    const countrySelect = document.getElementById('country');
+    const countryList = document.getElementById('countryList');
+    const countryHidden = document.getElementById('country');
     const deliveryNotes = document.getElementById('deliveryNotes');
 
     const cartItems = document.getElementById('cartItems');
@@ -125,72 +126,254 @@ document.addEventListener("DOMContentLoaded", function() {
     const popupMessage = document.getElementById('popup-message');
     const popupClose = document.getElementById('popup-close');
 
+    let selectedCountry = 'United States';
+
     // ==========================================
-    // POPULATE COUNTRIES
+    // LUXURY COUNTRY DROPDOWN
     // ==========================================
 
-    function populateCountries() {
-        // Populate select with all countries
-        COUNTRIES.forEach(function(country) {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (country === 'United States') {
-                option.selected = true;
-            }
-            countrySelect.appendChild(option);
+    function renderCountryList(filter = '') {
+        const query = filter.toLowerCase().trim();
+        let filteredCountries = COUNTRIES;
+
+        if (query) {
+            // Filter: countries that START WITH the query
+            filteredCountries = COUNTRIES.filter(function(country) {
+                return country.toLowerCase().startsWith(query);
+            });
+        }
+
+        if (filteredCountries.length === 0) {
+            countryList.innerHTML = `
+                <div class="country-dropdown-empty">
+                    <i class="fas fa-search" style="display:block;font-size:20px;margin-bottom:6px;opacity:0.5;"></i>
+                    No countries found
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        filteredCountries.forEach(function(country) {
+            const isSelected = (country === selectedCountry);
+            const flag = getCountryFlag(country);
+            html += `
+                <div class="country-dropdown-item ${isSelected ? 'selected' : ''}" data-country="${country}">
+                    <span class="country-flag">${flag}</span>
+                    <span class="country-name">${country}</span>
+                    <span class="country-check">✓</span>
+                </div>
+            `;
         });
 
-        // Set search input placeholder
-        countrySearch.placeholder = 'Search country...';
-        
-        // Set initial value
-        countrySearch.value = 'United States';
+        countryList.innerHTML = html;
+
+        // Click handler for each country
+        countryList.querySelectorAll('.country-dropdown-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const country = this.dataset.country;
+                selectCountry(country);
+                closeDropdown();
+            });
+        });
     }
 
-    populateCountries();
+    function getCountryFlag(country) {
+        // Simple emoji flags for common countries
+        const flags = {
+            'United States': '🇺🇸',
+            'United Kingdom': '🇬🇧',
+            'Canada': '🇨🇦',
+            'Australia': '🇦🇺',
+            'New Zealand': '🇳🇿',
+            'France': '🇫🇷',
+            'Germany': '🇩🇪',
+            'Italy': '🇮🇹',
+            'Spain': '🇪🇸',
+            'Portugal': '🇵🇹',
+            'Netherlands': '🇳🇱',
+            'Belgium': '🇧🇪',
+            'Switzerland': '🇨🇭',
+            'Austria': '🇦🇹',
+            'Sweden': '🇸🇪',
+            'Norway': '🇳🇴',
+            'Denmark': '🇩🇰',
+            'Finland': '🇫🇮',
+            'Ireland': '🇮🇪',
+            'Greece': '🇬🇷',
+            'Poland': '🇵🇱',
+            'Czechia': '🇨🇿',
+            'Ukraine': '🇺🇦',
+            'Russia': '🇷🇺',
+            'Turkey': '🇹🇷',
+            'China': '🇨🇳',
+            'Japan': '🇯🇵',
+            'South Korea': '🇰🇷',
+            'India': '🇮🇳',
+            'Brazil': '🇧🇷',
+            'Argentina': '🇦🇷',
+            'Mexico': '🇲🇽',
+            'Chile': '🇨🇱',
+            'Colombia': '🇨🇴',
+            'Peru': '🇵🇪',
+            'Venezuela': '🇻🇪',
+            'Cuba': '🇨🇺',
+            'Morocco': '🇲🇦',
+            'Algeria': '🇩🇿',
+            'Tunisia': '🇹🇳',
+            'Egypt': '🇪🇬',
+            'South Africa': '🇿🇦',
+            'Nigeria': '🇳🇬',
+            'Kenya': '🇰🇪',
+            'Ethiopia': '🇪🇹',
+            'United Arab Emirates': '🇦🇪',
+            'Saudi Arabia': '🇸🇦',
+            'Qatar': '🇶🇦',
+            'Kuwait': '🇰🇼',
+            'Israel': '🇮🇱',
+            'Jordan': '🇯🇴',
+            'Lebanon': '🇱🇧',
+            'Iran': '🇮🇷',
+            'Iraq': '🇮🇶',
+            'Pakistan': '🇵🇰',
+            'Bangladesh': '🇧🇩',
+            'Indonesia': '🇮🇩',
+            'Malaysia': '🇲🇾',
+            'Singapore': '🇸🇬',
+            'Thailand': '🇹🇭',
+            'Vietnam': '🇻🇳',
+            'Philippines': '🇵🇭',
+            'Jamaica': '🇯🇲',
+            'Dominican Republic': '🇩🇴',
+            'Haiti': '🇭🇹',
+            'Bahamas': '🇧🇸',
+            'Costa Rica': '🇨🇷',
+            'Panama': '🇵🇦',
+            'Guatemala': '🇬🇹',
+            'Bolivia': '🇧🇴',
+            'Ecuador': '🇪🇨',
+            'Uruguay': '🇺🇾',
+            'Paraguay': '🇵🇾',
+            'Malta': '🇲🇹',
+        };
+        return flags[country] || '🌍';
+    }
 
-    // ==========================================
-    // COUNTRY SEARCH
-    // ==========================================
+    function selectCountry(country) {
+        selectedCountry = country;
+        countrySearch.value = country;
+        countryHidden.value = country;
+        renderCountryList('');
+        closeDropdown();
+        // Trigger validation
+        validateForm();
+    }
 
+    function openDropdown() {
+        const dropdown = document.querySelector('.country-dropdown');
+        dropdown.classList.add('open');
+        renderCountryList(countrySearch.value);
+    }
+
+    function closeDropdown() {
+        const dropdown = document.querySelector('.country-dropdown');
+        dropdown.classList.remove('open');
+    }
+
+    function toggleDropdown() {
+        const dropdown = document.querySelector('.country-dropdown');
+        if (dropdown.classList.contains('open')) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    }
+
+    // Search input events
     countrySearch.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
+        const query = this.value;
+        const dropdown = document.querySelector('.country-dropdown');
         
-        // Show/hide options based on search
-        const options = countrySelect.options;
-        let hasMatch = false;
-        
-        for (let i = 0; i < options.length; i++) {
-            const country = options[i].value.toLowerCase();
-            if (country.includes(query)) {
-                options[i].style.display = '';
-                hasMatch = true;
-            } else {
-                options[i].style.display = 'none';
+        if (query.length > 0) {
+            dropdown.classList.add('open');
+            renderCountryList(query);
+        } else {
+            renderCountryList('');
+            // Keep dropdown open if it was open
+            if (dropdown.classList.contains('open')) {
+                renderCountryList('');
             }
         }
     });
 
-    // When select changes, update search input
-    countrySelect.addEventListener('change', function() {
-        countrySearch.value = this.value;
-        // Reset search filter
-        const options = this.options;
-        for (let i = 0; i < options.length; i++) {
-            options[i].style.display = '';
+    countrySearch.addEventListener('focus', function() {
+        openDropdown();
+    });
+
+    countrySearch.addEventListener('blur', function() {
+        // Delay close to allow click on dropdown item
+        setTimeout(function() {
+            closeDropdown();
+        }, 200);
+    });
+
+    // Keyboard support
+    countrySearch.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDropdown();
+            this.blur();
+        }
+        if (e.key === 'Enter') {
+            const selected = document.querySelector('.country-dropdown-item.selected');
+            if (selected) {
+                selectCountry(selected.dataset.country);
+            } else {
+                const first = document.querySelector('.country-dropdown-item');
+                if (first) {
+                    selectCountry(first.dataset.country);
+                }
+            }
+            closeDropdown();
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const items = document.querySelectorAll('.country-dropdown-item');
+            if (items.length > 0) {
+                let currentIdx = -1;
+                items.forEach(function(item, idx) {
+                    if (item.classList.contains('selected')) {
+                        currentIdx = idx;
+                    }
+                });
+                const nextIdx = (currentIdx + 1) % items.length;
+                items.forEach(function(item) { item.classList.remove('selected'); });
+                items[nextIdx].classList.add('selected');
+                items[nextIdx].scrollIntoView({ block: 'nearest' });
+            }
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const items = document.querySelectorAll('.country-dropdown-item');
+            if (items.length > 0) {
+                let currentIdx = 0;
+                items.forEach(function(item, idx) {
+                    if (item.classList.contains('selected')) {
+                        currentIdx = idx;
+                    }
+                });
+                const prevIdx = (currentIdx - 1 + items.length) % items.length;
+                items.forEach(function(item) { item.classList.remove('selected'); });
+                items[prevIdx].classList.add('selected');
+                items[prevIdx].scrollIntoView({ block: 'nearest' });
+            }
         }
     });
 
-    // When clicking on search input, show all options
-    countrySearch.addEventListener('focus', function() {
-        const options = countrySelect.options;
-        for (let i = 0; i < options.length; i++) {
-            options[i].style.display = '';
-        }
-        // Reset the search value to show all
-        if (this.value.trim() === '') {
-            // Keep as is
+    // Click outside to close
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.country-select-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            closeDropdown();
         }
     });
 
@@ -279,25 +462,20 @@ document.addEventListener("DOMContentLoaded", function() {
     loadCart();
 
     // ==========================================
-    // POPUP
+    // SHOW ERROR POPUP (Only for errors)
     // ==========================================
 
-    function showPopup(message, isSuccess = false) {
-        const icon = isSuccess ? '✅' : '❌';
-        const title = isSuccess ? 'Success!' : 'Error';
+    function showErrorPopup(message) {
         popupMessage.innerHTML = `
-            <div class="icon ${isSuccess ? 'success' : 'error'}">${icon}</div>
-            <h3>${title}</h3>
+            <div class="icon error">❌</div>
+            <h3>Error</h3>
             <p>${message}</p>
-            <button id="popupActionBtn">${isSuccess ? 'Continue to Payment' : 'OK'}</button>
+            <button id="popupActionBtn">OK</button>
         `;
         popupOverlay.classList.add('show');
 
         document.getElementById('popupActionBtn').addEventListener('click', function() {
             popupOverlay.classList.remove('show');
-            if (isSuccess) {
-                window.location.href = '/checkout';
-            }
         });
     }
 
@@ -340,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // ==========================================
-    // FORM SUBMIT
+    // FORM SUBMIT - DIRECT REDIRECT (No Success Popup)
     // ==========================================
 
     form.addEventListener('submit', async function(event) {
@@ -357,48 +535,48 @@ document.addEventListener("DOMContentLoaded", function() {
         const cityVal = city.value.trim();
         const stateVal = state.value.trim();
         const zipVal = zipCode.value.trim();
-        const countryVal = countrySelect.value;
+        const countryVal = countryHidden.value;
         const notes = deliveryNotes.value.trim();
 
         // ===== VALIDATION =====
         if (!name) {
-            showPopup('Please enter your full name.');
+            showErrorPopup('Please enter your full name.');
             fullName.focus();
             return;
         }
 
         if (!emailVal || !emailVal.includes('@')) {
-            showPopup('Please enter a valid email address.');
+            showErrorPopup('Please enter a valid email address.');
             email.focus();
             return;
         }
 
         if (!phoneVal || phoneVal.length < 7) {
-            showPopup('Please enter a valid phone number.');
+            showErrorPopup('Please enter a valid phone number.');
             phone.focus();
             return;
         }
 
         if (!addr1) {
-            showPopup('Please enter your address.');
+            showErrorPopup('Please enter your address.');
             addressLine1.focus();
             return;
         }
 
         if (!cityVal) {
-            showPopup('Please enter your city.');
+            showErrorPopup('Please enter your city.');
             city.focus();
             return;
         }
 
         if (!stateVal) {
-            showPopup('Please enter your state/province.');
+            showErrorPopup('Please enter your state/province.');
             state.focus();
             return;
         }
 
         if (!zipVal || zipVal.length < 3) {
-            showPopup('Please enter a valid ZIP/postal code.');
+            showErrorPopup('Please enter a valid ZIP/postal code.');
             zipCode.focus();
             return;
         }
@@ -406,7 +584,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Check cart
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
         if (cart.length === 0) {
-            showPopup('Your cart is empty. Please add items first.');
+            showErrorPopup('Your cart is empty. Please add items first.');
             return;
         }
 
@@ -436,12 +614,12 @@ document.addEventListener("DOMContentLoaded", function() {
             // Store in localStorage for payment page
             localStorage.setItem('delivery_infos', JSON.stringify(deliveryData));
 
-            // Show success and redirect
-            showPopup('Your delivery information has been saved successfully!', true);
+            // ✅ DIRECT REDIRECT - No popup, instant redirect
+            window.location.href = '/checkout';
 
         } catch (error) {
             console.error('❌ Error:', error);
-            showPopup('Error saving delivery information: ' + error.message);
+            showErrorPopup('Error saving delivery information: ' + error.message);
             
             continueBtn.disabled = false;
             continueBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Continue to Payment';
@@ -483,6 +661,11 @@ document.addEventListener("DOMContentLoaded", function() {
             input.addEventListener('change', validateForm);
         }
     });
+
+    // Initialize country dropdown with default
+    renderCountryList('');
+    countrySearch.value = 'United States';
+    countryHidden.value = 'United States';
 
     // Initial validation
     setTimeout(validateForm, 100);
