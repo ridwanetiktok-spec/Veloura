@@ -4314,7 +4314,6 @@ async function loadHeroFromMediaLibrary() {
 }
 
 // Apply hero images to respective sections
-// Apply hero images to respective sections
 function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
     // --- HOME PAGE HERO (Carousel) ---
     const heroContainer = document.getElementById('heroSlides');
@@ -4331,17 +4330,65 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
         // Clear existing content FIRST
         heroContainer.innerHTML = '';
         
-        heroContainer.innerHTML = homeHeroes.map((hero, i) => `
-            <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}" data-source="media-library">
-                <img src="${hero.image}" alt="${hero.name}">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h1>Welcome to Veloura</h1>
-                    <p>Luxury beauty products for your most radiant self</p>
-                    <a href="/shop" class="btn-primary">Shop Now</a>
+        // Define the slide texts - you can customize these
+        const slideTexts = [
+            {
+                headline: 'Discover Your Radiance',
+                subtitle: 'Luxury beauty products crafted for your most radiant self',
+                buttonText: 'Shop Now',
+                buttonLink: '/shop'
+            },
+            {
+                headline: 'Timeless Elegance',
+                subtitle: 'Curated collections for the modern beauty connoisseur',
+                buttonText: 'Explore Collection',
+                buttonLink: '/shop'
+            },
+            {
+                headline: 'Uncompromising Quality',
+                subtitle: 'Premium ingredients, exquisite craftsmanship, lasting results',
+                buttonText: 'View All Products',
+                buttonLink: '/shop'
+            },
+            {
+                headline: 'Beauty Redefined',
+                subtitle: 'Where science meets artistry for your most confident self',
+                buttonText: 'Discover More',
+                buttonLink: '/shop'
+            },
+            {
+                headline: 'Luxury Essentials',
+                subtitle: 'Timeless beauty staples for your daily ritual',
+                buttonText: 'Shop Essentials',
+                buttonLink: '/shop'
+            },
+            {
+                headline: 'Radiance Revealed',
+                subtitle: 'Unlock your natural glow with our premium formulas',
+                buttonText: 'Glow Up',
+                buttonLink: '/shop'
+            }
+        ];
+        
+        // Shuffle the slide texts so they display in random order
+        const shuffledTexts = shuffleArray([...slideTexts]);
+        
+        heroContainer.innerHTML = homeHeroes.map((hero, i) => {
+            // Get text for this slide, or use default if index exceeds array
+            const text = shuffledTexts[i] || shuffledTexts[0];
+            
+            return `
+                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}" data-source="media-library">
+                    <img src="${hero.image}" alt="${hero.name}">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h1>${text.headline}</h1>
+                        <p>${text.subtitle}</p>
+                        <a href="${text.buttonLink}" class="btn-primary">${text.buttonText}</a>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         if (dotsContainer) {
             dotsContainer.innerHTML = homeHeroes.map((_, i) => `
@@ -4553,4 +4600,18 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
     } else {
         console.log('ℹ️ No shop hero found or elements missing');
     }
+}
+
+// ============================================
+// HELPER FUNCTION - Shuffle Array
+// ============================================
+
+// Fisher-Yates shuffle algorithm
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
 }
