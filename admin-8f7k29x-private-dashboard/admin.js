@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - NO import.meta (Works with regular script)
+// SUPABASE INIT - Using import.meta.env (Works with type="module")
 // ============================================
 
 // Initialize Supabase client
@@ -12,12 +12,11 @@ function initSupabase() {
         return window.supabaseClient;
     }
 
-    console.log('🔄 Initializing Supabase client...');
+    console.log('🔄 Initializing Supabase client from environment...');
     
-    // Get from environment variables (Vite will replace these at build time)
-    // Fallback to window variables if not available
-    const supabaseUrl = window.VITE_SUPABASE_URL;
-    const supabaseKey = window.VITE_SUPABASE_ANON_KEY;
+    // ✅ Get from Vite environment variables (works with type="module")
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
     console.log('🔑 Supabase URL found:', !!supabaseUrl);
     console.log('🔑 Supabase Key found:', !!supabaseKey);
@@ -41,7 +40,6 @@ function initSupabase() {
         if (typeof window.supabase !== 'undefined') {
             window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
             console.log('✅ Supabase client loaded');
-            // Re-init auth after client loads
             if (typeof initAuth === 'function') {
                 initAuth();
             }
@@ -54,6 +52,9 @@ function initSupabase() {
     
     return null;
 }
+
+
+// ... rest of your code
 
 // Initialize Supabase
 const supabaseClient = initSupabase();
