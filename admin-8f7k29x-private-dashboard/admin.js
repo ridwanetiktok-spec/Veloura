@@ -1792,6 +1792,11 @@ window.togglePromoCode = togglePromoCode;
 // Tabs
 window.switchTab = switchTab;
 
+
+window.toggleNewsBanner = toggleNewsBanner;
+window.togglePromoBanner = togglePromoBanner;
+
+
 // ===== Boot =====
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
