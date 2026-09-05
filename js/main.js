@@ -3711,7 +3711,7 @@ function setupEventListeners() {
         return;
       }
       // ✅ Redirect to clean URL
-      window.location.href = '/checkout';
+      window.location.href = '/delivery-infos';
     });
   }
 }
@@ -4212,3 +4212,16 @@ function setupNewsletterForm() {
         }
     });
 }
+
+document.querySelectorAll('.checkout-btn, [href="/pay"], [href="/checkout"]').forEach(function(btn) {
+  if (btn.tagName === 'A' && btn.getAttribute('href')) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (cart.length === 0) {
+        showToast('Your cart is empty. Add some products first!', 'error');
+        return;
+      }
+      window.location.href = '/delivery-infos';
+    });
+  }
+});

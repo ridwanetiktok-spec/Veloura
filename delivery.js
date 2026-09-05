@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('popupActionBtn').addEventListener('click', function() {
             popupOverlay.classList.remove('show');
             if (isSuccess) {
-                window.location.href = '/chekout';
+                window.location.href = '/checkout';
             }
         });
     }
