@@ -16,8 +16,8 @@ function initSupabase() {
     
     // Get from environment variables (Vite will replace these at build time)
     // Fallback to window variables if not available
-    const supabaseUrl = window.SUPABASE_URL || 'https://jslinggtsisejnzmptdg.supabase.co';
-    const supabaseKey = window.SUPABASE_ANON_KEY || 'your-anon-key-here';
+    const supabaseUrl = window.VITE_SUPABASE_URL;
+    const supabaseKey = window.VITE_SUPABASE_ANON_KEY;
     
     console.log('🔑 Supabase URL found:', !!supabaseUrl);
     console.log('🔑 Supabase Key found:', !!supabaseKey);
