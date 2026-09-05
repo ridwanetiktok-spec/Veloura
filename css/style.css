@@ -2666,3 +2666,110 @@ html[data-theme="dark"] {
 [data-theme="dark"] .promo-banner-content p {
     color: rgba(255, 255, 255, 0.9);
 }
+/* ============================================
+   HERO SECTION - DARK MODE FIX
+   ============================================ */
+
+/* Hero section background fix for dark mode */
+[data-theme="dark"] .hero-section {
+    background: #0F0D10;
+}
+
+/* Hero overlay - darker for better text contrast in dark mode */
+[data-theme="dark"] .hero-overlay {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(248, 92, 125, 0.25) 50%, rgba(201, 168, 76, 0.3) 100%) !important;
+}
+
+/* Hero content text - ensure white in dark mode with strong shadow */
+[data-theme="dark"] .hero-content h1 {
+    color: #ffffff !important;
+    text-shadow: 0 4px 40px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .hero-content p {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Hero dots in dark mode */
+[data-theme="dark"] .hero-dot {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .hero-dot.active {
+    background: var(--gold-400);
+    border-color: var(--gold-500);
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.4);
+}
+
+/* Ensure hero images are visible in dark mode */
+[data-theme="dark"] .hero-slide img {
+    filter: brightness(0.85) contrast(1.05);
+}
+
+[data-theme="dark"] .hero-slide.active img {
+    filter: brightness(0.9) contrast(1.05);
+}
+
+/* ============================================
+   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE
+   ============================================ */
+
+/* Blog hero dark mode */
+[data-theme="dark"] .blog-hero-overlay {
+    background: rgba(0, 0, 0, 0.65) !important;
+}
+
+[data-theme="dark"] #blogHero .section-title,
+[data-theme="dark"] #blogHero h1 {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] #blogHero .section-subtitle,
+[data-theme="dark"] #blogHero p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] #blogHero .section-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Shop hero dark mode */
+[data-theme="dark"] .shop-hero-overlay {
+    background: rgba(0, 0, 0, 0.65) !important;
+}
+
+[data-theme="dark"] #shopHero .section-title,
+[data-theme="dark"] #shopHero h1 {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] #shopHero .section-subtitle,
+[data-theme="dark"] #shopHero p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] #shopHero .section-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ============================================
+   PROMO BANNER - DARK MODE FIX
+   ============================================ */
+
+[data-theme="dark"] .promo-banner-bg::after {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(248, 92, 125, 0.4) 100%);
+}
+
+[data-theme="dark"] .promo-banner-content h3 {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .promo-banner-content p {
+    color: rgba(255, 255, 255, 0.9) !important;
+}

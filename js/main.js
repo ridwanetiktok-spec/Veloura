@@ -4248,51 +4248,58 @@ async function loadHeroFromMediaLibrary() {
         }
 
         console.log('📚 Media library items found:', data.length);
+        console.log('📚 Media items:', data.map(m => ({ name: m.name, url: m.url })));
 
         const homeHeroes = [];
         const blogHeroes = [];
         const shopHeroes = [];
 
         data.forEach(media => {
-            const name = media.name.toLowerCase();
+            // Get filename without extension for checking
+            const fullName = media.name;
+            const nameWithoutExt = fullName.replace(/\.[^.]+$/, '');
+            const lowerName = fullName.toLowerCase();
+            
+            console.log(`🔍 Checking: ${fullName} (lower: ${lowerName})`);
             
             // Check for home hero images (home_1, home_2, home_3, home_4)
-            if (name.startsWith('home_') || name.startsWith('home-')) {
+            // Match: home_1.jpg, home-1.jpg, home_1.png, home-1.png, etc.
+            if (lowerName.startsWith('home_') || lowerName.startsWith('home-')) {
                 homeHeroes.push({
                     image: media.url,
-                    name: media.name,
+                    name: fullName,
                     id: media.id
                 });
-                console.log(`✅ Home hero: ${media.name}`);
+                console.log(`✅ Home hero detected: ${fullName}`);
             }
             // Check for blog hero image
-            else if (name.startsWith('blog_') || name.startsWith('blog-')) {
+            else if (lowerName.startsWith('blog_') || lowerName.startsWith('blog-')) {
                 if (blogHeroes.length === 0) {
                     blogHeroes.push({
                         image: media.url,
-                        name: media.name,
+                        name: fullName,
                         id: media.id
                     });
-                    console.log(`✅ Blog hero: ${media.name}`);
+                    console.log(`✅ Blog hero detected: ${fullName}`);
                 }
             }
             // Check for shop hero image
-            else if (name.startsWith('shop_') || name.startsWith('shop-')) {
+            else if (lowerName.startsWith('shop_') || lowerName.startsWith('shop-')) {
                 if (shopHeroes.length === 0) {
                     shopHeroes.push({
                         image: media.url,
-                        name: media.name,
+                        name: fullName,
                         id: media.id
                     });
-                    console.log(`✅ Shop hero: ${media.name}`);
+                    console.log(`✅ Shop hero detected: ${fullName}`);
                 }
             }
         });
 
         console.log('📊 Hero images summary:', {
-            home: homeHeroes.length,
-            blog: blogHeroes.length,
-            shop: shopHeroes.length
+            home: homeHeroes.map(h => h.name),
+            blog: blogHeroes.map(b => b.name),
+            shop: shopHeroes.map(s => s.name)
         });
 
         // Sort home heroes by name (home_1, home_2, etc.)
@@ -4315,47 +4322,97 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
 
     console.log('🏠 Home hero container:', !!heroContainer);
     console.log('🏠 Home heroes found:', homeHeroes.length);
+    console.log('🏠 Home heroes data:', homeHeroes);
 
+    // ALWAYS use media library images if available, regardless of existing slides
     if (heroContainer && homeHeroes.length > 0) {
-        const existingSlides = banners.heroSlides || [];
+        console.log('📸 Applying home hero images from media library:', homeHeroes.length);
         
-        // If we have media library images, use them
-        if (existingSlides.length === 0) {
-            console.log('📸 Applying home hero images from media library:', homeHeroes.length);
-            
-            heroContainer.innerHTML = homeHeroes.map((hero, i) => `
-                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}" data-source="media-library">
-                    <img src="${hero.image}" alt="${hero.name}">
+        // Clear existing content FIRST
+        heroContainer.innerHTML = '';
+        
+        heroContainer.innerHTML = homeHeroes.map((hero, i) => `
+            <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}" data-source="media-library">
+                <img src="${hero.image}" alt="${hero.name}">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <h1>Welcome to Veloura</h1>
+                    <p>Luxury beauty products for your most radiant self</p>
+                    <a href="/shop" class="btn-primary">Shop Now</a>
+                </div>
+            </div>
+        `).join('');
+
+        if (dotsContainer) {
+            dotsContainer.innerHTML = homeHeroes.map((_, i) => `
+                <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
+            `).join('');
+
+            // Re-bind dot click handlers
+            dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    goToSlide(parseInt(dot.dataset.dot));
+                });
+            });
+        }
+
+        // Restart autoplay with new slides
+        startAutoPlay();
+        console.log('✅ Home hero applied from media library!');
+        return; // Exit early to skip banner slides
+    }
+    
+    // Only use banner slides if NO media library images exist
+    if (heroContainer && homeHeroes.length === 0) {
+        const slides = banners.heroSlides || [];
+        console.log('📸 No media library images, checking banner slides:', slides.length);
+        
+        if (slides.length > 0) {
+            console.log('📸 Using banner hero slides as fallback');
+            heroContainer.innerHTML = slides.map((slide, i) => `
+                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}">
+                    <img src="${slide.image}" alt="${slide.headline}">
                     <div class="hero-overlay"></div>
                     <div class="hero-content">
-                        <h1>Welcome to Veloura</h1>
-                        <p>Luxury beauty products for your most radiant self</p>
-                        <a href="/shop" class="btn-primary">Shop Now</a>
+                        <h1>${slide.headline}</h1>
+                        <p>${slide.subheadline}</p>
+                        <a href="${slide.buttonLink}" class="btn-primary">${slide.buttonText}</a>
                     </div>
                 </div>
             `).join('');
 
             if (dotsContainer) {
-                dotsContainer.innerHTML = homeHeroes.map((_, i) => `
+                dotsContainer.innerHTML = slides.map((_, i) => `
                     <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
                 `).join('');
 
-                // Re-bind dot click handlers
                 dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
                     dot.addEventListener('click', () => {
                         goToSlide(parseInt(dot.dataset.dot));
                     });
                 });
             }
-
-            // Restart autoplay with new slides
             startAutoPlay();
-            console.log('✅ Home hero applied from media library!');
         } else {
-            console.log('ℹ️ Using existing banner hero slides instead of media library');
+            // No banner slides either - show default hero
+            console.log('📸 No banner slides, showing default hero');
+            heroContainer.innerHTML = `
+                <div class="hero-slide active" data-slide="0">
+                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1400&q=80" alt="Veloura Beauty">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h1>Discover Your Radiance</h1>
+                        <p>Luxury beauty products crafted for your most radiant self</p>
+                        <a href="/shop" class="btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            `;
+            
+            if (dotsContainer) {
+                dotsContainer.innerHTML = `<div class="hero-dot active" data-dot="0"></div>`;
+            }
+            startAutoPlay();
         }
-    } else {
-        console.log('ℹ️ No home hero images found in media library');
     }
 
     // --- BLOG PAGE HERO ---
@@ -4374,9 +4431,14 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
         const hero = blogHeroes[0];
         console.log('📸 Applying blog hero:', hero.image);
         
+        // Clear any existing inline styles
         blogHeroSection.style.backgroundImage = `url(${hero.image})`;
         blogHeroSection.style.backgroundSize = 'cover';
         blogHeroSection.style.backgroundPosition = 'center';
+        blogHeroSection.style.minHeight = '400px';
+        blogHeroSection.style.display = 'flex';
+        blogHeroSection.style.alignItems = 'center';
+        blogHeroSection.style.justifyContent = 'center';
         
         // Ensure overlay exists
         let overlay = blogHeroSection.querySelector('.blog-hero-overlay');
@@ -4389,25 +4451,34 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.35);
+                background: rgba(0, 0, 0, 0.45);
                 z-index: 1;
+                border-radius: inherit;
             `;
             blogHeroSection.style.position = 'relative';
             blogHeroSection.insertBefore(overlay, blogHeroSection.firstChild);
         }
         
+        // Ensure content is above overlay
+        const content = blogHeroSection.querySelector('div[style*="max-width"]') || blogHeroSection.querySelector('.blog-hero-content');
+        if (content) {
+            content.style.position = 'relative';
+            content.style.zIndex = '2';
+            content.style.color = '#fff';
+        }
+        
         if (blogHeroTitle) {
             const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
-            const cleanName = nameWithoutExt.replace(/^(blog[_-])/, '').replace(/[_-]/g, ' ');
+            const cleanName = nameWithoutExt.replace(/^(blog[_-])/i, '').replace(/[_-]/g, ' ');
             blogHeroTitle.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Beauty Blog';
             blogHeroTitle.style.color = '#fff';
-            blogHeroTitle.style.textShadow = '0 2px 8px rgba(0,0,0,0.3)';
+            blogHeroTitle.style.textShadow = '0 2px 12px rgba(0,0,0,0.5)';
         }
         
         if (blogHeroSubtitle) {
             blogHeroSubtitle.textContent = 'Discover expert beauty tips and inspiration';
             blogHeroSubtitle.style.color = 'rgba(255,255,255,0.9)';
-            blogHeroSubtitle.style.textShadow = '0 1px 4px rgba(0,0,0,0.2)';
+            blogHeroSubtitle.style.textShadow = '0 1px 8px rgba(0,0,0,0.4)';
         }
         
         console.log('✅ Blog hero applied!');
@@ -4434,6 +4505,10 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
         shopHeroSection.style.backgroundImage = `url(${hero.image})`;
         shopHeroSection.style.backgroundSize = 'cover';
         shopHeroSection.style.backgroundPosition = 'center';
+        shopHeroSection.style.minHeight = '400px';
+        shopHeroSection.style.display = 'flex';
+        shopHeroSection.style.alignItems = 'center';
+        shopHeroSection.style.justifyContent = 'center';
         
         let overlay = shopHeroSection.querySelector('.shop-hero-overlay');
         if (!overlay) {
@@ -4445,25 +4520,33 @@ function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.35);
+                background: rgba(0, 0, 0, 0.45);
                 z-index: 1;
+                border-radius: inherit;
             `;
             shopHeroSection.style.position = 'relative';
             shopHeroSection.insertBefore(overlay, shopHeroSection.firstChild);
         }
         
+        const content = shopHeroSection.querySelector('div[style*="max-width"]') || shopHeroSection.querySelector('.shop-hero-content');
+        if (content) {
+            content.style.position = 'relative';
+            content.style.zIndex = '2';
+            content.style.color = '#fff';
+        }
+        
         if (shopHeroTitle) {
             const nameWithoutExt = hero.name.replace(/\.[^.]+$/, '');
-            const cleanName = nameWithoutExt.replace(/^(shop[_-])/, '').replace(/[_-]/g, ' ');
+            const cleanName = nameWithoutExt.replace(/^(shop[_-])/i, '').replace(/[_-]/g, ' ');
             shopHeroTitle.textContent = cleanName.charAt(0).toUpperCase() + cleanName.slice(1) || 'Shop All Luxury Beauty';
             shopHeroTitle.style.color = '#fff';
-            shopHeroTitle.style.textShadow = '0 2px 8px rgba(0,0,0,0.3)';
+            shopHeroTitle.style.textShadow = '0 2px 12px rgba(0,0,0,0.5)';
         }
         
         if (shopHeroSubtitle) {
             shopHeroSubtitle.textContent = 'Discover our complete collection of premium beauty products';
             shopHeroSubtitle.style.color = 'rgba(255,255,255,0.9)';
-            shopHeroSubtitle.style.textShadow = '0 1px 4px rgba(0,0,0,0.2)';
+            shopHeroSubtitle.style.textShadow = '0 1px 8px rgba(0,0,0,0.4)';
         }
         
         console.log('✅ Shop hero applied!');
