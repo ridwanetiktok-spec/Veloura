@@ -962,59 +962,74 @@ async function toggleCategoryFeatured(id) {
   }
 }
 
-// ===== Banners Manager =====
 function renderBannersManager() {
-  // News banner
-  const nb = adminBanners.newsBanner || {};
-  document.getElementById('nbText').value = nb.text || '';
-  document.getElementById('nbEnabled').checked = nb.enabled || false;
+    // News banner
+    const nb = adminBanners.newsBanner || {};
+    document.getElementById('nbText').value = nb.text || '';
+    const nbToggle = document.getElementById('nbToggle');
+    if (nbToggle) {
+        if (nb.enabled) {
+            nbToggle.classList.add('on');
+        } else {
+            nbToggle.classList.remove('on');
+        }
+    }
 
-  // Promo banner
-  const pb = adminBanners.promoBanner || {};
-  document.getElementById('pbTitle').value = pb.title || '';
-  document.getElementById('pbSubtitle').value = pb.subtitle || '';
-  document.getElementById('pbButtonText').value = pb.buttonText || '';
-  document.getElementById('pbButtonLink').value = pb.buttonLink || '';
-  document.getElementById('pbBgImage').value = pb.backgroundImage || '';
-  document.getElementById('pbStartDate').value = pb.startDate || '';
-  document.getElementById('pbEndDate').value = pb.endDate || '';
-  document.getElementById('pbEnabled').checked = pb.enabled || false;
-}
+    // Promo banner
+    const pb = adminBanners.promoBanner || {};
+    document.getElementById('pbTitle').value = pb.title || '';
+    document.getElementById('pbSubtitle').value = pb.subtitle || '';
+    document.getElementById('pbButtonText').value = pb.buttonText || '';
+    document.getElementById('pbButtonLink').value = pb.buttonLink || '';
+    document.getElementById('pbBgImage').value = pb.backgroundImage || '';
+    document.getElementById('pbStartDate').value = pb.startDate || '';
+    document.getElementById('pbEndDate').value = pb.endDate || '';
+    const pbToggle = document.getElementById('pbToggle');
+    if (pbToggle) {
+        if (pb.enabled) {
+            pbToggle.classList.add('on');
+        } else {
+            pbToggle.classList.remove('on');
+        }
+    }
+} 
 
 async function saveNewsBanner() {
-  adminBanners.newsBanner = {
-    enabled: document.getElementById('nbEnabled').checked,
-    text: document.getElementById('nbText').value,
-    location: 'top',
-    schedule: { start: '2026-01-01', end: '2026-12-31' }
-  };
-  try {
-    await dbSaveBanners(adminBanners);
-    await loadAdminData();
-    showAdminToast('News banner saved successfully!', 'success');
-  } catch (error) {
-    showAdminToast(`News banner save failed: ${error.message}`, 'error');
-  }
+    const toggle = document.getElementById('nbToggle');
+    adminBanners.newsBanner = {
+        enabled: toggle.classList.contains('on'),
+        text: document.getElementById('nbText').value,
+        location: 'top',
+        schedule: { start: '2026-01-01', end: '2026-12-31' }
+    };
+    try {
+        await dbSaveBanners(adminBanners);
+        await loadAdminData();
+        showAdminToast('News banner saved successfully!', 'success');
+    } catch (error) {
+        showAdminToast(`News banner save failed: ${error.message}`, 'error');
+    }
 }
 
 async function savePromoBanner() {
-  adminBanners.promoBanner = {
-    enabled: document.getElementById('pbEnabled').checked,
-    title: document.getElementById('pbTitle').value,
-    subtitle: document.getElementById('pbSubtitle').value,
-    buttonText: document.getElementById('pbButtonText').value,
-    buttonLink: document.getElementById('pbButtonLink').value,
-    backgroundImage: document.getElementById('pbBgImage').value,
-    startDate: document.getElementById('pbStartDate').value,
-    endDate: document.getElementById('pbEndDate').value
-  };
-  try {
-    await dbSaveBanners(adminBanners);
-    await loadAdminData();
-    showAdminToast('Promo banner saved successfully!', 'success');
-  } catch (error) {
-    showAdminToast(`Promo banner save failed: ${error.message}`, 'error');
-  }
+    const toggle = document.getElementById('pbToggle');
+    adminBanners.promoBanner = {
+        enabled: toggle.classList.contains('on'),
+        title: document.getElementById('pbTitle').value,
+        subtitle: document.getElementById('pbSubtitle').value,
+        buttonText: document.getElementById('pbButtonText').value,
+        buttonLink: document.getElementById('pbButtonLink').value,
+        backgroundImage: document.getElementById('pbBgImage').value,
+        startDate: document.getElementById('pbStartDate').value,
+        endDate: document.getElementById('pbEndDate').value
+    };
+    try {
+        await dbSaveBanners(adminBanners);
+        await loadAdminData();
+        showAdminToast('Promo banner saved successfully!', 'success');
+    } catch (error) {
+        showAdminToast(`Promo banner save failed: ${error.message}`, 'error');
+    }
 }
 
 // ===== Hero Manager =====
@@ -1781,3 +1796,65 @@ window.switchTab = switchTab;
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
 });
+
+// ==========================================
+// TOGGLE BANNER FUNCTIONS
+// ==========================================
+
+async function toggleNewsBanner() {
+    const toggle = document.getElementById('nbToggle');
+    const isEnabled = toggle.classList.contains('on');
+    
+    // Toggle the visual state
+    toggle.classList.toggle('on');
+    
+    // Update the data
+    adminBanners.newsBanner = {
+        ...adminBanners.newsBanner,
+        enabled: !isEnabled,
+        text: document.getElementById('nbText').value || 'Default announcement text',
+        location: 'top',
+        schedule: { start: '2026-01-01', end: '2026-12-31' }
+    };
+    
+    try {
+        await dbSaveBanners(adminBanners);
+        await loadAdminData();
+        showAdminToast(`News banner ${!isEnabled ? 'enabled' : 'disabled'} successfully!`, 'success');
+    } catch (error) {
+        // Revert toggle on error
+        toggle.classList.toggle('on');
+        showAdminToast(`Failed to update news banner: ${error.message}`, 'error');
+    }
+}
+
+async function togglePromoBanner() {
+    const toggle = document.getElementById('pbToggle');
+    const isEnabled = toggle.classList.contains('on');
+    
+    // Toggle the visual state
+    toggle.classList.toggle('on');
+    
+    // Update the data
+    adminBanners.promoBanner = {
+        ...adminBanners.promoBanner,
+        enabled: !isEnabled,
+        title: document.getElementById('pbTitle').value || 'Promo Banner',
+        subtitle: document.getElementById('pbSubtitle').value || '',
+        buttonText: document.getElementById('pbButtonText').value || 'Shop Now',
+        buttonLink: document.getElementById('pbButtonLink').value || '#shop',
+        backgroundImage: document.getElementById('pbBgImage').value || '',
+        startDate: document.getElementById('pbStartDate').value || '',
+        endDate: document.getElementById('pbEndDate').value || ''
+    };
+    
+    try {
+        await dbSaveBanners(adminBanners);
+        await loadAdminData();
+        showAdminToast(`Promo banner ${!isEnabled ? 'enabled' : 'disabled'} successfully!`, 'success');
+    } catch (error) {
+        // Revert toggle on error
+        toggle.classList.toggle('on');
+        showAdminToast(`Failed to update promo banner: ${error.message}`, 'error');
+    }
+}
