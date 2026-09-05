@@ -517,10 +517,6 @@ textarea {
     font-weight: 600;
 }
 
-.country-dropdown-item .country-flag {
-    font-size: 16px;
-    opacity: 0.7;
-}
 
 .country-dropdown-item .country-name {
     flex: 1;

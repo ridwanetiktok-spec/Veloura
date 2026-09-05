@@ -137,7 +137,6 @@ document.addEventListener("DOMContentLoaded", function() {
         let filteredCountries = COUNTRIES;
 
         if (query) {
-            // Filter: countries that START WITH the query
             filteredCountries = COUNTRIES.filter(function(country) {
                 return country.toLowerCase().startsWith(query);
             });
@@ -156,10 +155,8 @@ document.addEventListener("DOMContentLoaded", function() {
         let html = '';
         filteredCountries.forEach(function(country) {
             const isSelected = (country === selectedCountry);
-            const flag = getCountryFlag(country);
             html += `
                 <div class="country-dropdown-item ${isSelected ? 'selected' : ''}" data-country="${country}">
-                    <span class="country-flag">${flag}</span>
                     <span class="country-name">${country}</span>
                     <span class="country-check">✓</span>
                 </div>
@@ -168,7 +165,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         countryList.innerHTML = html;
 
-        // Click handler for each country
         countryList.querySelectorAll('.country-dropdown-item').forEach(function(item) {
             item.addEventListener('click', function() {
                 const country = this.dataset.country;
@@ -178,86 +174,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    function getCountryFlag(country) {
-        // Simple emoji flags for common countries
-        const flags = {
-            'United States': '🇺🇸',
-            'United Kingdom': '🇬🇧',
-            'Canada': '🇨🇦',
-            'Australia': '🇦🇺',
-            'New Zealand': '🇳🇿',
-            'France': '🇫🇷',
-            'Germany': '🇩🇪',
-            'Italy': '🇮🇹',
-            'Spain': '🇪🇸',
-            'Portugal': '🇵🇹',
-            'Netherlands': '🇳🇱',
-            'Belgium': '🇧🇪',
-            'Switzerland': '🇨🇭',
-            'Austria': '🇦🇹',
-            'Sweden': '🇸🇪',
-            'Norway': '🇳🇴',
-            'Denmark': '🇩🇰',
-            'Finland': '🇫🇮',
-            'Ireland': '🇮🇪',
-            'Greece': '🇬🇷',
-            'Poland': '🇵🇱',
-            'Czechia': '🇨🇿',
-            'Ukraine': '🇺🇦',
-            'Russia': '🇷🇺',
-            'Turkey': '🇹🇷',
-            'China': '🇨🇳',
-            'Japan': '🇯🇵',
-            'South Korea': '🇰🇷',
-            'India': '🇮🇳',
-            'Brazil': '🇧🇷',
-            'Argentina': '🇦🇷',
-            'Mexico': '🇲🇽',
-            'Chile': '🇨🇱',
-            'Colombia': '🇨🇴',
-            'Peru': '🇵🇪',
-            'Venezuela': '🇻🇪',
-            'Cuba': '🇨🇺',
-            'Morocco': '🇲🇦',
-            'Algeria': '🇩🇿',
-            'Tunisia': '🇹🇳',
-            'Egypt': '🇪🇬',
-            'South Africa': '🇿🇦',
-            'Nigeria': '🇳🇬',
-            'Kenya': '🇰🇪',
-            'Ethiopia': '🇪🇹',
-            'United Arab Emirates': '🇦🇪',
-            'Saudi Arabia': '🇸🇦',
-            'Qatar': '🇶🇦',
-            'Kuwait': '🇰🇼',
-            'Israel': '🇮🇱',
-            'Jordan': '🇯🇴',
-            'Lebanon': '🇱🇧',
-            'Iran': '🇮🇷',
-            'Iraq': '🇮🇶',
-            'Pakistan': '🇵🇰',
-            'Bangladesh': '🇧🇩',
-            'Indonesia': '🇮🇩',
-            'Malaysia': '🇲🇾',
-            'Singapore': '🇸🇬',
-            'Thailand': '🇹🇭',
-            'Vietnam': '🇻🇳',
-            'Philippines': '🇵🇭',
-            'Jamaica': '🇯🇲',
-            'Dominican Republic': '🇩🇴',
-            'Haiti': '🇭🇹',
-            'Bahamas': '🇧🇸',
-            'Costa Rica': '🇨🇷',
-            'Panama': '🇵🇦',
-            'Guatemala': '🇬🇹',
-            'Bolivia': '🇧🇴',
-            'Ecuador': '🇪🇨',
-            'Uruguay': '🇺🇾',
-            'Paraguay': '🇵🇾',
-            'Malta': '🇲🇹',
-        };
-        return flags[country] || '🌍';
-    }
 
     function selectCountry(country) {
         selectedCountry = country;
