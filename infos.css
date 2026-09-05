@@ -682,13 +682,7 @@ input {
 }
 
 /* For subscribers tab - keep visible by default */
-#tabContentSubscribers {
-    display: block;
-}
 
-#tabContentPayments {
-    display: none;
-}
 /* =========================================================
    TABS
    ========================================================= */
@@ -729,13 +723,7 @@ input {
     display: none;
 }
 
-#tabContentSubscribers {
-    display: block;
-}
 
-#tabContentPayments {
-    display: none;
-}
 /* =========================================================
    TABS
    ========================================================= */
@@ -776,13 +764,7 @@ input {
     display: none;
 }
 
-#tabContentSubscribers {
-    display: block;
-}
 
-#tabContentPayments {
-    display: none;
-}
 /* =========================================================
    DELIVERY TABLE - Additional Styles
    ========================================================= */

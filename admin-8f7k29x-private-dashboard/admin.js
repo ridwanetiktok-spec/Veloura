@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Using environment variables only
+// SUPABASE INIT - Clean version with env vars only
 // ============================================
 
 function initSupabase() {
@@ -15,7 +15,7 @@ function initSupabase() {
     
     let supabaseUrl, supabaseKey;
     
-    // Try import.meta.env (Vite)
+    // Method 1: Try import.meta.env (Vite)
     try {
         if (typeof import.meta !== 'undefined' && import.meta.env) {
             supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -26,23 +26,36 @@ function initSupabase() {
         console.log('⚠️ import.meta.env not available');
     }
     
-    console.log('🔑 Supabase URL value:', supabaseUrl);
-    console.log('🔑 Supabase Key value:', supabaseKey ? '✅ Present' : '❌ Missing');
+    // Method 2: Try window.__ENV (passed from HTML)
+    if (!supabaseUrl && window.__ENV) {
+        supabaseUrl = window.__ENV.VITE_SUPABASE_URL;
+        supabaseKey = window.__ENV.VITE_SUPABASE_ANON_KEY;
+        console.log('🔑 Using window.__ENV');
+    }
     
-    if (!supabaseUrl || !supabaseKey || supabaseUrl === '' || supabaseUrl === '{{VITE_SUPABASE_URL}}') {
-        console.error('❌ Supabase environment variables not found or invalid!');
-        console.error('URL:', supabaseUrl);
+    // Method 3: Try process.env (Node.js fallback)
+    if (!supabaseUrl && typeof process !== 'undefined' && process.env) {
+        supabaseUrl = process.env.VITE_SUPABASE_URL;
+        supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+        console.log('🔑 Using process.env');
+    }
+    
+    console.log('🔑 Supabase URL found:', !!supabaseUrl);
+    console.log('🔑 Supabase Key found:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+        console.error('❌ Supabase environment variables not found!');
         console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file');
         showAdminToast('Supabase is not configured. Check your environment variables.', 'error');
         return null;
     }
 
-    // Validate URL format
+    // Validate URL
     try {
         new URL(supabaseUrl);
     } catch (e) {
         console.error('❌ Invalid Supabase URL:', supabaseUrl);
-        showAdminToast('Invalid Supabase URL format. Please check your .env file.', 'error');
+        showAdminToast('Invalid Supabase URL format.', 'error');
         return null;
     }
 
@@ -89,7 +102,7 @@ function initSupabase() {
     };
     script.onerror = () => {
         console.error('❌ Failed to load Supabase library');
-        showAdminToast('Failed to load Supabase library. Check your internet connection.', 'error');
+        showAdminToast('Failed to load Supabase library.', 'error');
     };
     document.head.appendChild(script);
     
@@ -310,7 +323,6 @@ async function dbSaveBanners(banners) {
 }
 
 // ===== Auth Functions =====
-// ===== Auth Functions =====
 function initAuth() {
   const loginScreen = document.getElementById('loginScreen');
   const adminLayout = document.getElementById('adminLayout');
@@ -327,8 +339,10 @@ function initAuth() {
       if (isAuthenticated) {
         loginScreen.classList.add('hidden');
         adminLayout.classList.add('active');
-        initAdmin();
-        showAdminToast('Welcome back, Admin!', 'success');
+        loadAdminData().then(() => {
+          initAdmin();
+          showAdminToast('Welcome back, Admin!', 'success');
+        }).catch(() => {});
       }
     });
   }
@@ -375,8 +389,10 @@ function initAuth() {
         isAuthenticated = true;
         loginScreen.classList.add('hidden');
         adminLayout.classList.add('active');
-        initAdmin();
-        showAdminToast('Welcome back, Admin!', 'success');
+        loadAdminData().then(() => {
+          initAdmin();
+          showAdminToast('Welcome back, Admin!', 'success');
+        }).catch(() => {});
         document.getElementById('loginForm').reset();
       } else {
         errorEl.textContent = 'No session created. Please try again.';
@@ -1706,7 +1722,6 @@ function switchTab(tabId, btn) {
 }
 
 // ===== Boot =====
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadAdminData();
+document.addEventListener('DOMContentLoaded', () => {
   initAuth();
 });
