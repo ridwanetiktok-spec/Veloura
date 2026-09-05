@@ -162,3 +162,21 @@ function getHtmlInputs() {
   
   return inputs
 }
+// === ADMIN LIB FOLDER (if needed) ===
+try {
+    const adminLibDir = resolve(__dirname, 'dist/admin-8f7k29x-private-dashboard/lib')
+    mkdirSync(adminLibDir, { recursive: true })
+    
+    // Check if lib/supabase.js exists
+    try {
+        copyFileSync(
+            resolve(__dirname, 'admin-8f7k29x-private-dashboard/lib/supabase.js'),
+            resolve(adminLibDir, 'supabase.js')
+        )
+        console.log('✅ admin lib/supabase.js copied')
+    } catch (e) {
+        console.log('⚠️ admin lib/supabase.js not found (optional)')
+    }
+} catch (e) {
+    console.log('⚠️ admin lib folder not created')
+}

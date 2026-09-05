@@ -87,7 +87,7 @@
         </div>
       </nav>
       <div class="sidebar-footer">
-        <a href="../index.html">
+        <a href="/">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           View Store
         </a>
@@ -99,7 +99,7 @@
       <div class="admin-topbar">
         <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
         <div class="topbar-actions">
-          <a href="../index.html" class="view-site-btn">
+          <a href="/" class="view-site-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             View Store
           </a>
@@ -600,7 +600,7 @@
         </div>
 
         <!-- ===== MEDIA LIBRARY PAGE ===== -->
-        <!-- <div class="admin-page" id="page-media">
+        <div class="admin-page" id="page-media">
           <div class="panel">
             <div class="panel-header"><span class="panel-title">Add New Media</span></div>
             <div class="panel-body">
@@ -629,65 +629,21 @@
           </div>
 
           <div class="panel">
-            <div class="panel-header">
-              <span class="panel-title">Media Library</span>
-              <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none">
+            <div class="panel-header" style="display:flex;gap:12px;flex-wrap:wrap">
+              <span class="panel-title" style="flex:1">Media Library</span>
+              <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;width:200px">
+              <select id="mediaFolderFilter" onchange="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--admin-bg)">
+                <option value="">All Folders</option>
+              </select>
             </div>
             <div class="panel-body">
-              <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">Click any image to copy its URL.</p>
+              <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">
+                💡 Click an image to copy its URL. Use the <strong>Replace</strong> button to update an image, or <strong>Delete</strong> to remove it.
+              </p>
               <div class="media-grid" id="mediaGrid"></div>
             </div>
           </div>
-        </div> -->
-
-
-<!-- ===== MEDIA LIBRARY PAGE ===== -->
-<div class="admin-page" id="page-media">
-  <div class="panel">
-    <div class="panel-header"><span class="panel-title">Add New Media</span></div>
-    <div class="panel-body">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Image URL *</label>
-          <input type="url" id="newMediaUrl" placeholder="https://example.com/image.jpg">
         </div>
-        <div class="form-group">
-          <label>Name</label>
-          <input type="text" id="newMediaName" placeholder="e.g., Lipstick Hero Shot">
-        </div>
-        <div class="form-group">
-          <label>Folder</label>
-          <select id="newMediaFolder">
-            <option value="products">Products</option>
-            <option value="banners">Banners</option>
-            <option value="hero">Hero</option>
-            <option value="blog">Blog</option>
-            <option value="general">General</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn btn-primary" style="margin-top:16px" onclick="addMedia()">Add to Library</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-header" style="display:flex;gap:12px;flex-wrap:wrap">
-      <span class="panel-title" style="flex:1">Media Library</span>
-      <input type="text" id="mediaSearch" placeholder="Search media..." oninput="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;width:200px">
-      <select id="mediaFolderFilter" onchange="renderMediaLibrary()" style="padding:8px 16px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--admin-bg)">
-        <option value="">All Folders</option>
-      </select>
-    </div>
-    <div class="panel-body">
-      <p style="font-size:0.82rem;color:var(--admin-text-light);margin-bottom:16px">
-        💡 Click an image to copy its URL. Use the <strong>Replace</strong> button to update an image, or <strong>Delete</strong> to remove it.
-      </p>
-      <div class="media-grid" id="mediaGrid"></div>
-    </div>
-  </div>
-</div>
-
-
 
         <!-- ===== REVIEWS PAGE ===== -->
         <div class="admin-page" id="page-reviews">
@@ -733,7 +689,6 @@
             <div class="panel-body" id="reviewsList"></div>
           </div>
         </div>
-
 
         <!-- ===== PROMOTIONS PAGE ===== -->
         <div class="admin-page" id="page-promotions">
@@ -876,8 +831,11 @@
 
   <!-- Toast Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
+
+  <!-- Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="module" src="../lib/supabase.js"></script>
+
+  <!-- Load admin.js -->
   <script src="admin.js"></script>
 </body>
 </html>

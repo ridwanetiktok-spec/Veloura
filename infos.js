@@ -181,10 +181,22 @@ document.addEventListener('DOMContentLoaded', () => {
 // TAB SWITCHING
 // ============================================================
 
+// ============================================================
+// TAB SWITCHING - FIXED
+// ============================================================
+
 function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
     
+    // Remove active class from all tab contents
+    document.querySelectorAll('.tab-content').forEach(tc => {
+        tc.classList.remove('active');
+    });
+    
+    // Add active class to selected tab button
     if (tab === 'subscribers') {
         tabSubscribers.classList.add('active');
         tabContentSubscribers.classList.add('active');
@@ -196,6 +208,42 @@ function switchTab(tab) {
         tabContentDeliveries.classList.add('active');
     }
 }
+
+// Also update the INIT section to use the correct tab switching
+document.addEventListener('DOMContentLoaded', () => {
+    loginForm?.addEventListener('submit', handleLogin);
+    logoutBtn?.addEventListener('click', handleLogout);
+    
+    // Subscribers
+    refreshBtn?.addEventListener('click', loadSubscribers);
+    copyAllBtn?.addEventListener('click', copyAllEmails);
+    exportCsvBtn?.addEventListener('click', exportCsv);
+    searchInput?.addEventListener('input', renderSubscribers);
+    
+    // Payments
+    refreshPaymentsBtn?.addEventListener('click', loadPayments);
+    exportPaymentsCsvBtn?.addEventListener('click', exportPaymentsCsv);
+    paymentSearchInput?.addEventListener('input', renderPayments);
+    
+    // Deliveries
+    refreshDeliveriesBtn?.addEventListener('click', loadDeliveries);
+    exportDeliveriesCsvBtn?.addEventListener('click', exportDeliveriesCsv);
+    deliverySearchInput?.addEventListener('input', renderDeliveries);
+
+    // ✅ Tab switching - FIXED
+    tabSubscribers?.addEventListener('click', function() {
+        switchTab('subscribers');
+    });
+    tabPayments?.addEventListener('click', function() {
+        switchTab('payments');
+    });
+    tabDeliveries?.addEventListener('click', function() {
+        switchTab('deliveries');
+    });
+
+    // Check authentication on load
+    checkAuth();
+});
 
 // ============================================================
 // LOGIN - Using Supabase Auth

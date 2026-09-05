@@ -1,6 +1,63 @@
 // ============================================
 // Veloura Admin Dashboard JavaScript
 // ============================================
+// ============================================
+// SUPABASE INIT - Add this at the top!
+// ============================================
+
+// Initialize Supabase client
+function initSupabase() {
+    if (window.supabaseClient) {
+        console.log('✅ Supabase client already available');
+        return window.supabaseClient;
+    }
+
+    console.log('🔄 Initializing Supabase client...');
+    
+    const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || window.SUPABASE_URL;
+    const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
+    
+    console.log('🔑 Supabase URL found:', !!supabaseUrl);
+    console.log('🔑 Supabase Key found:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+        console.error('❌ Supabase environment variables not found.');
+        return null;
+    }
+
+    if (typeof window.supabase !== 'undefined') {
+        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase client initialized');
+        return window.supabaseClient;
+    }
+
+    // Load Supabase library dynamically
+    console.log('📦 Loading Supabase library dynamically...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = () => {
+        if (typeof window.supabase !== 'undefined') {
+            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            console.log('✅ Supabase client loaded');
+            // Re-init auth after client loads
+            initAuth();
+        }
+    };
+    script.onerror = () => {
+        console.error('❌ Failed to load Supabase library');
+    };
+    document.head.appendChild(script);
+    
+    return null;
+}
+
+// Initialize Supabase
+const supabaseClient = initSupabase();
+window.supabaseClient = supabaseClient;
+
+// ============================================
+// REST OF YOUR ADMIN.JS CODE BELOW
+// ============================================
 
 // ===== Auth =====
 let isAuthenticated = false;
@@ -16,6 +73,8 @@ let adminReviews = [];
 let mediaLibrary = [];
 let editingProductId = null;
 let selectedProducts = new Set();
+
+
 
 // ===== Data Loading =====
 // ===== Data Loading with Retry Logic =====
