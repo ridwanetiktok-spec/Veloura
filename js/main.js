@@ -939,6 +939,7 @@ function renderNewsBanner() {
 // ===== Hero Slider =====
 
 // ===== Hero Slider =====
+// ===== Hero Slider =====
 
 function renderHero() {
   const container = document.getElementById('heroSlides');
@@ -946,22 +947,15 @@ function renderHero() {
 
   if (!container) return;
 
-  // Check if we have hero slides from media library already loaded
-  // The media library images are applied in applyHeroImages()
-  // If the container already has content from media library, skip
+  // If container already has content (from media library), don't override
+  if (container.children.length > 0) {
+    console.log('✅ Hero already has content from media library, skipping renderHero');
+    return;
+  }
   
   const slides = banners.heroSlides || [];
   
-  // If no hero slides in banners but we have media library images,
-  // they would have been applied already in applyHeroImages()
-  // So only render from banners if there are slides OR if container is empty
-  
   if (slides.length === 0) {
-    // Check if container already has content from media library
-    if (container.children.length > 0) {
-      return; // Media library already rendered hero
-    }
-    
     // Fallback: show default hero
     container.innerHTML = `
       <div class="hero-slide active" data-slide="0">
@@ -1010,6 +1004,9 @@ function renderHero() {
   // Auto-play
   startAutoPlay();
 }
+
+
+
 function goToSlide(index) {
   const slides =
     document.querySelectorAll(
@@ -4229,6 +4226,7 @@ document.querySelectorAll('.checkout-btn, [href="/pay"], [href="/checkout"]').fo
 // ============================================
 
 // Load hero images from media library based on filename prefix
+// Load hero images from media library based on filename prefix
 async function loadHeroFromMediaLibrary() {
     const client = window.supabaseClient;
     if (!client) {
@@ -4237,7 +4235,6 @@ async function loadHeroFromMediaLibrary() {
     }
 
     try {
-        // Fetch all media from media_library
         const { data, error } = await client
             .from('media_library')
             .select('*')
@@ -4250,7 +4247,8 @@ async function loadHeroFromMediaLibrary() {
             return;
         }
 
-        // Separate images by prefix
+        console.log('📚 Media library items found:', data.length);
+
         const homeHeroes = [];
         const blogHeroes = [];
         const shopHeroes = [];
@@ -4265,27 +4263,36 @@ async function loadHeroFromMediaLibrary() {
                     name: media.name,
                     id: media.id
                 });
+                console.log(`✅ Home hero: ${media.name}`);
             }
             // Check for blog hero image
             else if (name.startsWith('blog_') || name.startsWith('blog-')) {
-                if (blogHeroes.length === 0) { // Only keep the first one
+                if (blogHeroes.length === 0) {
                     blogHeroes.push({
                         image: media.url,
                         name: media.name,
                         id: media.id
                     });
+                    console.log(`✅ Blog hero: ${media.name}`);
                 }
             }
             // Check for shop hero image
             else if (name.startsWith('shop_') || name.startsWith('shop-')) {
-                if (shopHeroes.length === 0) { // Only keep the first one
+                if (shopHeroes.length === 0) {
                     shopHeroes.push({
                         image: media.url,
                         name: media.name,
                         id: media.id
                     });
+                    console.log(`✅ Shop hero: ${media.name}`);
                 }
             }
+        });
+
+        console.log('📊 Hero images summary:', {
+            home: homeHeroes.length,
+            blog: blogHeroes.length,
+            shop: shopHeroes.length
         });
 
         // Sort home heroes by name (home_1, home_2, etc.)
@@ -4294,21 +4301,62 @@ async function loadHeroFromMediaLibrary() {
         // Apply to hero sections
         applyHeroImages(homeHeroes, blogHeroes, shopHeroes);
 
-        console.log('✅ Hero images loaded from media library:', {
-            home: homeHeroes.length,
-            blog: blogHeroes.length,
-            shop: shopHeroes.length
-        });
-
     } catch (error) {
         console.error('❌ Error loading hero images from media library:', error);
     }
 }
 
 // Apply hero images to respective sections
+// Apply hero images to respective sections
 function applyHeroImages(homeHeroes, blogHeroes, shopHeroes) {
     // --- HOME PAGE HERO (Carousel) ---
-    // ... keep existing code ...
+    const heroContainer = document.getElementById('heroSlides');
+    const dotsContainer = document.getElementById('heroDots');
+
+    console.log('🏠 Home hero container:', !!heroContainer);
+    console.log('🏠 Home heroes found:', homeHeroes.length);
+
+    if (heroContainer && homeHeroes.length > 0) {
+        const existingSlides = banners.heroSlides || [];
+        
+        // If we have media library images, use them
+        if (existingSlides.length === 0) {
+            console.log('📸 Applying home hero images from media library:', homeHeroes.length);
+            
+            heroContainer.innerHTML = homeHeroes.map((hero, i) => `
+                <div class="hero-slide ${i === 0 ? 'active' : ''}" data-slide="${i}" data-source="media-library">
+                    <img src="${hero.image}" alt="${hero.name}">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h1>Welcome to Veloura</h1>
+                        <p>Luxury beauty products for your most radiant self</p>
+                        <a href="/shop" class="btn-primary">Shop Now</a>
+                    </div>
+                </div>
+            `).join('');
+
+            if (dotsContainer) {
+                dotsContainer.innerHTML = homeHeroes.map((_, i) => `
+                    <div class="hero-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>
+                `).join('');
+
+                // Re-bind dot click handlers
+                dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
+                    dot.addEventListener('click', () => {
+                        goToSlide(parseInt(dot.dataset.dot));
+                    });
+                });
+            }
+
+            // Restart autoplay with new slides
+            startAutoPlay();
+            console.log('✅ Home hero applied from media library!');
+        } else {
+            console.log('ℹ️ Using existing banner hero slides instead of media library');
+        }
+    } else {
+        console.log('ℹ️ No home hero images found in media library');
+    }
 
     // --- BLOG PAGE HERO ---
     const blogHeroSection = document.getElementById('blogHero');
