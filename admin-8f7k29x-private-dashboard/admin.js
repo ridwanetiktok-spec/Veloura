@@ -1150,30 +1150,6 @@ async function toggleProductFlag(id, flag, value) {
 }
 
 // ===== Media Library =====
-// function renderMediaLibrary() {
-//   const container = document.getElementById('mediaGrid');
-//   if (!container) return;
-
-//   const filter = document.getElementById('mediaSearch')?.value?.toLowerCase() || '';
-
-//   let filtered = mediaLibrary;
-//   if (filter) {
-//     filtered = filtered.filter(m => m.name.toLowerCase().includes(filter));
-//   }
-
-//   container.innerHTML = filtered.map(m => `
-//     <div class="media-item" onclick="selectMedia('${m.url}')">
-//       <img src="${m.url}" alt="${m.name}" loading="lazy">
-//       <div class="media-item-name">${m.name}</div>
-//     </div>
-//   `).join('');
-
-//   if (filtered.length === 0) {
-//     container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>No media found. Add some below.</p></div>';
-//   }
-// }
-
-
 function renderMediaLibrary() {
   const container = document.getElementById('mediaGrid');
   if (!container) return;
@@ -1254,8 +1230,6 @@ function updateFolderFilter() {
   }
 }
 
-
-
 async function addMedia() {
   const url = document.getElementById('newMediaUrl').value;
   const name = document.getElementById('newMediaName').value || 'Untitled';
@@ -1289,9 +1263,6 @@ function selectMedia(url) {
   });
 }
 
-
-// ===== Media Library - Enhanced =====
-
 // Delete media item
 async function deleteMediaItem(id) {
   const mediaItem = mediaLibrary.find(m => m.id === id);
@@ -1300,7 +1271,6 @@ async function deleteMediaItem(id) {
     return;
   }
 
-  // Confirm deletion
   if (!confirm(`Are you sure you want to delete "${mediaItem.name}"? This action cannot be undone.`)) {
     return;
   }
@@ -1315,10 +1285,6 @@ async function deleteMediaItem(id) {
   }
 }
 
-
-
-// -------------------------------------------------------------------------
-
 // Replace media item (update URL and/or name)
 async function replaceMediaItem(id) {
   const mediaItem = mediaLibrary.find(m => m.id === id);
@@ -1327,7 +1293,6 @@ async function replaceMediaItem(id) {
     return;
   }
 
-  // Create a modal for replacement
   const modal = document.createElement('div');
   modal.className = 'admin-modal-overlay open';
   modal.id = 'replaceMediaModal';
@@ -1375,7 +1340,6 @@ async function replaceMediaItem(id) {
 
   document.body.appendChild(modal);
 
-  // Handle save
   document.getElementById('confirmReplaceBtn').addEventListener('click', async () => {
     const newUrl = document.getElementById('replaceMediaUrl').value.trim();
     const newName = document.getElementById('replaceMediaName').value.trim() || 'Untitled';
@@ -1405,14 +1369,10 @@ async function replaceMediaItem(id) {
   });
 }
 
-// Close replace media modal
 function closeReplaceMediaModal() {
   const modal = document.getElementById('replaceMediaModal');
   if (modal) modal.remove();
 }
-
-// -------------------------------------------------------------------------
-
 
 // ===== Blog Manager =====
 function renderBlogManager() {
@@ -1510,7 +1470,6 @@ async function deleteBlogPost(id) {
 
 // ===== Reviews Manager =====
 function renderReviewsManager() {
-  // Populate product dropdown in Add Review form
   const productSelect = document.getElementById('revProductSelect');
   if (productSelect && adminProducts.length > 0) {
     productSelect.innerHTML = '<option value="">-- General Store Review --</option>' +
@@ -1660,41 +1619,65 @@ function renderSettingsManager() {
   document.getElementById('setEmail').value = adminSettings.contact?.email || '';
   document.getElementById('setPhone').value = adminSettings.contact?.phone || '';
   document.getElementById('setAddress').value = adminSettings.contact?.address || '';
-  // ✅ Social Media - Reddit & Pinterest only
   document.getElementById('setReddit').value = adminSettings.socialMedia?.reddit || '';
   document.getElementById('setPinterest').value = adminSettings.socialMedia?.pinterest || '';
-  
   document.getElementById('setSeoTitle').value = adminSettings.seo?.title || '';
   document.getElementById('setSeoDesc').value = adminSettings.seo?.description || '';
 }
 
-// ===== Footer =====
+async function saveSettings() {
+  adminSettings.siteName = document.getElementById('setSiteName').value;
+  adminSettings.tagline = document.getElementById('setTagline').value;
+  
+  adminSettings.contact = {
+    email: document.getElementById('setEmail').value,
+    phone: document.getElementById('setPhone').value,
+    address: document.getElementById('setAddress').value
+  };
+  
+  adminSettings.socialMedia = {
+    reddit: document.getElementById('setReddit').value,
+    pinterest: document.getElementById('setPinterest').value
+  };
+  
+  adminSettings.seo = {
+    title: document.getElementById('setSeoTitle').value,
+    description: document.getElementById('setSeoDesc').value,
+    keywords: adminSettings.seo?.keywords || ''
+  };
 
+  try {
+    await dbSaveSingleton('settings', adminSettings);
+    await loadAdminData();
+    showAdminToast('Settings saved successfully!', 'success');
+  } catch (error) {
+    showAdminToast(`Settings save failed: ${error.message}`, 'error');
+  }
+}
+
+// ===== Footer =====
 function renderFooter() {
   const sm = settings.socialMedia || {};
 
   const socialContainer = document.getElementById('socialLinks');
 
   if (socialContainer) {
-    // FontAwesome icons for Reddit and Pinterest
     const icons = {
       reddit: '<i class="fa-brands fa-reddit-alien"></i>',
       pinterest: '<i class="fa-brands fa-pinterest"></i>'
     };
 
-    // Only Reddit and Pinterest
     const platforms = ['reddit', 'pinterest'];
     
     socialContainer.innerHTML = platforms
       .map(platform => {
         const url = sm[platform];
-        // Check if URL exists and is not empty
         if (url && url.trim() !== '') {
           return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${platform.charAt(0).toUpperCase() + platform.slice(1)}">${icons[platform]}</a>`;
         }
         return '';
       })
-      .filter(html => html !== '') // Remove empty strings
+      .filter(html => html !== '')
       .join('');
   }
 
@@ -1732,8 +1715,11 @@ function switchTab(tabId, btn) {
   btn.classList.add('active');
 }
 
+// ============================================
+// EXPOSE ALL FUNCTIONS TO GLOBAL SCOPE
+// ============================================
 
-// Make media library functions globally accessible for inline onclick handlers
+// Make ALL functions globally accessible for inline onclick handlers
 window.addMedia = addMedia;
 window.selectMedia = selectMedia;
 window.deleteMediaItem = deleteMediaItem;
@@ -1741,8 +1727,55 @@ window.replaceMediaItem = replaceMediaItem;
 window.closeReplaceMediaModal = closeReplaceMediaModal;
 window.renderMediaLibrary = renderMediaLibrary;
 window.updateFolderFilter = updateFolderFilter;
-window.saveSettings = saveSettings;
 
+// Settings
+window.saveSettings = saveSettings;
+window.renderSettingsManager = renderSettingsManager;
+
+// Products
+window.generateProduct = generateProduct;
+window.clearProductForm = clearProductForm;
+window.updateSubcategories = updateSubcategories;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.closeDeleteModal = closeDeleteModal;
+window.toggleSelectProduct = toggleSelectProduct;
+window.selectAllProducts = selectAllProducts;
+window.bulkDelete = bulkDelete;
+window.bulkSetStatus = bulkSetStatus;
+window.renderProductsTable = renderProductsTable;
+
+// Categories
+window.addCategory = addCategory;
+window.editCategory = editCategory;
+window.deleteCategory = deleteCategory;
+window.toggleCategoryFeatured = toggleCategoryFeatured;
+
+// Banners
+window.saveNewsBanner = saveNewsBanner;
+window.savePromoBanner = savePromoBanner;
+window.addHeroSlide = addHeroSlide;
+window.editHeroSlide = editHeroSlide;
+window.deleteHeroSlide = deleteHeroSlide;
+
+// Featured
+window.toggleProductFlag = toggleProductFlag;
+
+// Blog
+window.addBlogPost = addBlogPost;
+window.editBlogPost = editBlogPost;
+window.deleteBlogPost = deleteBlogPost;
+
+// Reviews
+window.addAdminReview = addAdminReview;
+window.deleteAdminReview = deleteAdminReview;
+
+// Promotions
+window.addPromoCode = addPromoCode;
+window.togglePromoCode = togglePromoCode;
+
+// Tabs
+window.switchTab = switchTab;
 
 // ===== Boot =====
 document.addEventListener('DOMContentLoaded', () => {
