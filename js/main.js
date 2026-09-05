@@ -2099,212 +2099,86 @@ let shopFilters = {
   categories: [],
   maxPrice: 200,
   search: '',
-  sort: 'featured'
+  sort: 'all'
 };
 
 function renderShop() {
-  const container =
-    document.getElementById(
-      'shopProducts'
-    );
-
+  const container = document.getElementById('shopProducts');
   if (!container) return;
 
-  let filtered =
-    products.filter(
-      p =>
-        p.status ===
-        'Active'
-    );
+  let filtered = products.filter(p => p.status === 'Active');
 
   // Category filter
-  if (
-    shopFilters.categories
-      .length > 0
-  ) {
-    filtered =
-      filtered.filter(
-        p =>
-          shopFilters.categories.includes(
-            p.category
-          )
-      );
+  if (shopFilters.categories.length > 0) {
+    filtered = filtered.filter(p => shopFilters.categories.includes(p.category));
   }
 
   // Price filter
-  filtered =
-    filtered.filter(p => {
-      const price =
-        p.salePrice ||
-        p.price;
-
-      return (
-        price <=
-        shopFilters.maxPrice
-      );
-    });
+  filtered = filtered.filter(p => {
+    const price = p.salePrice || p.price;
+    return price <= shopFilters.maxPrice;
+  });
 
   // Search
-  if (
-    shopFilters.search
-  ) {
-    const q =
-      shopFilters.search.toLowerCase();
-
-    filtered =
-      filtered.filter(
-        p =>
-          p.name
-            .toLowerCase()
-            .includes(q) ||
-          p.description
-            .toLowerCase()
-            .includes(q) ||
-          p.tags.some(
-            t =>
-              t.toLowerCase()
-                .includes(q)
-          ) ||
-          p.category
-            .toLowerCase()
-            .includes(q)
-      );
+  if (shopFilters.search) {
+    const q = shopFilters.search.toLowerCase();
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q)) ||
+      p.category.toLowerCase().includes(q)
+    );
   }
 
   // Sort
-  switch (
-    shopFilters.sort
-  ) {
+  switch (shopFilters.sort) {
+    case 'all':  
+      break;
     case 'price-low':
-      filtered.sort(
-        (a, b) =>
-          (
-            a.salePrice ||
-            a.price
-          ) -
-          (
-            b.salePrice ||
-            b.price
-          )
-      );
+      filtered.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
       break;
-
     case 'price-high':
-      filtered.sort(
-        (a, b) =>
-          (
-            b.salePrice ||
-            b.price
-          ) -
-          (
-            a.salePrice ||
-            a.price
-          )
-      );
+      filtered.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
       break;
-
     case 'name':
-      filtered.sort(
-        (a, b) =>
-          a.name.localeCompare(
-            b.name
-          )
-      );
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
       break;
-
     case 'rating':
-      filtered.sort(
-        (a, b) =>
-          b.rating -
-          a.rating
-      );
+      filtered.sort((a, b) => b.rating - a.rating);
       break;
-
     case 'newest':
-      filtered.sort(
-        (a, b) =>
-          new Date(
-            b.createdAt
-          ) -
-          new Date(
-            a.createdAt
-          )
-      );
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       break;
-
     default:
-      filtered.sort(
-        (a, b) =>
-          (
-            b.featured
-              ? 1
-              : 0
-          ) -
-          (
-            a.featured
-              ? 1
-              : 0
-          )
-      );
+      filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   }
 
-  const isShopPage =
-    window.location.pathname.endsWith(
-      'shop.html'
-    );
+  // ✅ FIX: Use body class to detect shop page
+  const isShopPage = document.body.classList.contains('shop-page');
 
-  // Update count
-  const countEl =
-    document.getElementById(
-      'resultsCount'
-    );
-
+  const countEl = document.getElementById('resultsCount');
   if (countEl) {
     if (isShopPage) {
-      countEl.textContent =
-        `${filtered.length} products found`;
+      countEl.textContent = `${filtered.length} products found`;
     } else {
-      countEl.textContent =
-        `Showing ${Math.min(filtered.length, 6)} of ${filtered.length} products`;
+      countEl.textContent = `Showing ${Math.min(filtered.length, 6)} of ${filtered.length} products`;
     }
   }
 
-  const seeMoreBtn =
-    document.getElementById(
-      'seeMoreContainer'
-    );
-
+  const seeMoreBtn = document.getElementById('seeMoreContainer');
   if (seeMoreBtn) {
-    seeMoreBtn.style.display =
-      isShopPage
-        ? 'none'
-        : 'block';
+    seeMoreBtn.style.display = isShopPage ? 'none' : 'block';
   }
 
-  if (
-    filtered.length ===
-    0
-  ) {
-    container.innerHTML =
-      '<div class="text-center" style="grid-column:1/-1;padding:60px;color:var(--gray-400)"><h3>No products found</h3><p>Try adjusting your filters or search.</p></div>';
-
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="text-center" style="grid-column:1/-1;padding:60px;color:var(--gray-400)"><h3>No products found</h3><p>Try adjusting your filters or search.</p></div>';
     return;
   }
 
-  const displayedProducts =
-    isShopPage
-      ? filtered
-      : filtered.slice(
-          0,
-          6
-        );
+  // ✅ Show ALL products on shop page, only 6 on homepage
+  const displayedProducts = isShopPage ? filtered : filtered.slice(0, 6);
 
-  container.innerHTML =
-    displayedProducts
-      .map(p =>
-        createProductCard(p)
-      )
-      .join('');
+  container.innerHTML = displayedProducts.map(p => createProductCard(p)).join('');
 }
 
 function renderFilterSidebar() {
