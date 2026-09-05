@@ -2,7 +2,7 @@
 // Veloura Admin Dashboard JavaScript
 // ============================================
 // ============================================
-// SUPABASE INIT - Using import.meta.env (Same as infos.js)
+// SUPABASE INIT - Robust version
 // ============================================
 
 function initSupabase() {
@@ -11,37 +11,69 @@ function initSupabase() {
         return window.supabaseClient;
     }
 
-    console.log('🔄 Initializing Supabase client from environment...');
+    console.log('🔄 Initializing Supabase client...');
     
-    // ✅ Get from Vite environment variables (same as infos.js)
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    let supabaseUrl, supabaseKey;
+    
+    // Try multiple sources for env vars
+    try {
+        // 1. Try import.meta.env (Vite)
+        if (typeof import.meta !== 'undefined' && import.meta.env) {
+            supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            console.log('🔑 Using import.meta.env');
+        }
+    } catch (e) {
+        console.log('⚠️ import.meta.env not available');
+    }
+    
+    // 2. Try window.env (fallback)
+    if (!supabaseUrl && window.env) {
+        supabaseUrl = window.env.VITE_SUPABASE_URL;
+        supabaseKey = window.env.VITE_SUPABASE_ANON_KEY;
+        console.log('🔑 Using window.env');
+    }
+    
+    // 3. Try hardcoded for development (LAST RESORT - remove in production!)
+    if (!supabaseUrl) {
+        // WARNING: Only use this for development/testing
+        // Replace with your actual values or remove this entirely
+        console.warn('⚠️ Using hardcoded Supabase values - REMOVE THIS IN PRODUCTION');
+        supabaseUrl = 'YOUR_SUPABASE_URL_HERE';
+        supabaseKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
+    }
     
     console.log('🔑 Supabase URL found:', !!supabaseUrl);
     console.log('🔑 Supabase Key found:', !!supabaseKey);
     
     if (!supabaseUrl || !supabaseKey) {
         console.warn('⚠️ Supabase environment variables not found.');
+        showAdminToast('Supabase is not configured. Check your environment variables.', 'error');
         return null;
     }
 
+    // Create client if Supabase is available
     if (typeof window.supabase !== 'undefined') {
         window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Supabase client initialized from env');
+        console.log('✅ Supabase client initialized');
         return window.supabaseClient;
     }
 
+    // Dynamic load fallback
     console.log('📦 Loading Supabase library dynamically...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.onload = () => {
         if (typeof window.supabase !== 'undefined') {
             window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-            console.log('✅ Supabase client loaded and initialized from env');
+            console.log('✅ Supabase client loaded and initialized');
+            // Retry loading data
+            loadAdminData();
         }
     };
     script.onerror = () => {
         console.error('❌ Failed to load Supabase library');
+        showAdminToast('Failed to load Supabase library. Check your connection.', 'error');
     };
     document.head.appendChild(script);
     
