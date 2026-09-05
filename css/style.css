@@ -2773,3 +2773,100 @@ html[data-theme="dark"] {
 [data-theme="dark"] .promo-banner-content p {
     color: rgba(255, 255, 255, 0.9) !important;
 }
+
+/* ============================================
+   PAGE HERO SECTIONS (Blog & Shop) - DARK MODE FIX
+   ============================================ */
+
+/* IMPORTANT: Keep the background image in dark mode */
+[data-theme="dark"] .page-hero-section {
+    background: var(--bg-page) !important;
+    /* Allow background-image to show through */
+}
+
+/* Blog hero dark mode - preserve background image */
+[data-theme="dark"] #blogHero {
+    background-color: #0F0D10 !important;
+    /* Background image will overlay this */
+}
+
+[data-theme="dark"] #blogHero .blog-hero-overlay {
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="dark"] #blogHero .section-title,
+[data-theme="dark"] #blogHero h1,
+[data-theme="dark"] #blogHeroTitle {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7) !important;
+}
+
+[data-theme="dark"] #blogHero .section-subtitle,
+[data-theme="dark"] #blogHero p,
+[data-theme="dark"] #blogHeroSubtitle {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] #blogHero .section-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Shop hero dark mode - preserve background image */
+[data-theme="dark"] #shopHero {
+    background-color: #0F0D10 !important;
+    /* Background image will overlay this */
+}
+
+[data-theme="dark"] #shopHero .shop-hero-overlay {
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="dark"] #shopHero .section-title,
+[data-theme="dark"] #shopHero h1,
+[data-theme="dark"] #shopHeroTitle {
+    color: #ffffff !important;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7) !important;
+}
+
+[data-theme="dark"] #shopHero .section-subtitle,
+[data-theme="dark"] #shopHero p,
+[data-theme="dark"] #shopHeroSubtitle {
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] #shopHero .section-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ============================================
+   PAGE HERO - OVERRIDE INLINE GRADIENT
+   ============================================ */
+
+/* Remove the gradient background in dark mode so the image shows */
+[data-theme="dark"] .page-hero-section[style*="background:linear-gradient"] {
+    background: var(--bg-page) !important;
+    /* The background-image from JS will be applied inline and should take priority */
+}
+
+/* Ensure the hero section has proper z-index stacking */
+[data-theme="dark"] .page-hero-section {
+    position: relative;
+    z-index: 1;
+}
+
+[data-theme="dark"] .page-hero-section .blog-hero-overlay,
+[data-theme="dark"] .page-hero-section .shop-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+}
+
+[data-theme="dark"] .page-hero-section > div {
+    position: relative;
+    z-index: 3;
+}
