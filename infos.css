@@ -636,3 +636,103 @@ input {
         width: 100%;
     }
 }
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    padding: 4px;
+    box-shadow: var(--admin-shadow);
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--admin-text-light);
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: rgba(201, 149, 174, 0.08);
+}
+
+.tab-btn.active {
+    background: #2c2529;
+    color: #fff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* For subscribers tab - keep visible by default */
+#tabContentSubscribers {
+    display: block;
+}
+
+#tabContentPayments {
+    display: none;
+}
+/* =========================================================
+   TABS
+   ========================================================= */
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    padding: 4px;
+    box-shadow: var(--admin-shadow);
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--admin-text-light);
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: rgba(201, 149, 174, 0.08);
+}
+
+.tab-btn.active {
+    background: #2c2529;
+    color: #fff;
+}
+
+.tab-content {
+    display: none;
+}
+
+#tabContentSubscribers {
+    display: block;
+}
+
+#tabContentPayments {
+    display: none;
+}

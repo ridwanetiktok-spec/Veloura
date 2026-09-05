@@ -3711,7 +3711,7 @@ function setupEventListeners() {
         return;
       }
       // ✅ Redirect to clean URL
-      window.location.href = '/pay';
+      window.location.href = '/checkout';
     });
   }
 }

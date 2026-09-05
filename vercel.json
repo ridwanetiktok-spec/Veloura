@@ -20,7 +20,7 @@
       "destination": "/blog.html"
     },
     {
-      "source": "/pay",
+      "source": "/checkout",
       "destination": "/pay.html"
     },
     {
